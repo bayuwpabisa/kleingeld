@@ -63,7 +63,33 @@ Satu commit untuk satu tugas.
 2. Beri tag di `main`: `git tag v0.x && git push origin v0.x`
 3. Buat GitHub Release dari tag tersebut.
 
+## Hook commit
+
+Hook dipasang otomatis oleh Husky saat `npm install`.
+
+| Hook | Yang dicek |
+|---|---|
+| `pre-commit` | lint-staged menjalankan `eslint --fix --max-warnings=0` lalu `prettier --write` pada file `.js/.mjs/.ts/.tsx` yang di-stage, dan `prettier --write` pada `.json/.css`. Commit gagal kalau masih ada error atau warning ESLint. |
+| `commit-msg` | commitlint menolak pesan yang tidak sesuai format di atas. Scope di luar daftar hanya memberi peringatan. |
+
+```
+git commit -m "update stuff"           # ditolak: tidak ada type
+git commit -m "Feat: Add form."        # ditolak: type dan deskripsi harus huruf kecil, tanpa titik
+git commit -m "feat(ui): add button"   # lolos
+```
+
+Jangan melewati hook dengan `--no-verify`. Kalau hook gagal, perbaiki penyebabnya.
+
+Perintah manual:
+
+- `npm run lint` — ESLint seluruh proyek
+- `npm run typecheck` — `tsc --noEmit` (tidak ada di hook karena lambat; dicek CI)
+- `npm run format` / `npm run format:check` — Prettier seluruh proyek. Markdown dan `docs/` sengaja tidak diformat.
+
+## Struktur folder
+
+Kode fitur ada di `features/<nama>/`. Isi standar, aturan impor, dan pola akses data aman ada di [features/README.md](features/README.md).
+
 ## Menyusul
 
-- 3 Nov: Husky, lint-staged, dan commitlint mengecek format commit secara otomatis.
 - 4 Nov: CI di GitHub Actions menjadi status check wajib sebelum merge.

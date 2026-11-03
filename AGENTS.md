@@ -31,11 +31,15 @@ Package manager: npm.
 - `npm run dev` — start dev server
 - `npm run build` — production build
 - `npm run lint` — ESLint
+- `npm run typecheck` — `tsc --noEmit`
+- `npm run format` / `npm run format:check` — Prettier (Markdown and `docs/` are ignored)
 - `npm test` — Jest (add the script when Jest is set up)
 - `npx cypress run` — e2e (add when Cypress is set up)
 - Drizzle: `npx drizzle-kit generate` then `npx drizzle-kit migrate`
 
-Before saying a task is done: run lint, type-check (`npx tsc --noEmit`), and the relevant tests.
+Before saying a task is done: run lint, type-check (`npm run typecheck`), and the relevant tests.
+
+Git hooks (Husky): pre-commit runs lint-staged (ESLint `--fix --max-warnings=0` + Prettier on staged files); commit-msg runs commitlint (Conventional Commits). Do not bypass them with `--no-verify`.
 
 ## Structure
 
@@ -43,7 +47,7 @@ Adjust this to match the real layout as it grows.
 
 - `app/` — routes, layouts, route handlers (`app/api/...`)
 - `components/` — reusable UI components
-- `features/<name>/` — feature code (transactions, budgets, bills, dashboard): components, hooks, queries
+- `features/<name>/` — feature code (transactions, budgets, bills, dashboard): components, hooks, queries. Layout, import rules and safe-indexing patterns (`noUncheckedIndexedAccess` is on) are in `features/README.md`
 - `lib/` — helpers, auth config, query client
 - `db/` — Drizzle schema, migrations, queries
 - `schemas/` — Zod schemas shared by forms and route handlers

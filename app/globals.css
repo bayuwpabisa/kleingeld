@@ -10,7 +10,10 @@
     @slot;
   }
   @media (prefers-color-scheme: dark) {
-    &:where(:root:not([data-theme="light"]), :root:not([data-theme="light"]) *) {
+    &:where(
+      :root:not([data-theme="light"]),
+      :root:not([data-theme="light"]) *
+    ) {
       @slot;
     }
   }
@@ -42,7 +45,8 @@
   --chart-income: #00806a;
   --chart-expense: #4f6bd8;
 
-  --shadow-overlay: 0 8px 24px rgb(22 26 25 / 0.12), 0 2px 6px rgb(22 26 25 / 0.08);
+  --shadow-overlay:
+    0 8px 24px rgb(22 26 25 / 0.12), 0 2px 6px rgb(22 26 25 / 0.08);
 }
 
 @media (prefers-color-scheme: dark) {
