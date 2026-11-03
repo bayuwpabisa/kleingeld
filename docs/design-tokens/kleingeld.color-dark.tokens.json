@@ -1,0 +1,275 @@
+{
+  "color": {
+    "canvas": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.058824,
+          0.07451,
+          0.070588
+        ],
+        "alpha": 1,
+        "hex": "#0F1312"
+      },
+      "$description": "Latar app dan halaman"
+    },
+    "surface": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.090196,
+          0.109804,
+          0.105882
+        ],
+        "alpha": 1,
+        "hex": "#171C1B"
+      },
+      "$description": "Kartu, dialog, sheet, input"
+    },
+    "surface-muted": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.12549,
+          0.152941,
+          0.145098
+        ],
+        "alpha": 1,
+        "hex": "#202725"
+      },
+      "$description": "Area terisi, skeleton, track meter, hover baris"
+    },
+    "border": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.172549,
+          0.203922,
+          0.196078
+        ],
+        "alpha": 1,
+        "hex": "#2C3432"
+      },
+      "$description": "Pembatas dan tepi kartu (dekoratif)"
+    },
+    "border-strong": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.419608,
+          0.458824,
+          0.447059
+        ],
+        "alpha": 1,
+        "hex": "#6B7572"
+      },
+      "$description": "Tepi input dan pill segmented aktif (>=3:1)"
+    },
+    "fg": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.909804,
+          0.92549,
+          0.917647
+        ],
+        "alpha": 1,
+        "hex": "#E8ECEA"
+      },
+      "$description": "Teks utama, nominal pengeluaran"
+    },
+    "fg-muted": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.639216,
+          0.678431,
+          0.662745
+        ],
+        "alpha": 1,
+        "hex": "#A3ADA9"
+      },
+      "$description": "Label, meta, placeholder"
+    },
+    "primary": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.298039,
+          0.764706,
+          0.682353
+        ],
+        "alpha": 1,
+        "hex": "#4CC3AE"
+      },
+      "$description": "Tombol utama, link, nav aktif, fokus"
+    },
+    "primary-hover": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.435294,
+          0.827451,
+          0.756863
+        ],
+        "alpha": 1,
+        "hex": "#6FD3C1"
+      },
+      "$description": "Hover tombol utama"
+    },
+    "primary-soft": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.078431,
+          0.188235,
+          0.168627
+        ],
+        "alpha": 1,
+        "hex": "#14302B"
+      },
+      "$description": "Latar nav aktif, chip terpilih, banner info"
+    },
+    "on-primary": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.058824,
+          0.07451,
+          0.070588
+        ],
+        "alpha": 1,
+        "hex": "#0F1312"
+      },
+      "$description": "Teks di atas primary"
+    },
+    "income": {
+      "$type": "color",
+      "$value": "{color.primary}",
+      "$description": "Nominal pemasukan di daftar dan tabel"
+    },
+    "warning": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.94902,
+          0.709804,
+          0.290196
+        ],
+        "alpha": 1,
+        "hex": "#F2B54A"
+      },
+      "$description": "Teks status hampir habis (>=80%)"
+    },
+    "warning-fill": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.94902,
+          0.709804,
+          0.290196
+        ],
+        "alpha": 1,
+        "hex": "#F2B54A"
+      },
+      "$description": "Isi meter budget >=80%"
+    },
+    "warning-soft": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.2,
+          0.156863,
+          0.058824
+        ],
+        "alpha": 1,
+        "hex": "#33280F"
+      },
+      "$description": "Latar banner peringatan"
+    },
+    "danger": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.941176,
+          0.45098,
+          0.415686
+        ],
+        "alpha": 1,
+        "hex": "#F0736A"
+      },
+      "$description": "Lewat batas, error, aksi hapus"
+    },
+    "danger-soft": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.227451,
+          0.113725,
+          0.105882
+        ],
+        "alpha": 1,
+        "hex": "#3A1D1B"
+      },
+      "$description": "Latar banner error"
+    },
+    "on-danger": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.058824,
+          0.07451,
+          0.070588
+        ],
+        "alpha": 1,
+        "hex": "#0F1312"
+      },
+      "$description": "Teks di atas danger"
+    },
+    "chart-income": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.184314,
+          0.627451,
+          0.54902
+        ],
+        "alpha": 1,
+        "hex": "#2FA08C"
+      },
+      "$description": "Seri grafik pemasukan"
+    },
+    "chart-expense": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.486275,
+          0.54902,
+          0.921569
+        ],
+        "alpha": 1,
+        "hex": "#7C8CEB"
+      },
+      "$description": "Seri grafik pengeluaran dan bar per kategori"
+    }
+  }
+}

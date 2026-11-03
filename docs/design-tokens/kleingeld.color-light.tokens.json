@@ -1,0 +1,275 @@
+{
+  "color": {
+    "canvas": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.968627,
+          0.972549,
+          0.968627
+        ],
+        "alpha": 1,
+        "hex": "#F7F8F7"
+      },
+      "$description": "Latar app dan halaman"
+    },
+    "surface": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "alpha": 1,
+        "hex": "#FFFFFF"
+      },
+      "$description": "Kartu, dialog, sheet, input"
+    },
+    "surface-muted": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.937255,
+          0.945098,
+          0.941176
+        ],
+        "alpha": 1,
+        "hex": "#EFF1F0"
+      },
+      "$description": "Area terisi, skeleton, track meter, hover baris"
+    },
+    "border": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.866667,
+          0.882353,
+          0.87451
+        ],
+        "alpha": 1,
+        "hex": "#DDE1DF"
+      },
+      "$description": "Pembatas dan tepi kartu (dekoratif)"
+    },
+    "border-strong": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.517647,
+          0.54902,
+          0.537255
+        ],
+        "alpha": 1,
+        "hex": "#848C89"
+      },
+      "$description": "Tepi input dan pill segmented aktif (>=3:1)"
+    },
+    "fg": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.086275,
+          0.101961,
+          0.098039
+        ],
+        "alpha": 1,
+        "hex": "#161A19"
+      },
+      "$description": "Teks utama, nominal pengeluaran"
+    },
+    "fg-muted": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.356863,
+          0.392157,
+          0.380392
+        ],
+        "alpha": 1,
+        "hex": "#5B6461"
+      },
+      "$description": "Label, meta, placeholder"
+    },
+    "primary": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.043137,
+          0.431373,
+          0.372549
+        ],
+        "alpha": 1,
+        "hex": "#0B6E5F"
+      },
+      "$description": "Tombol utama, link, nav aktif, fokus"
+    },
+    "primary-hover": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.035294,
+          0.352941,
+          0.305882
+        ],
+        "alpha": 1,
+        "hex": "#095A4E"
+      },
+      "$description": "Hover tombol utama"
+    },
+    "primary-soft": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.890196,
+          0.945098,
+          0.933333
+        ],
+        "alpha": 1,
+        "hex": "#E3F1EE"
+      },
+      "$description": "Latar nav aktif, chip terpilih, banner info"
+    },
+    "on-primary": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "alpha": 1,
+        "hex": "#FFFFFF"
+      },
+      "$description": "Teks di atas primary"
+    },
+    "income": {
+      "$type": "color",
+      "$value": "{color.primary}",
+      "$description": "Nominal pemasukan di daftar dan tabel"
+    },
+    "warning": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.541176,
+          0.32549,
+          0.0
+        ],
+        "alpha": 1,
+        "hex": "#8A5300"
+      },
+      "$description": "Teks status hampir habis (>=80%)"
+    },
+    "warning-fill": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.721569,
+          0.458824,
+          0.0
+        ],
+        "alpha": 1,
+        "hex": "#B87500"
+      },
+      "$description": "Isi meter budget >=80%"
+    },
+    "warning-soft": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.984314,
+          0.941176,
+          0.862745
+        ],
+        "alpha": 1,
+        "hex": "#FBF0DC"
+      },
+      "$description": "Latar banner peringatan"
+    },
+    "danger": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.760784,
+          0.211765,
+          0.184314
+        ],
+        "alpha": 1,
+        "hex": "#C2362F"
+      },
+      "$description": "Lewat batas, error, aksi hapus"
+    },
+    "danger-soft": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.984314,
+          0.913725,
+          0.905882
+        ],
+        "alpha": 1,
+        "hex": "#FBE9E7"
+      },
+      "$description": "Latar banner error"
+    },
+    "on-danger": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "alpha": 1,
+        "hex": "#FFFFFF"
+      },
+      "$description": "Teks di atas danger"
+    },
+    "chart-income": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.0,
+          0.501961,
+          0.415686
+        ],
+        "alpha": 1,
+        "hex": "#00806A"
+      },
+      "$description": "Seri grafik pemasukan"
+    },
+    "chart-expense": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.309804,
+          0.419608,
+          0.847059
+        ],
+        "alpha": 1,
+        "hex": "#4F6BD8"
+      },
+      "$description": "Seri grafik pengeluaran dan bar per kategori"
+    }
+  }
+}
