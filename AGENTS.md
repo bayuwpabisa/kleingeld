@@ -31,7 +31,8 @@ Package manager: npm.
 - `npm run dev` — start dev server
 - `npm run build` — production build
 - `npm run lint` — ESLint
-- `npm run typecheck` — `tsc --noEmit`
+- `npm run typecheck` — `next typegen && tsc --noEmit` (route types are generated first, so a fresh clone checks them too)
+- CI: `.github/workflows/ci.yml` runs lint, typecheck, format:check and build on every PR to `develop`/`main`; Vercel builds a preview for every non-`main` branch
 - `npm run format` / `npm run format:check` — Prettier (Markdown and `docs/` are ignored)
 - `npm test` — Jest (add the script when Jest is set up)
 - `npx cypress run` — e2e (add when Cypress is set up)
