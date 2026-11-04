@@ -83,13 +83,29 @@ Jangan melewati hook dengan `--no-verify`. Kalau hook gagal, perbaiki penyebabny
 Perintah manual:
 
 - `npm run lint` — ESLint seluruh proyek
-- `npm run typecheck` — `tsc --noEmit` (tidak ada di hook karena lambat; dicek CI)
+- `npm run typecheck` — `next typegen && tsc --noEmit`; `next typegen` membuat tipe route dulu supaya route ikut dicek (tidak ada di hook karena lambat; dicek CI)
 - `npm run format` / `npm run format:check` — Prettier seluruh proyek. Markdown dan `docs/` sengaja tidak diformat.
 
 ## Struktur folder
 
 Kode fitur ada di `features/<nama>/`. Isi standar, aturan impor, dan pola akses data aman ada di [features/README.md](features/README.md).
 
-## Menyusul
+## CI dan preview
 
-- 4 Nov: CI di GitHub Actions menjadi status check wajib sebelum merge.
+Setiap PR ke `develop` atau `main`, dan setiap push ke kedua branch itu, menjalankan workflow [CI](.github/workflows/ci.yml) di GitHub Actions. Job `ci` menjalankan langkah berikut berurutan, dengan Node versi [.nvmrc](.nvmrc):
+
+1. `npm ci`
+2. `npm run lint -- --max-warnings=0`
+3. `npm run typecheck`
+4. `npm run format:check`
+5. `npm run build`
+
+Kalau satu langkah gagal, buka tab **Checks** di PR untuk melihat langkah mana yang gagal beserta log-nya. Untuk menjalankan pengecekan yang sama di lokal sebelum push:
+
+```
+npm run lint && npm run typecheck && npm run format:check && npm run build
+```
+
+Vercel terhubung lewat integrasi GitHub. Setiap push ke branch selain `main` mendapat preview deploy, dan bot Vercel menulis link preview di PR. `main` adalah production.
+
+PR baru boleh di-merge setelah check `ci` hijau. Saat repo masih private di plan Free, aturan ini belum dipaksa GitHub. Setelah repo public, `ci` dijadikan status check wajib di ruleset `develop` dan `main`.
