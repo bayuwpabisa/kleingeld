@@ -3,7 +3,7 @@
 ## Context
 Tugas jadwal hari ini (Pekan 1): **"CI GitHub Actions (lint, typecheck, build di setiap PR) + Vercel preview deploy"** → output: *PR pertama lolos CI dengan link preview*.
 
-Kondisi `develop` sekarang (`d9893b9`, PR #3 sudah di-squash-merge):
+Kondisi `develop` sekarang (`717f42c`, PR #3 sudah di-squash-merge):
 - **Sudah ada:** script `lint`, `typecheck`, `format:check`, `build`; Husky + lint-staged + commitlint; `.gitattributes` `eol=lf`.
 - **Belum ada:** folder `.github/workflows/`, versi Node yang dikunci, project Vercel.
 - `CONTRIBUTING.md` bagian "Menyusul" menjanjikan CI sebagai status check wajib hari ini.

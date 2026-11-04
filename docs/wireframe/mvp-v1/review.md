@@ -2,7 +2,7 @@
 
 Perbandingan wireframe dengan [mvp-scope.md](../../mvp-scope.md) dan [DESIGN.md](../../../DESIGN.md).
 
-- Putaran 1 (2026-11-02): 6 layar per ukuran. Versinya ada di riwayat git (commit `1ca38ee`).
+- Putaran 1 (2026-11-02): 6 layar per ukuran. Versinya ada di riwayat git (commit `76bfd4f`).
 - Putaran 2 (2026-11-02): versi sekarang di folder ini (`Desktop/`, `Mobile/`, `Komponen.png`), 12 layar per ukuran (dengan form, dialog konfirmasi, dan Pengaturan).
 
 Centang item setelah direvisi di Figma, lalu export ulang PNG ke folder ini.
