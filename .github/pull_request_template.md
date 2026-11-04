@@ -31,7 +31,7 @@
 ## Checklist
 
 - [ ] `npm run lint` lolos
-- [ ] `npx tsc --noEmit` lolos
+- [ ] `npm run typecheck` dan `npm run format:check` lolos (sama dengan check `ci`)
 - [ ] Test yang relevan ditambah atau diperbarui, dan lolos
 - [ ] Aksesibilitas: input berlabel, bisa dipakai dengan keyboard, kontras cukup
 - [ ] Tidak ada file `.env` atau secret
