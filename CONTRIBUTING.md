@@ -108,4 +108,4 @@ npm run lint && npm run typecheck && npm run format:check && npm run build
 
 Vercel terhubung lewat integrasi GitHub. Setiap push ke branch selain `main` mendapat preview deploy, dan bot Vercel menulis link preview di PR. `main` adalah production.
 
-PR baru boleh di-merge setelah check `ci` hijau. Saat repo masih private di plan Free, aturan ini belum dipaksa GitHub. Setelah repo public, `ci` dijadikan status check wajib di ruleset `develop` dan `main`.
+PR baru bisa di-merge setelah check `ci` hijau. Aturan ini dipaksa GitHub lewat ruleset `protect-main-develop` di `develop` dan `main`: `ci` adalah status check wajib, semua percakapan review harus selesai, dan hanya squash atau merge commit yang diizinkan.
