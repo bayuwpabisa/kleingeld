@@ -32,12 +32,12 @@ Sisa dari 4 Nov (memori, item b) ikut dikerjakan di branch ini: centang progres 
 Server Component, `metadata.robots = { index: false }`. Bagian: Button (4 varian × 2 ukuran, disabled, busy, link bergaya tombol), Input (default, dengan hint, error, disabled, `inputMode="numeric"`), Select (placeholder, error, disabled), Card (default, muted, contoh kartu ringkasan "Pemasukan / Rp 8.500.000" dari wireframe). Dark mode dicek lewat DevTools (emulate `prefers-color-scheme: dark`), karena toggle tema baru 7 Nov.
 
 ## Progres (centang saat selesai)
-- [ ] 0. Branch `feature/ui-base-components` dari `develop` terbaru; simpan plan ke `docs/plans/2026-11-05-ui-components.md`
-- [ ] 1. Sisa 4 Nov: centang progres 6 di plan CI, perbarui paragraf CONTRIBUTING — commit `docs: mark ci preview done and document enforced checks`
-- [ ] 2. `lucide-react` + `lib/cn.ts` + `Button` — commit `feat(ui): add accessible button`
-- [ ] 3. `Field` + `Input` + `Select` — commit `feat(ui): add input and select with labelled field`
-- [ ] 4. `Card` — commit `feat(ui): add card`
-- [ ] 5. Halaman `/dev/ui` — commit `feat(ui): add dev showcase page for base components`
+- [x] 0. Branch `feature/ui-base-components` dari `develop` terbaru; simpan plan ke `docs/plans/2026-11-05-ui-components.md`
+- [x] 1. Sisa 4 Nov: centang progres 6 di plan CI, perbarui paragraf CONTRIBUTING — commit `docs: mark ci preview done and document enforced checks`
+- [x] 2. `lucide-react` + `lib/cn.ts` + `Button` — commit `feat(ui): add accessible button`
+- [x] 3. `Field` + `Input` + `Select` — commit `feat(ui): add input and select with labelled field`
+- [x] 4. `Card` — commit `feat(ui): add card`
+- [x] 5. Halaman `/dev/ui` — commit `feat(ui): add dev showcase page for base components`
 - [ ] 6. Verifikasi (di bawah), push, PR `feat(ui): add accessible button, input, select and card` ke `develop`, CI hijau + cek preview, squash merge (kamu)
 
 ## Verifikasi
