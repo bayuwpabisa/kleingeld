@@ -26,7 +26,7 @@ Kondisi `develop` sekarang (`717f42c`, PR #3 sudah di-squash-merge):
 - [x] 3. Script `typecheck` dengan `next typegen`
 - [x] 4. Dokumentasi (CONTRIBUTING, AGENTS.md)
 - [x] 5. Verifikasi di clone bersih
-- [ ] 6. Hubungkan Vercel (kamu), push, PR ke `develop`, CI hijau + link preview
+- [x] 6. Hubungkan Vercel (kamu), push, PR ke `develop`, CI hijau + link preview
 
 ## Langkah
 ### 2. Workflow — commit `ci: add github actions workflow for lint, typecheck and build`
