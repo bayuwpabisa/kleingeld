@@ -2,19 +2,31 @@ import type { ComponentProps } from "react";
 import { LoaderCircle } from "lucide-react";
 import { cn } from "@/lib/cn";
 
-export type ButtonVariant = "primary" | "secondary" | "quiet" | "danger";
+export type ButtonVariant =
+  | "primary"
+  | "secondary"
+  | "quiet"
+  | "quiet-primary"
+  | "quiet-danger"
+  | "danger";
 export type ButtonSize = "md" | "sm";
 
 const base =
   "inline-flex items-center justify-center gap-2 rounded-lg font-medium whitespace-nowrap transition-colors disabled:cursor-not-allowed disabled:opacity-50";
 
-// Hover styles sit behind `enabled:` so a disabled button does not react.
+// Hover sits behind `not-disabled:` so a disabled button does not react.
+// (`enabled:` would also skip links styled with `buttonClasses`.)
 const variants: Record<ButtonVariant, string> = {
-  primary: "bg-primary text-on-primary enabled:hover:bg-primary-hover",
+  primary: "bg-primary text-on-primary not-disabled:hover:bg-primary-hover",
   secondary:
-    "border border-border-strong bg-surface text-fg enabled:hover:bg-surface-muted",
-  quiet: "text-fg enabled:hover:bg-surface-muted",
-  danger: "bg-danger text-on-danger enabled:hover:brightness-95",
+    "border border-border-strong bg-surface text-fg not-disabled:hover:bg-surface-muted",
+  // Text-only buttons. quiet-primary: "Daftar" in the demo banner.
+  // quiet-danger: "Hapus transaksi" inside the form (DESIGN.md, Button).
+  quiet: "text-fg not-disabled:hover:bg-surface-muted",
+  "quiet-primary": "text-primary not-disabled:hover:bg-surface-muted",
+  "quiet-danger": "text-danger not-disabled:hover:bg-surface-muted",
+  // Only for the confirm button in a delete dialog.
+  danger: "bg-danger text-on-danger not-disabled:hover:brightness-95",
 };
 
 // md is 44px on mobile and 40px from lg up (DESIGN.md, Ukuran kontrol).
