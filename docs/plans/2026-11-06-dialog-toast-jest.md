@@ -56,10 +56,10 @@ Tambah komponen client `app/dev/ui/overlay-demo.tsx` dan pasang di `page.tsx`. I
 
 ## Progres (centang saat selesai)
 - [x] 0. Branch `feature/dialog-toast-jest` dari `develop` terbaru. Simpan plan ini ke `docs/plans/2026-11-06-dialog-toast-jest.md` dan centang progres 6 di plan 5 Nov. Commit `docs: add dialog, toast and jest plan`
-- [ ] 1. Install dependency dev, `jest.config.mjs`, `jest.setup.ts`, script, test Button/Input/Select/Card, langkah CI, `AGENTS.md`. Commit `test: set up jest, testing library and jest-axe`
-- [ ] 2. Test Dialog (gagal dulu), lalu `dialog.tsx` + CSS scroll lock. Commit `feat(ui): add accessible dialog`
-- [ ] 3. Test Toast (gagal dulu), lalu `toast.tsx` + provider di layout. Commit `feat(ui): add toast with undo action`
-- [ ] 4. Demo di `/dev/ui`. Commit `feat(ui): show dialog and toast on dev page`
+- [x] 1. Install dependency dev, `jest.config.mjs`, `jest.setup.ts`, script, test Button/Input/Select/Card, langkah CI, `AGENTS.md`. Commit `test: set up jest, testing library and jest-axe`
+- [x] 2. Test Dialog (gagal dulu), lalu `dialog.tsx` + CSS scroll lock. Commit `feat(ui): add accessible dialog`
+- [x] 3. Test Toast (gagal dulu), lalu `toast.tsx` + provider di layout. Commit `feat(ui): add toast with undo action`
+- [x] 4. Demo di `/dev/ui`. Commit `feat(ui): show dialog and toast on dev page`
 - [ ] 5. Verifikasi (di bawah), push, PR `feat(ui): add dialog, toast and first component tests` ke `develop`. Tunggu check `ci` hijau (termasuk langkah Test) dan cek preview, lalu squash merge (kamu)
 
 ## Verifikasi
