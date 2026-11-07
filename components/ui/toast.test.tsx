@@ -101,6 +101,17 @@ describe("Toast", () => {
     expect(status).toBeEmptyDOMElement();
   });
 
+  it("returns focus to where it came from after Urungkan", async () => {
+    const { user } = setup();
+
+    await user.click(screen.getByRole("button", { name: "Hapus" }));
+    await user.tab();
+    expect(screen.getByRole("button", { name: "Urungkan" })).toHaveFocus();
+
+    await user.keyboard("{Enter}");
+    expect(screen.getByRole("button", { name: "Hapus" })).toHaveFocus();
+  });
+
   it("closes with the Tutup button", async () => {
     const { user, status } = setup();
 

@@ -41,7 +41,8 @@ export function useToast(): ToastApi {
  * One toast at a time, in a `role="status"` live region that is always in the
  * page, so screen readers announce each new message. It hides after 4 seconds;
  * hovering it or moving focus into it pauses the timer (WCAG 2.2.1), and the
- * full 4 seconds start again after.
+ * full 4 seconds start again after. Closing it while focus is inside sends
+ * focus back to where it was before.
  */
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [toast, setToast] = useState<(ToastOptions & { id: number }) | null>(
@@ -49,9 +50,13 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   );
   const [paused, setPaused] = useState(false);
   const nextId = useRef(0);
+  const toastRef = useRef<HTMLDivElement>(null);
+  // Where focus was before it moved into the toast, to go back on close.
+  const returnFocusTo = useRef<HTMLElement | null>(null);
 
   const show = useCallback((options: ToastOptions) => {
     nextId.current += 1;
+    returnFocusTo.current = null;
     setToast({ ...options, id: nextId.current });
     setPaused(false);
   }, []);
@@ -59,6 +64,10 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   // Also clears `paused`: a toast closed under the pointer never gets
   // its mouseleave.
   const dismiss = useCallback(() => {
+    if (toastRef.current?.contains(document.activeElement)) {
+      returnFocusTo.current?.focus();
+    }
+    returnFocusTo.current = null;
     setToast(null);
     setPaused(false);
   }, []);
@@ -70,6 +79,14 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   }, [toast, paused, dismiss]);
 
   const api = useMemo(() => ({ show, dismiss }), [show, dismiss]);
+
+  function handleFocus(event: FocusEvent<HTMLDivElement>) {
+    setPaused(true);
+    const from = event.relatedTarget;
+    if (from instanceof HTMLElement && !event.currentTarget.contains(from)) {
+      returnFocusTo.current = from;
+    }
+  }
 
   function handleBlur(event: FocusEvent<HTMLDivElement>) {
     if (!event.currentTarget.contains(event.relatedTarget)) setPaused(false);
@@ -88,9 +105,10 @@ export function ToastProvider({ children }: { children: ReactNode }) {
         {toast && (
           <div
             key={toast.id}
+            ref={toastRef}
             onMouseEnter={() => setPaused(true)}
             onMouseLeave={() => setPaused(false)}
-            onFocus={() => setPaused(true)}
+            onFocus={handleFocus}
             onBlur={handleBlur}
             className="pointer-events-auto flex w-full max-w-md items-center gap-2 rounded-xl bg-fg py-2 pr-2 pl-4 text-sm text-canvas shadow-overlay lg:w-auto"
           >
