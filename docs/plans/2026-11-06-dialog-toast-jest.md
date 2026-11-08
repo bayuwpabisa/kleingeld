@@ -60,7 +60,7 @@ Tambah komponen client `app/dev/ui/overlay-demo.tsx` dan pasang di `page.tsx`. I
 - [x] 2. Test Dialog (gagal dulu), lalu `dialog.tsx` + CSS scroll lock. Commit `feat(ui): add accessible dialog`
 - [x] 3. Test Toast (gagal dulu), lalu `toast.tsx` + provider di layout. Commit `feat(ui): add toast with undo action`
 - [x] 4. Demo di `/dev/ui`. Commit `feat(ui): show dialog and toast on dev page`
-- [ ] 5. Verifikasi (di bawah), push, PR `feat(ui): add dialog, toast and first component tests` ke `develop`. Tunggu check `ci` hijau (termasuk langkah Test) dan cek preview, lalu squash merge (kamu)
+- [x] 5. Verifikasi (di bawah), push, PR `feat(ui): add dialog, toast and first component tests` ke `develop`. Tunggu check `ci` hijau (termasuk langkah Test) dan cek preview, lalu squash merge (kamu)
 
 ## Verifikasi
 - `npm test`, `npm run lint`, `npm run typecheck`, `npm run format:check`, `npm run build` semuanya lolos. Satu test sengaja dibuat gagal untuk memastikan Jest memang mendeteksi kegagalan, lalu dikembalikan.
