@@ -95,12 +95,13 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   return (
     <ToastContext value={api}>
       {children}
-      {/* Bottom left on desktop; on phones above the bottom nav (64px). */}
+      {/* Bottom left on desktop. On phones 16px above the bottom nav when the
+          page has one (--bottom-nav-space, app/globals.css), else the edge. */}
       <div
         role="status"
         aria-live="polite"
         aria-atomic="true"
-        className="pointer-events-none fixed inset-x-5 bottom-20 z-50 flex justify-center lg:inset-x-auto lg:bottom-6 lg:left-6"
+        className="pointer-events-none fixed inset-x-5 bottom-[calc(var(--bottom-nav-space,0px)+1rem)] z-50 flex justify-center lg:inset-x-auto lg:bottom-6 lg:left-6"
       >
         {toast && (
           <div
