@@ -152,6 +152,12 @@ body {
   outline-offset: 2px;
 }
 
+/* Room the bottom nav (64px + home indicator) takes; the toast sits above it.
+ * The nav is hidden from lg up, where the toast uses its own offset. */
+:root:has([data-bottom-nav]) {
+  --bottom-nav-space: calc(4rem + env(safe-area-inset-bottom));
+}
+
 /* The page behind an open modal dialog does not scroll. */
 html:has(dialog[open]:modal) {
   overflow: hidden;
