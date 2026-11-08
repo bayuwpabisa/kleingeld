@@ -28,11 +28,12 @@ export function DashboardPreview() {
       aria-label="Pratinjau dashboard Kleingeld: saldo, pemasukan, pengeluaran, dan tren enam bulan"
       className="flex flex-col gap-4 rounded-2xl border border-border bg-canvas p-4 sm:p-6"
     >
-      <div className="grid grid-cols-3 gap-2 sm:gap-3">
-        {summary.map(({ label, amount }) => (
+      {/* Phones: Saldo full width on top, like the mobile dashboard. */}
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3">
+        {summary.map(({ label, amount }, index) => (
           <div
             key={label}
-            className="flex min-w-0 flex-col gap-1 rounded-xl border border-border bg-surface p-3"
+            className={`flex min-w-0 flex-col gap-1 rounded-xl border border-border bg-surface p-3 ${index === 0 ? "col-span-2 sm:col-span-1" : ""}`}
           >
             <span className="text-xs text-fg-muted">{label}</span>
             <span className="truncate text-sm font-semibold tabular-nums sm:text-lg">
