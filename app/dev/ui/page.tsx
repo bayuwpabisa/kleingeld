@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { OverlayDemo } from "./overlay-demo";
+import { SegmentedDemo } from "./segmented-demo";
 
 // Dev-only showcase of the base components. Delete before the v1 release.
 export const metadata: Metadata = {
@@ -140,6 +141,10 @@ export default function UiShowcasePage() {
             <option>Rupiah (IDR)</option>
           </Select>
         </div>
+      </Showcase>
+
+      <Showcase id="segmented" title="Segmented control">
+        <SegmentedDemo />
       </Showcase>
 
       <Showcase id="card" title="Card">
