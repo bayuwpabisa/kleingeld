@@ -60,8 +60,15 @@ Satu commit untuk satu tugas.
 ## Rilis
 
 1. Buka PR `develop` → `main`, lalu pilih **Create a merge commit** (jangan squash, supaya `main` dan `develop` tidak bercabang).
-2. Beri tag di `main`: `git tag v0.x && git push origin v0.x`
+2. Beri tag annotated di merge commit `main`, dengan versi yang sama seperti `package.json`:
+   ```
+   git switch main && git pull
+   git tag -a v0.1.0 -m "v0.1.0: foundation"
+   git push origin v0.1.0
+   ```
 3. Buat GitHub Release dari tag tersebut.
+
+`develop` tidak perlu menarik merge commit dari `main`; rilis berikutnya tetap merge bersih.
 
 ## Hook commit
 
@@ -97,13 +104,14 @@ Setiap PR ke `develop` atau `main`, dan setiap push ke kedua branch itu, menjala
 1. `npm ci`
 2. `npm run lint -- --max-warnings=0`
 3. `npm run typecheck`
-4. `npm run format:check`
-5. `npm run build`
+4. `npm test -- --ci`
+5. `npm run format:check`
+6. `npm run build`
 
 Kalau satu langkah gagal, buka tab **Checks** di PR untuk melihat langkah mana yang gagal beserta log-nya. Untuk menjalankan pengecekan yang sama di lokal sebelum push:
 
 ```
-npm run lint && npm run typecheck && npm run format:check && npm run build
+npm run lint && npm run typecheck && npm test && npm run format:check && npm run build
 ```
 
 Vercel terhubung lewat integrasi GitHub. Setiap push ke branch selain `main` mendapat preview deploy, dan bot Vercel menulis link preview di PR. `main` adalah production.
