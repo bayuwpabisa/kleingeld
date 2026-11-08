@@ -44,7 +44,7 @@ Acuan: wireframe `docs/wireframe/mvp-v1/{Desktop,Mobile}/01 Landing.png`, `03 Da
 - [x] 4. Pengaturan: bagian Tampilan dengan pemilih tema + test. Commit `feat(settings): let users pick light, dark or system theme`
 - [x] 5. Landing statis + test, hapus SVG template. Commit `feat(landing): add static landing page`
 - [x] 6. DESIGN.md (Dark mode: script `<head>` sudah ada; Navigasi: header mobile berisi link Pengaturan), AGENTS.md › Structure (`components/app-shell/`, `components/theme/`, route group `(app)`). Commit `docs: describe app shell and theme setup`
-- [ ] 7. Verifikasi (di bawah), push, PR `feat: add app shell, dark mode and landing page` ke `develop`. Tunggu `ci` hijau, cek preview, lalu squash merge (kamu)
+- [x] 7. Verifikasi (di bawah), push, PR `feat: add app shell, dark mode and landing page` ke `develop`. Tunggu `ci` hijau, cek preview, lalu squash merge (kamu)
 
 ## Verifikasi
 - `npm test`, `npm run lint`, `npm run typecheck`, `npm run format:check`, `npm run build` lolos. Di output build, `/` dan halaman `(app)` bertanda statis (○ / prerender), bukan dinamis (ƒ).
