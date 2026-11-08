@@ -46,8 +46,8 @@ Git hooks (Husky): pre-commit runs lint-staged (ESLint `--fix --max-warnings=0` 
 
 Adjust this to match the real layout as it grows.
 
-- `app/` — routes, layouts, route handlers (`app/api/...`)
-- `components/` — reusable UI components
+- `app/` — routes, layouts, route handlers (`app/api/...`). `app/page.tsx` is the static landing page; signed-in pages live in the route group `app/(app)/` (English paths: `/dashboard`, `/transactions`, `/budgets`, `/bills`, `/settings`), which wraps them in the app shell
+- `components/` — reusable UI components: `ui/` (base components), `app-shell/` (sidebar, bottom nav, mobile header, page header), `theme/` (`ThemeProvider`, `useTheme`, `ThemePicker`), `brand/`, `landing/`
 - `features/<name>/` — feature code (transactions, budgets, bills, dashboard): components, hooks, queries. Layout, import rules and safe-indexing patterns (`noUncheckedIndexedAccess` is on) are in `features/README.md`
 - `lib/` — helpers, auth config, query client
 - `db/` — Drizzle schema, migrations, queries

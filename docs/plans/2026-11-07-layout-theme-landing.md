@@ -38,12 +38,12 @@ Acuan: wireframe `docs/wireframe/mvp-v1/{Desktop,Mobile}/01 Landing.png`, `03 Da
 
 ## Progres (centang saat selesai)
 - [x] 0. `git switch develop && git pull`; hapus branch lokal `feature/dialog-toast-jest` (cek `git diff develop feature/dialog-toast-jest` kosong, lalu `-D`). Branch `feature/layout-theme-landing`. Simpan plan ini ke `docs/plans/2026-11-07-layout-theme-landing.md`, centang progres 5 di plan 6 Nov. Commit `docs: add layout, theme and landing plan`
-- [ ] 1. `lib/theme.ts` + `ThemeProvider`/`useTheme` + script di `<head>` + test. Commit `feat(theme): add theme provider with stored preference`
-- [ ] 2. `SegmentedControl` + test + demo di `/dev/ui`. Commit `feat(ui): add segmented control`
-- [ ] 3. App shell (logo, nav, sidebar, bottom nav, mobile header, page header), `app/(app)/layout.tsx`, halaman placeholder, offset toast + test. Commit `feat(app): add responsive app shell with sidebar and bottom nav`
-- [ ] 4. Pengaturan: bagian Tampilan dengan pemilih tema + test. Commit `feat(settings): let users pick light, dark or system theme`
-- [ ] 5. Landing statis + test, hapus SVG template. Commit `feat(landing): add static landing page`
-- [ ] 6. DESIGN.md (Dark mode: script `<head>` sudah ada; Navigasi: header mobile berisi link Pengaturan), AGENTS.md › Structure (`components/app-shell/`, `components/theme/`, route group `(app)`). Commit `docs: describe app shell and theme setup`
+- [x] 1. `lib/theme.ts` + `ThemeProvider`/`useTheme` + script di `<head>` + test. Commit `feat(theme): add theme provider with stored preference`
+- [x] 2. `SegmentedControl` + test + demo di `/dev/ui`. Commit `feat(ui): add segmented control`
+- [x] 3. App shell (logo, nav, sidebar, bottom nav, mobile header, page header), `app/(app)/layout.tsx`, halaman placeholder, offset toast + test. Commit `feat(app): add responsive app shell with sidebar and bottom nav`
+- [x] 4. Pengaturan: bagian Tampilan dengan pemilih tema + test. Commit `feat(settings): let users pick light, dark or system theme`
+- [x] 5. Landing statis + test, hapus SVG template. Commit `feat(landing): add static landing page`
+- [x] 6. DESIGN.md (Dark mode: script `<head>` sudah ada; Navigasi: header mobile berisi link Pengaturan), AGENTS.md › Structure (`components/app-shell/`, `components/theme/`, route group `(app)`). Commit `docs: describe app shell and theme setup`
 - [ ] 7. Verifikasi (di bawah), push, PR `feat: add app shell, dark mode and landing page` ke `develop`. Tunggu `ci` hijau, cek preview, lalu squash merge (kamu)
 
 ## Verifikasi

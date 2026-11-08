@@ -159,6 +159,7 @@ Semua komponen punya state: default, hover, `focus-visible` (outline 2px `primar
   Elemen: `role="meter"` dengan `aria-valuenow`, `aria-valuemax`, `aria-valuetext`.
 - **Navigasi**: item aktif selalu memakai `aria-current="page"`.
   - Sidebar desktop: `bg-surface border-r border-border`. Isinya logo, 5 item, lalu profil + **"Keluar akun"** di bawah. Item tidak aktif `fg-muted` weight 400. Item aktif `bg-primary-soft text-primary font-medium`, stroke ikon 2.25, dan bar 3px `bg-primary` di sisi kiri. Latar `primary-soft` saja tidak cukup (1.09:1 terhadap latar).
+  - Header mobile (56px): logo di kiri, ikon Pengaturan berlabel "Pengaturan" di kanan, karena Pengaturan tidak ada di bottom nav.
   - Bottom nav mobile: 4 item + FAB tengah `bg-primary` 56px. Lucide hanya punya ikon garis, jadi item aktif ditandai dengan ikon dan label `text-primary`, stroke ikon 2.25 (normal 1.75), label `font-medium`, dan bar 3px `bg-primary rounded-full` di atas ikon. Penandanya tidak hanya warna.
 - **Banner demo**: `bg-primary-soft`, ikon info, teks `text-sm`, aksi "Daftar" (quiet `primary`).
 - **Dialog / bottom sheet**: judul `text-xl` 600, tombol tutup berlabel "Tutup", fokus terkunci di dalam, Esc menutup, fokus kembali ke pemicu. Tombol: batal (secondary) di kiri primary (desktop). Di mobile, primary penuh di atas dan batal di bawahnya.
@@ -210,7 +211,7 @@ Target WCAG 2.2 AA.
 
 - Pilihan user: Terang, Gelap, Sistem (di Pengaturan). Atribut `data-theme="light|dark"` di `<html>`. Tanpa atribut, mode mengikuti OS.
 - Token dark didefinisikan ulang dengan nilai yang dipilih sendiri, bukan inversi otomatis. Varian Tailwind `dark:` sudah mengikuti kedua cara (atribut dan OS), tapi **utamakan token**, karena token sudah otomatis berganti.
-- Script kecil di `<head>` untuk mencegah kedipan tema dibuat bersama fitur Pengaturan.
+- Pilihan disimpan di `localStorage` (kunci `theme`, nilai `light`/`dark`; Sistem = tanpa nilai), bukan cookie, supaya halaman tetap bisa di-prerender statis. Script kecil di `<head>` ([lib/theme.ts](lib/theme.ts)) memasang `data-theme` sebelum halaman digambar, jadi tidak ada kedipan. Di React, `ThemeProvider` + `useTheme()` ([components/theme/](components/theme/)) membaca nilai yang sama dan ikut berubah saat tab lain mengganti tema.
 
 ## Keputusan terbuka
 
