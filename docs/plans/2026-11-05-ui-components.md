@@ -38,7 +38,7 @@ Server Component, `metadata.robots = { index: false }`. Bagian: Button (4 varian
 - [x] 3. `Field` + `Input` + `Select` — commit `feat(ui): add input and select with labelled field`
 - [x] 4. `Card` — commit `feat(ui): add card`
 - [x] 5. Halaman `/dev/ui` — commit `feat(ui): add dev showcase page for base components`
-- [ ] 6. Verifikasi (di bawah), push, PR `feat(ui): add accessible button, input, select and card` ke `develop`, CI hijau + cek preview, squash merge (kamu)
+- [x] 6. Verifikasi (di bawah), push, PR `feat(ui): add accessible button, input, select and card` ke `develop`, CI hijau + cek preview, squash merge (kamu)
 
 ## Verifikasi
 - `npm run lint`, `npm run typecheck`, `npm run format:check`, `npm run build` lolos.

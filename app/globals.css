@@ -152,6 +152,11 @@ body {
   outline-offset: 2px;
 }
 
+/* The page behind an open modal dialog does not scroll. */
+html:has(dialog[open]:modal) {
+  overflow: hidden;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

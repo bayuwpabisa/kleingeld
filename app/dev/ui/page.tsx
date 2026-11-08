@@ -5,6 +5,7 @@ import { Button, buttonClasses } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
+import { OverlayDemo } from "./overlay-demo";
 
 // Dev-only showcase of the base components. Delete before the v1 release.
 export const metadata: Metadata = {
@@ -170,6 +171,10 @@ export default function UiShowcasePage() {
             </p>
           </Card>
         </ul>
+      </Showcase>
+
+      <Showcase id="overlay" title="Dialog dan Toast">
+        <OverlayDemo />
       </Showcase>
     </main>
   );

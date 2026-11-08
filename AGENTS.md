@@ -32,9 +32,9 @@ Package manager: npm.
 - `npm run build` — production build
 - `npm run lint` — ESLint
 - `npm run typecheck` — `next typegen && tsc --noEmit` (route types are generated first, so a fresh clone checks them too)
-- CI: `.github/workflows/ci.yml` runs lint, typecheck, format:check and build on every PR to `develop`/`main`; Vercel builds a preview for every non-`main` branch
+- CI: `.github/workflows/ci.yml` runs lint, typecheck, test, format:check and build on every PR to `develop`/`main`; Vercel builds a preview for every non-`main` branch
 - `npm run format` / `npm run format:check` — Prettier (Markdown and `docs/` are ignored)
-- `npm test` — Jest (add the script when Jest is set up)
+- `npm test` / `npm run test:watch` — Jest + React Testing Library + jest-axe (jsdom). Test files sit next to their code as `*.test.tsx`; `jest.setup.ts` adds the jest-dom and axe matchers and a `<dialog>` stub
 - `npx cypress run` — e2e (add when Cypress is set up)
 - Drizzle: `npx drizzle-kit generate` then `npx drizzle-kit migrate`
 
