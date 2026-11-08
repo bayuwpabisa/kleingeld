@@ -1,26 +1,175 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+/*
+ * Design tokens. Values and roles are documented in DESIGN.md.
+ * Theme: [data-theme] on <html> wins; without it the OS setting decides.
+ */
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@custom-variant dark {
+  &:where([data-theme="dark"], [data-theme="dark"] *) {
+    @slot;
+  }
+  @media (prefers-color-scheme: dark) {
+    &:where(
+      :root:not([data-theme="light"]),
+      :root:not([data-theme="light"]) *
+    ) {
+      @slot;
+    }
   }
 }
 
+:root {
+  color-scheme: light;
+
+  --canvas: #f7f8f7;
+  --surface: #ffffff;
+  --surface-muted: #eff1f0;
+  --border: #dde1df;
+  --border-strong: #848c89;
+  --fg: #161a19;
+  --fg-muted: #5b6461;
+
+  --primary: #0b6e5f;
+  --primary-hover: #095a4e;
+  --primary-soft: #e3f1ee;
+  --on-primary: #ffffff;
+
+  --warning: #8a5300;
+  --warning-fill: #b87500;
+  --warning-soft: #fbf0dc;
+  --danger: #c2362f;
+  --danger-soft: #fbe9e7;
+  --on-danger: #ffffff;
+
+  --chart-income: #00806a;
+  --chart-expense: #4f6bd8;
+
+  --shadow-overlay:
+    0 8px 24px rgb(22 26 25 / 0.12), 0 2px 6px rgb(22 26 25 / 0.08);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+
+    --canvas: #0f1312;
+    --surface: #171c1b;
+    --surface-muted: #202725;
+    --border: #2c3432;
+    --border-strong: #6b7572;
+    --fg: #e8ecea;
+    --fg-muted: #a3ada9;
+
+    --primary: #4cc3ae;
+    --primary-hover: #6fd3c1;
+    --primary-soft: #14302b;
+    --on-primary: #0f1312;
+
+    --warning: #f2b54a;
+    --warning-fill: #f2b54a;
+    --warning-soft: #33280f;
+    --danger: #f0736a;
+    --danger-soft: #3a1d1b;
+    --on-danger: #0f1312;
+
+    --chart-income: #2fa08c;
+    --chart-expense: #7c8ceb;
+
+    --shadow-overlay: 0 8px 24px rgb(0 0 0 / 0.5), 0 2px 6px rgb(0 0 0 / 0.4);
+  }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --canvas: #0f1312;
+  --surface: #171c1b;
+  --surface-muted: #202725;
+  --border: #2c3432;
+  --border-strong: #6b7572;
+  --fg: #e8ecea;
+  --fg-muted: #a3ada9;
+
+  --primary: #4cc3ae;
+  --primary-hover: #6fd3c1;
+  --primary-soft: #14302b;
+  --on-primary: #0f1312;
+
+  --warning: #f2b54a;
+  --warning-fill: #f2b54a;
+  --warning-soft: #33280f;
+  --danger: #f0736a;
+  --danger-soft: #3a1d1b;
+  --on-danger: #0f1312;
+
+  --chart-income: #2fa08c;
+  --chart-expense: #7c8ceb;
+
+  --shadow-overlay: 0 8px 24px rgb(0 0 0 / 0.5), 0 2px 6px rgb(0 0 0 / 0.4);
+}
+
+@theme inline {
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-surface-muted: var(--surface-muted);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-fg: var(--fg);
+  --color-fg-muted: var(--fg-muted);
+
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-soft: var(--primary-soft);
+  --color-on-primary: var(--on-primary);
+  --color-income: var(--primary);
+
+  --color-warning: var(--warning);
+  --color-warning-fill: var(--warning-fill);
+  --color-warning-soft: var(--warning-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-on-danger: var(--on-danger);
+
+  --color-chart-income: var(--chart-income);
+  --color-chart-expense: var(--chart-expense);
+
+  --shadow-overlay: var(--shadow-overlay);
+
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+
+  --text-5xl: 3rem;
+  --text-5xl--line-height: calc(52 / 48);
+}
+
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--canvas);
+  color: var(--fg);
+}
+
+:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* Room the bottom nav (64px + home indicator) takes; the toast sits above it.
+ * The nav is hidden from lg up, where the toast uses its own offset. */
+:root:has([data-bottom-nav]) {
+  --bottom-nav-space: calc(4rem + env(safe-area-inset-bottom));
+}
+
+/* The page behind an open modal dialog does not scroll. */
+html:has(dialog[open]:modal) {
+  overflow: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

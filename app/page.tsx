@@ -1,69 +1,222 @@
-import Image from "next/image";
+import Link from "next/link";
+import { ArrowLeftRight, CalendarClock, PiggyBank } from "lucide-react";
+import { Logo } from "@/components/brand/logo";
+import { DashboardPreview } from "@/components/landing/dashboard-preview";
+import { buttonClasses } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { SkipLink } from "@/components/ui/skip-link";
 
-export default function Home() {
+// No request data here, so the page is prerendered at build time (SSG).
+
+// Sign-in arrives on 10 Nov. Until then both calls to action open the app
+// preview; then "Mulai gratis" goes to /login and the demo to the demo sign-in.
+const START_HREF = "/dashboard";
+const DEMO_HREF = "/dashboard";
+
+const container = "mx-auto w-full max-w-320 px-5 lg:px-8";
+
+const features = [
+  {
+    icon: ArrowLeftRight,
+    title: "Pencatatan transaksi",
+    body: "Catat pemasukan dan pengeluaran dalam hitungan detik, lengkap dengan kategori, tanggal, dan catatan.",
+  },
+  {
+    icon: PiggyBank,
+    title: "Budget per kategori",
+    body: "Tetapkan batas tiap kategori dan lihat sisanya kapan saja, dengan peringatan saat hampir habis.",
+  },
+  {
+    icon: CalendarClock,
+    title: "Tagihan & cicilan",
+    body: "Lihat jatuh tempo tagihan rutin dan progres cicilan di satu tempat.",
+  },
+];
+
+const steps = [
+  {
+    title: "Masuk dengan Google atau GitHub",
+    body: "Tidak perlu membuat password baru.",
+  },
+  {
+    title: "Catat transaksi dan buat budget",
+    body: "Tambahkan pengeluaran pertama dan tentukan batas tiap kategori.",
+  },
+  {
+    title: "Pantau di dashboard",
+    body: "Lihat sisa uang, budget yang hampir habis, dan tagihan terdekat.",
+  },
+];
+
+function CallsToAction() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+    <div className="flex flex-col gap-3 sm:flex-row">
+      <Link href={START_HREF} className={buttonClasses()}>
+        Mulai gratis
+      </Link>
+      <Link
+        href={DEMO_HREF}
+        className={buttonClasses({ variant: "secondary" })}
+      >
+        Coba akun demo
+      </Link>
     </div>
+  );
+}
+
+export default function LandingPage() {
+  return (
+    <>
+      <SkipLink />
+      <header className="border-b border-border bg-surface">
+        <div className={`${container} flex h-16 items-center justify-between`}>
+          <Link href="/" className="rounded-lg">
+            <Logo />
+          </Link>
+          <nav aria-label="Bagian halaman" className="hidden md:block">
+            <ul className="flex gap-8 text-sm text-fg-muted">
+              <li>
+                <a href="#fitur" className="rounded hover:text-fg">
+                  Fitur
+                </a>
+              </li>
+              <li>
+                <a href="#cara-kerja" className="rounded hover:text-fg">
+                  Cara kerja
+                </a>
+              </li>
+            </ul>
+          </nav>
+          <div className="flex items-center gap-2">
+            <Link
+              href={START_HREF}
+              className={buttonClasses({ variant: "quiet" })}
+            >
+              Masuk
+            </Link>
+            {/* Phones get the same button right below, in the hero. */}
+            <div className="hidden md:flex">
+              <Link href={START_HREF} className={buttonClasses()}>
+                Mulai gratis
+              </Link>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <main id="konten" tabIndex={-1} className="flex-1 outline-none">
+        <section
+          className={`${container} grid items-center gap-10 py-10 lg:grid-cols-2 lg:gap-16 lg:py-24`}
+        >
+          <div className="flex flex-col gap-6">
+            <h1 className="text-4xl font-semibold tracking-[-0.01em] lg:text-5xl">
+              Atur uang bulanan tanpa ribet
+            </h1>
+            <p className="max-w-prose text-lg text-fg-muted">
+              Catat transaksi, pantau budget per kategori, dan jangan telat
+              bayar tagihan lagi. Semua dalam satu dashboard.
+            </p>
+            <CallsToAction />
+            <p className="text-sm text-fg-muted">
+              Masuk dengan Google atau GitHub · Gratis
+            </p>
+          </div>
+          <DashboardPreview />
+        </section>
+
+        <section
+          id="fitur"
+          aria-labelledby="fitur-judul"
+          className="border-y border-border bg-surface-muted py-16 lg:py-24"
+        >
+          <div className={`${container} flex flex-col gap-10`}>
+            <div className="flex flex-col gap-3 lg:items-center lg:text-center">
+              <h2
+                id="fitur-judul"
+                className="text-2xl font-semibold tracking-[-0.01em] lg:text-3xl"
+              >
+                Semua yang kamu butuhkan untuk mengatur uang bulanan
+              </h2>
+              <p className="max-w-prose text-fg-muted">
+                Fokus ke tiga hal yang paling sering bikin bocor: pengeluaran
+                harian, budget, dan tagihan.
+              </p>
+            </div>
+            <ul className="grid gap-4 md:grid-cols-3 lg:gap-6">
+              {features.map(({ icon: Icon, title, body }) => (
+                <Card as="li" key={title} className="flex flex-col gap-3">
+                  <span className="flex size-10 items-center justify-center rounded-lg bg-primary-soft text-primary">
+                    <Icon aria-hidden className="size-5" strokeWidth={1.75} />
+                  </span>
+                  <h3 className="text-lg font-semibold">{title}</h3>
+                  <p className="text-sm text-fg-muted">{body}</p>
+                </Card>
+              ))}
+            </ul>
+          </div>
+        </section>
+
+        <section
+          id="cara-kerja"
+          aria-labelledby="cara-kerja-judul"
+          className={`${container} flex flex-col gap-10 py-16 lg:py-24`}
+        >
+          <h2
+            id="cara-kerja-judul"
+            className="text-2xl font-semibold tracking-[-0.01em] lg:text-3xl"
+          >
+            Cara kerja
+          </h2>
+          <ol className="grid gap-8 md:grid-cols-3">
+            {steps.map(({ title, body }, index) => (
+              <li key={title} className="flex flex-col gap-3">
+                <span
+                  aria-hidden
+                  className="flex size-10 items-center justify-center rounded-full bg-primary font-semibold text-on-primary"
+                >
+                  {index + 1}
+                </span>
+                <h3 className="text-lg font-semibold">{title}</h3>
+                <p className="text-sm text-fg-muted">{body}</p>
+              </li>
+            ))}
+          </ol>
+        </section>
+
+        <section
+          aria-labelledby="mulai-judul"
+          className={`${container} pb-16 lg:pb-24`}
+        >
+          <div className="flex flex-col gap-6 rounded-2xl border border-border bg-surface p-6 lg:flex-row lg:items-center lg:justify-between lg:p-10">
+            <div className="flex flex-col gap-2">
+              <h2
+                id="mulai-judul"
+                className="text-2xl font-semibold tracking-[-0.01em]"
+              >
+                Siap mulai mengatur keuangan?
+              </h2>
+              <p className="text-fg-muted">
+                Gratis. Coba dulu pakai akun demo kalau belum yakin.
+              </p>
+            </div>
+            <CallsToAction />
+          </div>
+        </section>
+      </main>
+
+      <footer className="border-t border-border bg-surface">
+        <div
+          className={`${container} flex flex-col gap-2 py-6 text-sm text-fg-muted sm:flex-row sm:justify-between`}
+        >
+          <p>© 2026 Kleingeld · Proyek portofolio</p>
+          <a
+            href="https://github.com/bayuwpabisa/kleingeld"
+            className="rounded underline-offset-2 hover:text-fg hover:underline"
+          >
+            Kode di GitHub
+          </a>
+        </div>
+      </footer>
+    </>
   );
 }

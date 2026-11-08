@@ -1,0 +1,12 @@
+# Files in .gitignore are ignored too (Prettier 3 reads it).
+
+# Hand-written docs with wide tables; reformatting them only adds diff noise.
+*.md
+docs/
+
+# Generated or managed by tools
+AGENTS.md
+package-lock.json
+skills-lock.json
+.claude/
+public/

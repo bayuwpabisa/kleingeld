@@ -4,7 +4,7 @@
 
 This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
 
-This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff re-creates the uncommitted change; committing it with your work keeps the tree clean.
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
 
 <!-- END:nextjs-agent-rules -->
 
@@ -31,19 +31,24 @@ Package manager: npm.
 - `npm run dev` — start dev server
 - `npm run build` — production build
 - `npm run lint` — ESLint
-- `npm test` — Jest (add the script when Jest is set up)
+- `npm run typecheck` — `next typegen && tsc --noEmit` (route types are generated first, so a fresh clone checks them too)
+- CI: `.github/workflows/ci.yml` runs lint, typecheck, test, format:check and build on every PR to `develop`/`main`; Vercel builds a preview for every non-`main` branch
+- `npm run format` / `npm run format:check` — Prettier (Markdown and `docs/` are ignored)
+- `npm test` / `npm run test:watch` — Jest + React Testing Library + jest-axe (jsdom). Test files sit next to their code as `*.test.tsx`; `jest.setup.ts` adds the jest-dom and axe matchers and a `<dialog>` stub
 - `npx cypress run` — e2e (add when Cypress is set up)
 - Drizzle: `npx drizzle-kit generate` then `npx drizzle-kit migrate`
 
-Before saying a task is done: run lint, type-check (`npx tsc --noEmit`), and the relevant tests.
+Before saying a task is done: run lint, type-check (`npm run typecheck`), and the relevant tests.
+
+Git hooks (Husky): pre-commit runs lint-staged (ESLint `--fix --max-warnings=0` + Prettier on staged files); commit-msg runs commitlint (Conventional Commits). Do not bypass them with `--no-verify`.
 
 ## Structure
 
 Adjust this to match the real layout as it grows.
 
-- `app/` — routes, layouts, route handlers (`app/api/...`)
-- `components/` — reusable UI components
-- `features/<name>/` — feature code (transactions, budgets, bills, dashboard): components, hooks, queries
+- `app/` — routes, layouts, route handlers (`app/api/...`). `app/page.tsx` is the static landing page; signed-in pages live in the route group `app/(app)/` (English paths: `/dashboard`, `/transactions`, `/budgets`, `/bills`, `/settings`), which wraps them in the app shell
+- `components/` — reusable UI components: `ui/` (base components), `app-shell/` (sidebar, bottom nav, mobile header, page header), `theme/` (`ThemeProvider`, `useTheme`, `ThemePicker`), `brand/`, `landing/`
+- `features/<name>/` — feature code (transactions, budgets, bills, dashboard): components, hooks, queries. Layout, import rules and safe-indexing patterns (`noUncheckedIndexedAccess` is on) are in `features/README.md`
 - `lib/` — helpers, auth config, query client
 - `db/` — Drizzle schema, migrations, queries
 - `schemas/` — Zod schemas shared by forms and route handlers

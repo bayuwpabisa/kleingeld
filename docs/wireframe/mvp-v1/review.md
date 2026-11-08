@@ -1,59 +1,72 @@
 # Review wireframe MVP v1
 
-Perbandingan wireframe di folder ini (`Desktop/`, `Mobile/`, `Komponen.png`) dengan [mvp-scope.md](../../mvp-scope.md). Centang item setelah direvisi di Figma, lalu export ulang PNG ke folder ini.
+Perbandingan wireframe dengan [mvp-scope.md](../../mvp-scope.md) dan [DESIGN.md](../../../DESIGN.md).
 
-## Cakupan scope v1
+- Putaran 1 (2026-11-02): 6 layar per ukuran. Versinya ada di riwayat git (commit `76bfd4f`).
+- Putaran 2 (2026-11-02): versi sekarang di folder ini (`Desktop/`, `Mobile/`, `Komponen.png`), 12 layar per ukuran (dengan form, dialog konfirmasi, dan Pengaturan).
+
+Centang item setelah direvisi di Figma, lalu export ulang PNG ke folder ini.
+
+## Cakupan scope v1 (status putaran 2)
 
 | Scope | Desktop | Mobile |
 |---|---|---|
 | Login Google/GitHub + demo | ✅ | ✅ |
-| Logout | ❌ | ❌ |
-| Kelola kategori | ⚠️ menu Pengaturan ada, layarnya belum | ⚠️ |
-| Tambah/ubah/hapus transaksi (form) | ❌ hanya tombol dan menu "…" | ❌ |
+| Logout | ✅ sidebar + Pengaturan | ✅ Pengaturan |
+| Kelola kategori | ✅ Pengaturan | ✅ |
+| Tambah/ubah/hapus transaksi (form) | ✅ dialog + konfirmasi hapus | ✅ layar penuh + sheet |
 | Pencarian, filter kategori dan tipe | ✅ | ✅ |
-| Filter tanggal | ✅ | ❌ |
-| Sort | ❌ | ❌ |
-| Pagination | ✅ | ❌ |
+| Filter tanggal | ✅ | ✅ |
+| Sort | ✅ header kolom + dropdown | ✅ chip "Terbaru" |
+| Pagination | ✅ | ✅ "Muat lebih banyak" |
 | Peringatan budget ≥80% dan >100% | ✅ | ✅ |
-| Form atur budget, form tagihan/cicilan | ❌ | ❌ |
-| Tandai dibayar | ❌ hanya badge status | ❌ |
-| Grafik per kategori | ✅ | ❌ |
-| Grafik tren bulanan | ❌ yang ada grafik harian | ❌ |
-| Alternatif aksesibel grafik | ❌ | ❌ |
+| Form atur budget, form tagihan/cicilan | ✅ | ✅ |
+| Tandai dibayar | ✅ tombol Bayar + konfirmasi | ✅ |
+| Grafik per kategori | ⚠️ donut, ganti ke bar berperingkat | ⚠️ sama |
+| Grafik tren bulanan | ✅ | ✅ |
+| Alternatif aksesibel grafik | ✅ "Lihat sebagai tabel" | ✅ |
 | Sidebar desktop / bottom nav mobile | ✅ | ✅ |
-| Toggle dark mode | ❌ | ❌ |
+| Dark mode | ✅ Pengaturan: Terang/Gelap/Sistem | ✅ |
 
-## Hapus atau sesuaikan (melebihi scope)
+## Sudah beres dari putaran 1
 
-- [ ] Akun/dompet (BCA, GoPay, OVO, Tunai): kolom Akun dan filter "Semua akun" di Transaksi desktop, subtitle baris transaksi (desktop dan mobile, termasuk dashboard), copy landing "lengkap dengan kategori dan akun". Ini Stretch.
-- [ ] Tombol "Ekspor CSV" di Transaksi desktop. Ini Stretch.
-- [ ] Status "Otomatis" (Langganan musik). Bertentangan dengan keputusan "transaksi dibuat saat tagihan ditandai dibayar".
-- [ ] Kartu "Kalender November" di Tagihan desktop. Tidak ada di scope.
-- [ ] Grafik "Budget vs realisasi 6 bulan" di Budget desktop. Tidak ada di scope.
-- [ ] Grafik "Pengeluaran harian" di dashboard (desktop dan mobile). Ganti dengan grafik tren bulanan.
+- [x] Akun/dompet dihapus dari Transaksi, baris transaksi, dan copy landing
+- [x] Tombol "Ekspor CSV" dihapus
+- [x] Status "Otomatis" dihapus
+- [x] Grafik "Pengeluaran harian" diganti tren bulanan
+- [x] Dashboard mobile: grafik per kategori dan tren
+- [x] Tagihan: tombol Bayar + dialog "Tandai sudah dibayar?" berisi pratinjau transaksi
+- [x] Transaksi mobile: filter bulan, sort, "Muat lebih banyak", form ubah dengan Hapus, sheet konfirmasi hapus
+- [x] Semua form (transaksi, budget, tagihan/cicilan), Pengaturan, logout, dark mode
+- [x] Angka budget dan total tagihan konsisten antar layar
 
-## Tambahkan (kurang dari scope)
+## Masih terbuka
 
-- [ ] Dashboard: grafik tren bulanan (beberapa bulan) di desktop dan mobile
-- [ ] Dashboard mobile: grafik per kategori (desktop sudah ada). Usul: tab "Kategori | Tren".
-- [ ] Alternatif aksesibel untuk grafik ("Lihat sebagai tabel")
-- [ ] Tagihan: tombol "Tandai dibayar" yang jelas, bukan hanya badge "Belum bayar", plus konfirmasi dan toast "Transaksi dibuat"
-- [ ] Transaksi mobile: filter tanggal/bulan (desktop sudah ada)
-- [ ] Transaksi: sort (indikator di header kolom desktop, opsi di mobile)
-- [ ] Transaksi mobile: pagination ("Muat lagi" atau nomor halaman)
-- [ ] Transaksi: cara ubah/hapus di mobile (tap baris membuka detail) dan dialog konfirmasi hapus
-- [ ] Toggle dark mode (sidebar desktop; di mobile lewat ikon header atau Pengaturan)
-- [ ] Logout (menu dari avatar)
-- [ ] Form: tambah/ubah transaksi (sheet di mobile, dialog di desktop), atur budget, tambah tagihan/cicilan
-- [ ] Pengaturan: kelola kategori (tambah/ubah/hapus). Cukup 1 frame atau anotasi.
-- [ ] Anotasi state: empty (user baru), loading (skeleton), error (+ "Coba lagi"), minimal untuk dashboard dan transaksi
+**Hapus (di luar scope)**
+- [ ] Kartu "Kalender November" di Tagihan desktop
+- [ ] Grafik "Budget vs realisasi" di Budget desktop
+- [ ] `Komponen.png`: komponen baris transaksi masih "Makanan · GoPay"
 
-## Konsistensi
+**Ubah**
+- [ ] Donut "Per kategori" (dashboard desktop dan mobile) menjadi bar horizontal berperingkat, maksimal 5 + "Lainnya". Lihat DESIGN.md › Grafik.
+- [ ] Pill "Bayar" sekitar 20px tingginya, perlu minimal 24px (WCAG 2.5.8). DESIGN.md memakai 32px.
+- [ ] **Cicilan tidak konsisten.** Form: sudah dibayar 3 dari 12. Daftar: "33% lunas · sisa Rp 10.000.000", yang dihitung dari 4. Usulan definisi untuk model data:
+  - progres = angsuran dibayar / total = 3/12 = **25%**
+  - sisa = (12 − 3) × Rp 1.250.000 = **Rp 11.250.000**
+  - "Cicilan 4 dari 12" = angsuran berikutnya yang belum dibayar
+- [ ] **"Keluar" punya dua arti:** chip filter pengeluaran dan tombol logout. Usulan: chip "Pemasukan / Pengeluaran", logout "Keluar akun".
 
-- [ ] Penamaan "Beranda" (bottom nav) vs "Dashboard" (sidebar): pilih satu
-- [ ] CTA "Mulai gratis", "Daftar gratis", dan "Daftar dengan Google" (CTA landing mobile, tanpa GitHub dan demo) disatukan, misalnya "Masuk" + "Coba akun demo"
+**Tambah**
+- [ ] Toast setelah aksi, minimal "Tagihan ditandai dibayar. Transaksi dibuat." dan "Transaksi dihapus" + Urungkan
+- [ ] Anotasi state minimal untuk dashboard dan transaksi: user baru (kosong), loading (skeleton), error (+ "Coba lagi"), filter tanpa hasil. Polanya ada di DESIGN.md › States.
+
+## Konsistensi (masih terbuka)
+
+- [ ] "Beranda" (bottom nav) vs "Dashboard" (sidebar). DESIGN.md memilih **Dashboard**.
+- [ ] CTA landing masih tiga versi: "Mulai gratis", "Daftar gratis" (CTA bawah desktop), "Daftar dengan Google" (CTA bawah mobile, tanpa GitHub dan demo). Pilih satu, misalnya "Mulai gratis" + "Coba akun demo" di semua tempat.
 - [ ] Link "FAQ" di nav landing tidak punya section
-- [ ] Data transaksi: filter "1–30 Nov 2026" dan kartu "November 2026", tapi daftar berisi transaksi 30–31 Okt
-- [ ] Cicilan: "Cicilan 4 dari 12" belum dibayar, tapi tertulis "33% lunas · sisa Rp 10.000.000". Tetapkan definisinya karena dibutuhkan untuk model data.
+- [ ] Filter "1–30 Nov 2026" / "Nov 2026", tapi daftar berisi transaksi 30–31 Okt
 - [ ] Budget: "+ Buat budget" dan "+ Tambah kategori budget" (desktop), "+ Tambah" dan "+ Buat budget baru" (mobile). Masing-masing pilih satu aksi.
-- [ ] Ikon lingkaran di header mobile: beri label (misalnya dark mode dan avatar/menu)
+- [ ] Lingkaran di header mobile belum berlabel (avatar menuju Pengaturan?)
+- [ ] "Saldo" (dashboard) vs "Selisih" (transaksi) untuk angka yang sama. DESIGN.md memilih **Saldo**.
+- [x] File `Landing · Login · ... tanpa warna brand..png` sepertinya export caption yang tidak sengaja, bisa dihapus
