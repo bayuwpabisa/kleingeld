@@ -36,7 +36,7 @@ Package manager: npm.
 - `npm run format` / `npm run format:check` — Prettier (Markdown and `docs/` are ignored)
 - `npm test` / `npm run test:watch` — Jest + React Testing Library + jest-axe (jsdom). Test files sit next to their code as `*.test.tsx`; `jest.setup.ts` adds the jest-dom and axe matchers and a `<dialog>` stub
 - `npx cypress run` — e2e (add when Cypress is set up)
-- Drizzle: `npx drizzle-kit generate` then `npx drizzle-kit migrate`
+- Database: `npm run db:generate` (migration from `db/schema.ts` into `db/migrations/`), `npm run db:migrate`, `npm run db:seed` (resets the demo account), `npm run db:studio`. Env: `DATABASE_URL` (pooled, app) and `DATABASE_URL_UNPOOLED` (direct, migrations) in `.env.local`; scripts outside Next load it via `db/load-env.ts`
 
 Before saying a task is done: run lint, type-check (`npm run typecheck`), and the relevant tests.
 

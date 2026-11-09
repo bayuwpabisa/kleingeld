@@ -29,9 +29,9 @@ What v0.1 contains:
 
 ## Tech stack
 
-**In use:** Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS v4, Lucide icons, Jest + React Testing Library + jest-axe, GitHub Actions, Vercel.
+**In use:** Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS v4, Lucide icons, Neon Postgres + Drizzle ORM, Jest + React Testing Library + jest-axe, GitHub Actions, Vercel.
 
-**Coming in later releases:** Neon Postgres + Drizzle ORM, Better Auth, Zod, TanStack Query, Redux Toolkit, React Hook Form, Recharts, Cypress + cypress-axe, Docker.
+**Coming in later releases:** Better Auth, Zod, TanStack Query, Redux Toolkit, React Hook Form, Recharts, Cypress + cypress-axe, Docker.
 
 ## Getting started
 
@@ -42,7 +42,28 @@ npm ci
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000). No environment variables are needed yet.
+Open [http://localhost:3000](http://localhost:3000). The pages built so far run without a database.
+
+### Database
+
+The app uses Postgres on [Neon](https://neon.com) through Drizzle ORM. To work on database code:
+
+1. Create a Neon project and a `dev` branch for local work.
+2. Add both connection strings of that branch to `.env.local` (ignored by Git):
+
+   ```bash
+   DATABASE_URL=postgresql://...-pooler...        # pooled, used by the app
+   DATABASE_URL_UNPOOLED=postgresql://...         # direct, used by migrations
+   ```
+
+3. Apply the migrations and load the demo account (about three months of transactions up to today):
+
+   ```bash
+   npm run db:migrate
+   npm run db:seed
+   ```
+
+`db:seed` only resets the demo account, so it is safe to run again.
 
 ## Scripts
 
@@ -54,6 +75,10 @@ Open [http://localhost:3000](http://localhost:3000). No environment variables ar
 | `npm run typecheck` | Generate route types, then `tsc --noEmit` |
 | `npm test` | Jest (`npm run test:watch` for watch mode) |
 | `npm run format` / `npm run format:check` | Prettier |
+| `npm run db:generate` | Create a migration in `db/migrations/` from changes in `db/schema.ts` |
+| `npm run db:migrate` | Apply pending migrations |
+| `npm run db:seed` | Reset the demo account with fresh demo data |
+| `npm run db:studio` | Browse the database in Drizzle Studio |
 
 ## Project structure
 
@@ -62,6 +87,7 @@ app/            routes and layouts; app/(app)/ holds the signed-in pages
 components/     shared UI: ui/ (base components), app-shell/, theme/, brand/, landing/
 features/       feature code per domain (transactions, budgets, bills, dashboard)
 lib/            helpers (class names, theme storage)
+db/             Drizzle schema, migrations, demo seed
 docs/           scope, plans, wireframes, design tokens, learning notes
 ```
 
