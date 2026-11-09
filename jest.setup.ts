@@ -7,7 +7,11 @@ expect.extend(toHaveNoViolations);
 // `open` attribute and fires `close`, so components can run in tests. The real
 // modal behavior (inert page, focus trap, Esc) comes from the browser and is
 // checked there, not here.
-if (typeof HTMLDialogElement.prototype.showModal !== "function") {
+// Tests that opt into `@jest-environment node` have no DOM, so skip it there.
+if (
+  typeof HTMLDialogElement !== "undefined" &&
+  typeof HTMLDialogElement.prototype.showModal !== "function"
+) {
   HTMLDialogElement.prototype.showModal = function showModal() {
     this.open = true;
   };
