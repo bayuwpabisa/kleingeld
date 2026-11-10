@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 
-import { DEFAULT_CATEGORIES } from "../default-categories";
+import { defaultCategoriesFor } from "../default-categories";
 import type { Db } from "../index";
 import { categories, transactions, users } from "../schema";
 import { buildDemoTransactions } from "./build-demo-transactions";
@@ -34,11 +34,7 @@ export async function seedDemoUser(db: Db, today = todayInJakarta()) {
     const insertedCategories = await tx
       .insert(categories)
       .values([
-        ...DEFAULT_CATEGORIES.map((c) => ({
-          ...c,
-          userId: DEMO_USER.id,
-          isDefault: true,
-        })),
+        ...defaultCategoriesFor(DEMO_USER.id),
         ...DEMO_CUSTOM_CATEGORIES.map((c) => ({
           ...c,
           userId: DEMO_USER.id,
