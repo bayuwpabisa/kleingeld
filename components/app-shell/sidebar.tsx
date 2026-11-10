@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import type { ReactNode } from "react";
 import { Logo } from "@/components/brand/logo";
 import { cn } from "@/lib/cn";
 import { isActivePath, navItems } from "./nav-items";
@@ -10,8 +11,10 @@ import { isActivePath, navItems } from "./nav-items";
  * Desktop navigation (lg and up), fixed on the left (DESIGN.md, Navigasi).
  * The active item is not marked by the soft background alone (1.09:1): it
  * also gets primary text, a heavier icon and a 3px bar.
+ * `account` sits at the bottom: the signed-in user and "Keluar". The layout
+ * passes it in, so this component stays free of auth code.
  */
-export function Sidebar() {
+export function Sidebar({ account }: { account?: ReactNode }) {
   const pathname = usePathname();
 
   return (
@@ -53,7 +56,11 @@ export function Sidebar() {
           })}
         </ul>
       </nav>
-      {/* Profile and "Keluar akun" come with sign-in (10 Nov). */}
+      {account && (
+        <div className="mt-auto flex flex-col gap-2 border-t border-border pt-4">
+          {account}
+        </div>
+      )}
     </aside>
   );
 }
