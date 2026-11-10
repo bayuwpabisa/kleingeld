@@ -29,9 +29,9 @@ What v0.1 contains:
 
 ## Tech stack
 
-**In use:** Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS v4, Lucide icons, Neon Postgres + Drizzle ORM, Jest + React Testing Library + jest-axe, GitHub Actions, Vercel.
+**In use:** Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS v4, Lucide icons, Neon Postgres + Drizzle ORM, Better Auth, Jest + React Testing Library + jest-axe, GitHub Actions, Vercel.
 
-**Coming in later releases:** Better Auth, Zod, TanStack Query, Redux Toolkit, React Hook Form, Recharts, Cypress + cypress-axe, Docker.
+**Coming in later releases:** Zod, TanStack Query, Redux Toolkit, React Hook Form, Recharts, Cypress + cypress-axe, Docker.
 
 ## Getting started
 
@@ -42,7 +42,7 @@ npm ci
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000). The pages built so far run without a database.
+Open [http://localhost:3000](http://localhost:3000). The landing page runs without any setup; the signed-in pages need the database and auth below.
 
 ### Database
 
@@ -65,6 +65,26 @@ The app uses Postgres on [Neon](https://neon.com) through Drizzle ORM. To work o
 
 `db:seed` only resets the demo account, so it is safe to run again.
 
+### Auth
+
+Sign-in uses [Better Auth](https://www.better-auth.com) with Google, GitHub and a demo account. Add these to `.env.local` too:
+
+```bash
+BETTER_AUTH_SECRET=...                 # openssl rand -base64 32
+BETTER_AUTH_URL=http://localhost:3000
+GOOGLE_CLIENT_ID=...                   # optional, see below
+GOOGLE_CLIENT_SECRET=...
+GITHUB_CLIENT_ID=...                   # optional, see below
+GITHUB_CLIENT_SECRET=...
+```
+
+The demo sign-in ("Masuk dengan akun demo") needs only the database and the secret. Each one resets the demo data. Google and GitHub are offered only when their keys are set:
+
+- **GitHub:** Settings › Developer settings › OAuth Apps › New. Homepage `http://localhost:3000`, callback `http://localhost:3000/api/auth/callback/github`.
+- **Google:** in Google Cloud Console, set up the OAuth consent screen (External, scopes `openid`, `email`, `profile`; add yourself as a test user), then create an OAuth client ID of type Web application with origin `http://localhost:3000` and redirect URI `http://localhost:3000/api/auth/callback/google`.
+
+`proxy.ts` sends signed-out visitors from the app pages to `/login`. It only checks that a session cookie exists; the server checks the session itself in `lib/session.ts`.
+
 ## Scripts
 
 | Command | What it does |
@@ -85,8 +105,9 @@ The app uses Postgres on [Neon](https://neon.com) through Drizzle ORM. To work o
 ```
 app/            routes and layouts; app/(app)/ holds the signed-in pages
 components/     shared UI: ui/ (base components), app-shell/, theme/, brand/, landing/
-features/       feature code per domain (transactions, budgets, bills, dashboard)
-lib/            helpers (class names, theme storage)
+features/       feature code per domain (auth, transactions, budgets, bills, dashboard)
+lib/            helpers, auth config (auth.ts, auth-client.ts, session.ts)
+proxy.ts        redirects signed-out visitors to /login
 db/             Drizzle schema, migrations, demo seed
 docs/           scope, plans, wireframes, design tokens, learning notes
 ```
