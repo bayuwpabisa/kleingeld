@@ -73,7 +73,7 @@ export function SignInOptions({
         <span aria-hidden className="h-px flex-1 bg-border" />
       </div>
       <DemoSignInButton next={next} />
-      <p className="text-xs text-fg-muted">
+      <p className="text-center text-xs text-fg-muted lg:text-left">
         Akun demo berisi data contoh. Data di-reset setiap login demo dan setiap
         hari.
       </p>
