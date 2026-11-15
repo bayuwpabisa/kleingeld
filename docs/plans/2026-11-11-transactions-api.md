@@ -59,8 +59,8 @@ Setelah setiap langkah, sebelum commit: aku membaca ulang `git diff` dan mencoco
 - [x] 0. `git switch develop && git pull`. Cek `git diff develop feature/auth` kosong, lalu `git branch -D feature/auth`. Buat branch `feature/transactions-api`. Simpan plan ke `docs/plans/2026-11-11-transactions-api.md`, centang box 7 di plan 10 Nov. Commit `docs: add transactions api plan`
 - [x] 1. `npm i zod@^4.6.7` dan `npm i -D @electric-sql/pglite`. Pastikan `package-lock` hanya me-resolve ke registry.npmjs.org dan zod tidak terduplikasi (`npm ls zod`). Commit `build: add zod and pglite`
 - [x] 2. Test schema → `schemas/transaction.ts`. Commit `feat(transactions): add shared zod schemas`
-- [ ] 3. `db/types.ts`, `db/testing/test-db.ts`, test repo → repo. Commit `feat(transactions): add per-user data access`
-- [ ] 4. Test `lib/api/http` → helper, `getCurrentUser` di `lib/session.ts`. Commit `feat(api): add json helpers and session check for routes`
+- [x] 3. `db/types.ts`, `db/testing/test-db.ts`, test repo → repo. Commit `feat(transactions): add per-user data access`
+- [x] 4. Test `lib/api/http` → helper, `getCurrentUser` di `lib/session.ts`. Commit `feat(api): add json helpers and session check for routes`
 - [ ] 5. Test route → `app/api/transactions/**/route.ts`. Commit `feat(api): add transactions route handlers`
 - [ ] 6. README › API, AGENTS.md › Structure. Commit `docs: document transactions api`
 - [ ] 7. Verifikasi di bawah, push, PR `feat: add transactions api` ke `develop` (judul PR diketik ulang supaya tidak tercampur nama branch); `ci` + Vercel hijau; squash merge (kamu); hapus branch lokal; perbarui memori; centang box 7 di branch berikutnya (12 Nov).
@@ -87,6 +87,12 @@ Kalau Jest gagal memuat PGlite (WASM/ESM), aku coba dulu `@jest-environment node
 - Langkah 2: nilai `income`/`expense` tertulis di dua tempat (`db/schema.ts` dan `schemas/transaction.ts`), jadi bisa tidak sinkron. `pgEnum` sekarang memakai `TRANSACTION_TYPES` dari `schemas/`. `drizzle-kit generate` → "No schema changes", migrasi tidak berubah.
 - Langkah 2: satu perintah shell sempat menggantung karena sisa `cat > /tmp/x` yang menunggu input. Proses dihentikan, file kosong yang terlanjur dibuat dihapus, dan edit diulang dengan tool Edit. Tidak ada file repo yang berubah karena kejadian itu.
 - Langkah 2: ESLint memberi warning `_note` tidak terpakai di test, dan CI memakai `--max-warnings=0` sehingga pasti gagal. Destructuring diganti objek eksplisit. Prettier juga merapikan dua file baru.
+- Langkah 3: Jest gagal memuat PGlite ("A dynamic import callback was invoked without --experimental-vm-modules"), karena build CJS PGlite memuat modul bawaan Node (`fs`, `zlib`, …) lewat `import()`. Opsi `transformIgnorePatterns` di plan ternyata rapuh (regex transform next/jest tidak mencakup `.cjs`). Solusinya: script `test`/`test:watch` menjalankan Jest dengan `node --experimental-vm-modules --disable-warning=ExperimentalWarning`. File test tetap CJS dan ke-137 test lama tetap lolos. Commit terpisah `test: allow dynamic imports in jest for pglite`.
+- Langkah 3: tipe `DtoRow` pertama memakai mapped/conditional type yang sulit dibaca. Diganti menjadi `Omit<TransactionDto, …> & { createdAt: Date; updatedAt: Date }`.
+- Langkah 3: penyimpangan kecil dari plan. `getTransaction` mengembalikan `TransactionDto | null` dan `deleteTransaction` mengembalikan `boolean`, bukan union, karena hanya ada satu jenis kegagalan (tidak ditemukan). Union tetap dipakai untuk create/update yang punya beberapa alasan gagal.
+- Langkah 3: untuk membuktikan test otorisasi benar-benar menangkap bug, `ownedBy` sengaja diubah sementara agar tanpa `userId`. Hasilnya 3 test gagal (get/patch/delete milik user lain), jadi test-nya bekerja. Saat dikembalikan, `git checkout` gagal karena file itu belum dilacak git. File dipulihkan dari backup yang dibuat sebelum mutasi, `diff` dicek (hanya baris itu yang berbeda), dan 17 test lolos lagi. `features/transactions/.gitkeep` dihapus.
+- Langkah 4: test dan implementasi `lib/api/http.ts` terlanjur ditulis dalam satu batch, jadi tahap "test gagal dulu" tidak sempat terlihat. Cakupannya tetap lengkap (11 test). Ditambah `lib/session.test.ts` (5 test) untuk `getCurrentUser`/`requireUser`, yang sebelumnya belum punya test.
+- Langkah 4: respons `validation_error` juga membawa `formErrors` (mis. `Unrecognized key: "userId"`), bukan hanya `fieldErrors`, supaya error di level body tidak hilang.
 
 ## Catatan untuk nanti
 - 12 Nov: hook TanStack Query memakai tipe `TransactionDto`/`TransactionPage` dari `schemas/transaction.ts` dan format error di atas.

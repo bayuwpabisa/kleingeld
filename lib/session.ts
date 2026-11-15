@@ -20,10 +20,21 @@ export type CurrentUser = {
   isDemo: boolean;
 };
 
-/** The signed-in user, narrowed to what the UI needs; else go to /login. */
-export async function requireUser(): Promise<CurrentUser> {
+/** The signed-in user, narrowed to what the app needs, or null. */
+export async function getCurrentUser(): Promise<CurrentUser | null> {
   const session = await getSession();
-  if (!session) redirect("/login");
+  if (!session) return null;
   const { id, name, email } = session.user;
   return { id, name, email, isDemo: id === DEMO_USER.id };
+}
+
+/**
+ * For pages: the signed-in user, else go to /login. Route Handlers use
+ * getCurrentUser() and answer 401 instead, because an API call cannot follow
+ * a redirect to a sign-in page.
+ */
+export async function requireUser(): Promise<CurrentUser> {
+  const user = await getCurrentUser();
+  if (!user) redirect("/login");
+  return user;
 }
