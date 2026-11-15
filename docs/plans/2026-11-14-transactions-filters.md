@@ -186,6 +186,59 @@ Setiap langkah: test dulu sampai gagal, lalu implementasi. Sebelum commit: revie
   - Pembatalan request lama tidak bisa dipicu di dev lokal, karena respons terlalu cepat. Bukti pembatalannya adalah test `use-transactions.test.tsx` (`signal.aborted`).
 - Verifikasi akhir: lint, typecheck, format, 437 test (tanpa `console.error`), dan build dengan env dummy CI semuanya hijau. `/transactions` tetap ◐. Dev server dimatikan lewat PID port, dan port 3000 kosong.
 
+## Perbaikan setelah review
+Kamu meminta semua kesalahan task ini diperbaiki dan dicegah supaya tidak terulang. Branch ini belum punya PR, jadi perbaikannya masuk ke PR yang sama.
+
+### Kesalahan yang sudah tercatat, dan yang masih kurang
+| # | Kesalahan | Yang masih kurang | Langkah |
+|---|---|---|---|
+| 1 | `escapeLike` kehilangan backslash (heredoc) | aturan pencegahan | aturan 1 |
+| 2 | test escape `_` tidak membuktikan apa-apa | mutation check untuk test penggantinya | R2 |
+| 3 | commit langkah 2 tanpa catatan plan | tidak ada (squash merge, history tidak diubah) | aturan 2 |
+| 4 | stub kosong + cast di draf toolbar | toolbar tanpa test sendiri | R1 |
+| 5 | dua bug logika input rentang | tanpa test regresi | R1 |
+| 6 | warning `act()` dari `next/link` | tidak ada penjaga untuk warning baru | R3 |
+| 7 | chip aktif menebal, baris pecah di 1440 | 1024/1280 dan browser tanpa `field-sizing` belum dicek | R4 |
+
+### Kesalahan lain yang ditemukan saat menelusuri ulang sesi
+| # | Kesalahan | Langkah |
+|---|---|---|
+| 8 | `git diff … && git branch -D …` dalam satu perintah: branch terhapus sebelum diff dibaca (`git diff` keluar 0 walaupun ada beda). Hasilnya aman, tetapi itu kebetulan. | aturan 9 |
+| 9 | `git stash`/`stash pop` hanya untuk membandingkan file lama | aturan 10 |
+| 10 | `field-sizing: content` ditambahkan atas diagnosis yang salah ("…" ternyata bagian label) | R4: dinilai ulang |
+| 11 | chip Kategori dengan id tidak dikenal tetap aktif tetapi menulis "Semua kategori" | R1b |
+| 12 | klaim tanpa bukti: "Ada test untuk keduanya" (kotak cari), "tanpa request RSC", "axe 0 di semua kondisi", optimistic "langsung tampil" dan alur ubah di browser, "nominal HP muat sampai ratusan juta", memory "browser-checked" | R4 + R5 |
+| 13 | test toolbar, ringkasan, dan list ditulis setelah komponennya | aturan 3 |
+| 14 | scope commit `api` tidak ada di `scope-enum` | aturan 11 |
+| 15 | kesalahan kecil yang tertangkap tool: salah ketik `utilsCategories`, `?` kosong di URL, narrowing `in` → `never`, ekspektasi tanpa "Rp" | aturan 3 + 4 |
+
+### Aturan kerja tetap (juga disimpan di memory)
+1. Kode/teks yang berisi `\`, backtick, atau `$` hanya ditulis dengan Edit/Write, tidak lewat heredoc atau `node -e`.
+2. Satu perintah, satu tujuan. Script edit tidak dirantai dengan `git commit`. Sebelum commit: exit code, `git status`, `git diff --stat`, centang + catatan plan.
+3. Test dulu dan harus terlihat merah. Setiap test regresi dibuktikan dengan mutation check (perbaikannya dibalik sementara → test gagal → kode dikembalikan → `git diff` hanya berisi test).
+4. Tidak ada stub, placeholder, atau cast. UI yang punya state: pemilik state dan tabel transisinya ditulis di plan, dan setiap transisi mendapat test.
+5. Output test harus bersih: `console.error` membuat test gagal.
+6. UI dicek di browser per langkah sebelum commit, di 390/1024/1440px, terang dan gelap.
+7. Setiap klaim menyebut buktinya. Yang belum dicek ditulis "belum dicek".
+8. Cek akhir lewat `node` langsung, dan exit code-nya dicatat.
+9. Aksi destruktif atau yang sulit dibalik berupa perintah terpisah setelah hasil cek dibaca.
+10. Versi lama sebuah file dilihat dengan `git show <rev>:<path>`, bukan `git stash`.
+11. Scope commit hanya dari `scope-enum` commitlint.
+12. Penyebab temuan browser dipastikan dulu (ukur atau baca kode) sebelum diperbaiki.
+
+### Langkah perbaikan
+- [x] R0. Cek awal (branch bersih, sama dengan origin `e38e6c8`, PR belum ada), lalu catatan ini. Commit `docs: plan fixes after the filters review`
+- [ ] R1. Test regresi toolbar (`transaction-toolbar.test.tsx`): kotak cari (URL terlambat, perubahan dari luar, Enter, tombol hapus), rentang/periode (rentang satu bulan penuh tetap terbuka, "Semua waktu" menutup, Hapus filter menutup, pilih bulan menutup), tipe/kategori, dan axe. Mutation check per kelompok. Commit `test(transactions): cover the toolbar's search and period states`
+- [ ] R1b. Chip Kategori dengan id tidak dikenal: test merah dulu, lalu perbaikan. Commit `fix(transactions): name an unknown category filter honestly`
+- [ ] R2. Mutation check test escape `_` dan `%` (tanpa commit kode)
+- [ ] R3. Penjaga `console.error` di `jest.setup.ts` + bukti penjaganya bekerja + AGENTS.md. Commit `test: fail tests that log console errors`
+- [ ] R4. Cek ulang di browser: 1024/1280/1440, tanpa `field-sizing`, penilaian ulang `field-sizing`, optimistic tambah/ubah sebelum server menjawab, nominal besar di HP, log network tanpa `_rsc`, axe per kondisi + isi "incomplete"
+- [ ] R5. Koreksi catatan dan memory. Commit `docs: correct the filters notes`
+- [ ] R6. Verifikasi akhir, self-review `git diff e38e6c8..HEAD`, push, lalu PR (kamu)
+
+### Catatan perbaikan ronde ini
+(diisi saat pengerjaan)
+
 ## Catatan untuk nanti
 - 15 Nov: test form + tabel (RTL), rilis v0.2. Perlu env Production di Vercel, migrasi di Neon `production`, dan tanggal di roadmap README.
 - 16 Nov: dashboard SSR memakai `summarizeTransactions` untuk "bulan ini" (ingat: Gaji demo baru masuk tanggal 25).
