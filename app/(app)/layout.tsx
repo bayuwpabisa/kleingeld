@@ -8,6 +8,7 @@ import {
   UserCard,
   UserCardSkeleton,
 } from "@/features/auth/components/user-card";
+import { TransactionDialogs } from "@/features/transactions/components/transaction-dialogs";
 
 /**
  * App frame, mobile first (DESIGN.md, Spacing dan layout): top bar and bottom
@@ -43,6 +44,8 @@ export default function AppLayout({ children }: LayoutProps<"/">) {
         </main>
       </div>
       <BottomNav />
+      {/* Add, edit and delete dialogs for desktop, opened from any page. */}
+      <TransactionDialogs />
     </>
   );
 }

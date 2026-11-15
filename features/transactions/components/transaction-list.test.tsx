@@ -121,6 +121,17 @@ describe("TransactionList", () => {
     expect(yesterdayList?.children).toHaveLength(1);
   });
 
+  it("links each row on phones to its edit page", async () => {
+    fetchApi.mockResolvedValue(page);
+    renderWithProviders(<TransactionList />);
+
+    const link = await screen.findByRole("link", { name: /Makan siang/ });
+    expect(link).toHaveAttribute(
+      "href",
+      `/transactions/${page.data[0]?.id}/edit`,
+    );
+  });
+
   it("keeps the full text of a long note in its title", async () => {
     fetchApi.mockResolvedValue(page);
     renderWithProviders(<TransactionList />);

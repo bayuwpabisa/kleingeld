@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { AddTransactionLink } from "@/components/app-shell/add-transaction-link";
+import { AddTransactionButton } from "@/components/app-shell/add-transaction-button";
 import { PageHeader } from "@/components/app-shell/page-header";
 import { TransactionList } from "@/features/transactions/components/transaction-list";
 
@@ -11,7 +11,7 @@ export default function TransactionsPage() {
       <PageHeader
         title="Transaksi"
         description="Semua pemasukan dan pengeluaranmu."
-        actions={<AddTransactionLink />}
+        actions={<AddTransactionButton />}
       />
       <TransactionList />
     </>

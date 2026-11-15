@@ -70,10 +70,17 @@ export function fieldAria(
   };
 }
 
-/** Box styles shared by Input and Select, size md (DESIGN.md, Ukuran kontrol). */
-export function controlClasses(invalid: boolean) {
+/**
+ * Box styles shared by Input, Select and Textarea, size md (DESIGN.md,
+ * Ukuran kontrol). "multi" is the textarea: no fixed height, at least 88px.
+ */
+export function controlClasses(
+  invalid: boolean,
+  shape: "single" | "multi" = "single",
+) {
   return cn(
-    "h-11 w-full rounded-lg border bg-surface px-3 text-base text-fg lg:h-10",
+    "w-full rounded-lg border bg-surface px-3 text-base text-fg",
+    shape === "single" ? "h-11 lg:h-10" : "min-h-22 py-2.5",
     "placeholder:text-fg-muted disabled:cursor-not-allowed disabled:opacity-50",
     invalid ? "border-danger" : "border-border-strong",
   );

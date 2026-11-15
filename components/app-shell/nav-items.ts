@@ -25,7 +25,11 @@ export const navItems: readonly NavItem[] = [
   { href: "/settings", label: "Pengaturan", icon: Settings },
 ];
 
-/** True on the section's page and on pages under it (`/transactions/new`). */
-export function isActivePath(pathname: string, href: string) {
+/**
+ * True on the section's page and on pages under it (`/transactions/new`).
+ * `null` is a pathname not known yet: nothing is marked active.
+ */
+export function isActivePath(pathname: string | null, href: string) {
+  if (pathname === null) return false;
   return pathname === href || pathname.startsWith(`${href}/`);
 }

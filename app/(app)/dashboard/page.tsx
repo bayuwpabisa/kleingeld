@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { AddTransactionLink } from "@/components/app-shell/add-transaction-link";
+import { AddTransactionButton } from "@/components/app-shell/add-transaction-button";
 import { PageHeader } from "@/components/app-shell/page-header";
 import { PagePlaceholder } from "@/components/app-shell/page-placeholder";
 
@@ -11,7 +11,7 @@ export default function DashboardPage() {
       <PageHeader
         title="Dashboard"
         description="Ringkasan keuanganmu bulan ini."
-        actions={<AddTransactionLink />}
+        actions={<AddTransactionButton />}
       />
       <PagePlaceholder>
         Saldo, grafik, budget, dan tagihan terdekat akan tampil di sini.
