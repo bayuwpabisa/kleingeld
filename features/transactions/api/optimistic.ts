@@ -7,38 +7,55 @@ import type { CategoryDto } from "@/schemas/category";
 import type {
   TransactionDto,
   TransactionInput,
+  TransactionListQuery,
   TransactionPage,
 } from "@/schemas/transaction";
 
-import { transactionKeys } from "./keys";
+import { updateCachedList, type CachedList } from "./cache";
+import { listQueryFromKey, transactionKeys } from "./keys";
 
 // Shared steps of the optimistic mutations: stop list refetches, remember the
 // cache, change it, and put it back if the server says no.
 
-export type ListSnapshot = [QueryKey, TransactionPage | undefined][];
+export type ListSnapshot = [QueryKey, CachedList | undefined][];
+
+function cachedLists(queryClient: QueryClient) {
+  return queryClient.getQueriesData<CachedList>({
+    queryKey: transactionKeys.lists(),
+  });
+}
 
 export async function snapshotLists(
   queryClient: QueryClient,
 ): Promise<ListSnapshot> {
   // A refetch landing now would overwrite the optimistic change.
   await queryClient.cancelQueries({ queryKey: transactionKeys.lists() });
-  return queryClient.getQueriesData<TransactionPage>({
-    queryKey: transactionKeys.lists(),
-  });
+  return cachedLists(queryClient);
 }
 
 export function restoreLists(queryClient: QueryClient, snapshot: ListSnapshot) {
   for (const [key, data] of snapshot) queryClient.setQueryData(key, data);
 }
 
+/**
+ * Changes every cached list, desktop pages and phone lists alike. Each update
+ * gets the list's own query, so it can follow that list's filters and order.
+ */
 export function updateLists(
   queryClient: QueryClient,
-  update: (page: TransactionPage) => TransactionPage,
+  update: (
+    page: TransactionPage,
+    query: TransactionListQuery,
+  ) => TransactionPage,
 ) {
-  queryClient.setQueriesData<TransactionPage>(
-    { queryKey: transactionKeys.lists() },
-    (page) => (page ? update(page) : page),
-  );
+  for (const [key, list] of cachedLists(queryClient)) {
+    const query = listQueryFromKey(key);
+    if (!list || !query) continue;
+    queryClient.setQueryData<CachedList>(
+      key,
+      updateCachedList(list, (page) => update(page, query)),
+    );
+  }
 }
 
 /** A transaction from any cached list or detail, for edits and undo. */
@@ -50,10 +67,11 @@ export function findCachedTransaction(
     transactionKeys.detail(id),
   );
   if (detail) return detail;
-  for (const [, page] of queryClient.getQueriesData<TransactionPage>({
-    queryKey: transactionKeys.lists(),
-  })) {
-    const found = page?.data.find((t) => t.id === id);
+  for (const [, list] of cachedLists(queryClient)) {
+    if (!list) continue;
+    const rows =
+      "pages" in list ? list.pages.flatMap((p) => p.data) : list.data;
+    const found = rows.find((t) => t.id === id);
     if (found) return found;
   }
   return undefined;

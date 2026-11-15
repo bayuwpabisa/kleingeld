@@ -67,7 +67,8 @@ beforeEach(() => {
     const body = init?.body ? JSON.parse(String(init.body)) : undefined;
     const id = path.split("/")[3]?.split("?")[0];
     if (path === "/api/categories") return categories;
-    if (path.startsWith("/api/transactions?")) {
+    // The list: "/api/transactions", with or without a query string.
+    if (method === "GET" && /^\/api\/transactions(\?|$)/.test(path)) {
       return { data: server, page: 1, pageSize: 20, total: server.length };
     }
     if (method === "POST") {

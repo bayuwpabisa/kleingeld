@@ -72,10 +72,10 @@ describe("TransactionList", () => {
 
     await screen.findByRole("table", { name: "Daftar transaksi" });
 
-    expect(fetchApi).toHaveBeenCalledWith(
-      "/api/transactions?page=1&pageSize=20",
-      { signal: expect.any(AbortSignal) },
-    );
+    // The defaults (newest first, page 1 of 20) need no parameters.
+    expect(fetchApi).toHaveBeenCalledWith("/api/transactions", {
+      signal: expect.any(AbortSignal),
+    });
   });
 
   it("shows a skeleton while loading", () => {

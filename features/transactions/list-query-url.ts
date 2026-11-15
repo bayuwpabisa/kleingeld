@@ -55,24 +55,25 @@ export function parseListQuery(params: SearchParamsLike): TransactionListQuery {
 
 /**
  * The query as URL parameters: only what differs from the default, in a fixed
- * order, so equal lists get equal URLs. Also used for the API requests.
+ * order, so equal lists get equal URLs. Also used for the API requests,
+ * where the summary sends the filters alone.
  */
-export function toSearchParams(query: TransactionListQuery): URLSearchParams {
+export function toSearchParams(
+  query: TransactionFilters &
+    Partial<Pick<TransactionListQuery, "sort" | "order" | "page">>,
+): URLSearchParams {
+  const sort = query.sort ?? DEFAULT_LIST_QUERY.sort;
+  const order = query.order ?? DEFAULT_LIST_QUERY.order;
+  const page = query.page ?? DEFAULT_LIST_QUERY.page;
   const entries: [string, string | undefined][] = [
     ["q", query.q],
     ["type", query.type],
     ["category", query.category],
     ["from", query.from],
     ["to", query.to],
-    ["sort", query.sort === DEFAULT_LIST_QUERY.sort ? undefined : query.sort],
-    [
-      "order",
-      query.order === DEFAULT_LIST_QUERY.order ? undefined : query.order,
-    ],
-    [
-      "page",
-      query.page === DEFAULT_LIST_QUERY.page ? undefined : String(query.page),
-    ],
+    ["sort", sort === DEFAULT_LIST_QUERY.sort ? undefined : sort],
+    ["order", order === DEFAULT_LIST_QUERY.order ? undefined : order],
+    ["page", page === DEFAULT_LIST_QUERY.page ? undefined : String(page)],
   ];
   return new URLSearchParams(
     entries.filter((entry): entry is [string, string] => Boolean(entry[1])),

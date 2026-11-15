@@ -1,3 +1,4 @@
+import type { InfiniteData } from "@tanstack/react-query";
 import { act, waitFor } from "@testing-library/react";
 
 import { categoryKeys } from "@/features/categories/api/use-categories";
@@ -225,5 +226,97 @@ describe("useDeleteTransaction", () => {
       ),
     );
     expect(list()).toEqual(firstPage);
+  });
+});
+
+describe("filtered and phone lists", () => {
+  const GAJI = "9a1c2b4e-8a7d-4c5e-9f60-1a2b3c4d5e6f";
+  const makanKey = transactionKeys.list({
+    ...DEFAULT_LIST_QUERY,
+    category: MAKAN,
+  });
+  const incomeKey = transactionKeys.list({
+    ...DEFAULT_LIST_QUERY,
+    type: "income",
+  });
+  const salary: TransactionDto = {
+    ...existing,
+    id: "0b6e5f00-0000-4000-8000-000000000002",
+    type: "income",
+    amount: 8_500_000,
+    category: { id: GAJI, name: "Gaji", icon: "wallet" },
+  };
+  const incomePage: TransactionPage = { ...firstPage, data: [salary] };
+  const phoneKey = transactionKeys.infinite({
+    sort: DEFAULT_LIST_QUERY.sort,
+    order: DEFAULT_LIST_QUERY.order,
+    pageSize: DEFAULT_LIST_QUERY.pageSize,
+  });
+  const phoneList: InfiniteData<TransactionPage, number> = {
+    pages: [firstPage],
+    pageParams: [1],
+  };
+
+  function setupFiltered<Result>(hook: () => Result) {
+    const utils = setup(hook);
+    utils.queryClient.setQueryData(makanKey, firstPage);
+    utils.queryClient.setQueryData(incomeKey, incomePage);
+    utils.queryClient.setQueryData(phoneKey, phoneList);
+    const get = (key: readonly unknown[]) =>
+      utils.queryClient.getQueryData(key);
+    return { ...utils, get };
+  }
+
+  it("adds the new transaction only to the lists it matches", async () => {
+    fetchApi.mockReturnValue(new Promise(() => {}));
+    const { result, get } = setupFiltered(() => useCreateTransaction());
+
+    act(() => result.current.mutate(input));
+
+    await waitFor(() => expect(get(makanKey)).toMatchObject({ total: 2 }));
+    expect(get(incomeKey)).toEqual(incomePage);
+    expect(get(phoneKey)).toMatchObject({
+      pages: [{ total: 2, data: [{ note: "Kopi" }, { id: existing.id }] }],
+    });
+  });
+
+  it("puts every list back, phone lists too, when it fails", async () => {
+    fetchApi.mockRejectedValueOnce(serverError());
+    const { result, get, toast } = setupFiltered(() => useCreateTransaction());
+
+    act(() => result.current.mutate(input));
+
+    await waitFor(() =>
+      expect(toast()?.message).toMatch(/^Transaksi gagal disimpan\./),
+    );
+    expect(get(makanKey)).toEqual(firstPage);
+    expect(get(incomeKey)).toEqual(incomePage);
+    expect(get(phoneKey)).toEqual(phoneList);
+  });
+
+  it("takes an edited row out of a list it no longer matches", async () => {
+    fetchApi.mockReturnValue(new Promise(() => {}));
+    const { result, get } = setupFiltered(() => useUpdateTransaction());
+
+    act(() =>
+      result.current.mutate({
+        id: existing.id,
+        values: { ...input, type: "income", categoryId: GAJI },
+      }),
+    );
+
+    await waitFor(() =>
+      expect(get(makanKey)).toMatchObject({ data: [], total: 0 }),
+    );
+  });
+
+  it("deletes the row from the phone list as well", async () => {
+    fetchApi.mockResolvedValueOnce(undefined);
+    const { result, get, toast } = setupFiltered(() => useDeleteTransaction());
+
+    act(() => result.current.mutate(existing.id));
+
+    await waitFor(() => expect(toast()?.message).toBe("Transaksi dihapus"));
+    expect(get(phoneKey)).toMatchObject({ pages: [{ data: [], total: 0 }] });
   });
 });

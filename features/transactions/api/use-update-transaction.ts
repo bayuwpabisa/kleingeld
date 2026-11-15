@@ -43,7 +43,9 @@ export function useUpdateTransaction() {
           category: cachedCategory(queryClient, values.categoryId),
           updatedAt: new Date().toISOString(),
         };
-        updateLists(queryClient, (page) => replaceTransaction(page, updated));
+        updateLists(queryClient, (page, query) =>
+          replaceTransaction(page, updated, query),
+        );
         if (previousDetail) queryClient.setQueryData(detailKey, updated);
       }
       return { snapshot, previousDetail };

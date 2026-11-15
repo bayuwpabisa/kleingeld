@@ -129,8 +129,8 @@ Setiap langkah: test dulu sampai gagal, lalu implementasi. Sebelum commit: revie
 ## Langkah dan commit
 - [x] 0. `git switch develop && git pull`, cek `git diff develop feature/transaction-form` kosong, lalu `git branch -D feature/transaction-form`. Branch `feature/transactions-filters`. Simpan plan ke `docs/plans/2026-11-14-transactions-filters.md`, centang box 9 plan 13 Nov. Commit `docs: add transactions filters plan`
 - [x] 1. Schema filter/sort + URL helpers. Commit `feat(transactions): add filters and sort to the list query`
-- [ ] 2. Repo filter/cari/sort + summary + routes. Commit `feat(api): filter, sort and summarize transactions`
-- [ ] 3. Keys/hooks (paged, infinite, summary) + cache sadar filter + `updateLists` dua bentuk. Commit `feat(transactions): keep filtered lists correct after optimistic changes`
+- [x] 2. Repo filter/cari/sort + summary + routes. Commit `feat(api): filter, sort and summarize transactions`
+- [x] 3. Keys/hooks (paged, infinite, summary) + cache sadar filter + `updateLists` dua bentuk. Commit `feat(transactions): keep filtered lists correct after optimistic changes`
 - [ ] 4. `useListQuery` (URL) + `useMediaQuery` + debounce. Commit `feat(transactions): keep search, filters, sort and page in the url`
 - [ ] 5. `ChipSelect` + `Pagination`. Commit `feat(ui): add chip select and pagination`
 - [ ] 6. Toolbar + kartu ringkasan + header sort + list desktop/HP + states. Commit `feat(transactions): add search, filters, sort and pagination`
@@ -156,7 +156,12 @@ Setiap langkah: test dulu sampai gagal, lalu implementasi. Sebelum commit: revie
 3. Self-review `git diff develop...HEAD` terhadap checklist Keputusan.
 
 ## Catatan perbaikan
-(diisi saat pengerjaan)
+- Langkah 1: default `sort`/`order` yang baru membuat pemanggil lama (`{ page, pageSize }`) gagal typecheck, dan dua test route mengharapkan objek tanpa sort. Pemanggil diganti `DEFAULT_LIST_QUERY`, dan ekspektasi test route ditambah `sort`/`order`.
+- Langkah 2: test escape `_` yang pertama ("i_k") tetap lulus walaupun `_` tidak di-escape, jadi test itu tidak membuktikan apa-apa. Diganti "makan_siang", yang hanya cocok ke "Makan siang" kalau `_` dijadikan wildcard.
+- Langkah 2: `escapeLike` ditulis lewat heredoc shell, dan backslash-nya hilang. Test "50%" langsung gagal, lalu diperbaiki dengan Edit. Setelah itu, script node untuk catatan ini gagal karena ada backtick di dalam template string, sehingga commit langkah 2 terkirim tanpa centang box dan catatan. Keduanya masuk di commit langkah 3. Teks yang berisi backslash atau backtick sekarang ditulis dengan Edit/Write, bukan lewat shell.
+- Langkah 3: penyimpangan nama file. `fetchTransactionSummary` berada di `fetch-transactions.ts`, bukan di `fetch-summary.ts` terpisah, karena memakai helper URL yang sama. Query sebuah list dibaca kembali dari key-nya lewat schema (`listQueryFromKey`), jadi tidak ada cast. List infinite di-update sebagai satu list, lalu dibagi lagi sesuai panjang halaman, dan semua halaman mendapat `total` yang sama.
+- Langkah 3: request default sempat menjadi `/api/transactions?` (tanda tanya kosong). Sekarang `?` hanya ditulis kalau ada parameter. Mock di `transaction-dialogs.test.tsx` mencocokkan `"/api/transactions?"`, jadi ikut diperbarui.
+- Langkah 3: di awal, test mutation memakai variabel `utilsCategories` yang tidak ada (salah tulis), dan typecheck menangkapnya. Push kategori itu ternyata tidak perlu, sehingga dihapus.
 
 ## Catatan untuk nanti
 - 15 Nov: test form + tabel (RTL), rilis v0.2. Perlu env Production di Vercel, migrasi di Neon `production`, dan tanggal di roadmap README.
