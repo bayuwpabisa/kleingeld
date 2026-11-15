@@ -132,7 +132,7 @@ Setiap langkah: test dulu sampai gagal, lalu implementasi. Sebelum commit: revie
 - [x] 2. Repo filter/cari/sort + summary + routes. Commit `feat(api): filter, sort and summarize transactions`
 - [x] 3. Keys/hooks (paged, infinite, summary) + cache sadar filter + `updateLists` dua bentuk. Commit `feat(transactions): keep filtered lists correct after optimistic changes`
 - [x] 4. `useListQuery` (URL) + `useMediaQuery` + debounce. Commit `feat(transactions): keep search, filters, sort and page in the url`
-- [ ] 5. `ChipSelect` + `Pagination`. Commit `feat(ui): add chip select and pagination`
+- [x] 5. `ChipSelect` + `Pagination`. Commit `feat(ui): add chip select and pagination`
 - [ ] 6. Toolbar + kartu ringkasan + header sort + list desktop/HP + states. Commit `feat(transactions): add search, filters, sort and pagination`
 - [ ] 7. DESIGN.md + README + AGENTS. Commit `docs: document transaction filters`
 - [ ] 8. Verifikasi, push, PR `feat: add transaction search, filters and pagination`, `ci` + Vercel hijau, squash merge (kamu), titik cek ke 15 Nov.
@@ -165,6 +165,8 @@ Setiap langkah: test dulu sampai gagal, lalu implementasi. Sebelum commit: revie
 - Langkah 4: **penyimpangan dari plan, berdasarkan docs Next 16.** `router.push`/`replace` diganti `window.history.pushState`/`replaceState`. Docs `linking-and-navigating.md` › Native History API menyebutkan keduanya tersinkron dengan `useSearchParams`, jadi mengganti filter tidak memicu request RSC ke server dan halaman tidak di-scroll ke atas. Back tetap mengembalikan filter sebelumnya (push), dan ketikan pencarian memakai replace. Untuk test dibuat `test/url-navigation.ts`, pengganti `next/navigation` yang membaca `window.location` jsdom, sehingga test bisa memeriksa URL dan panjang history yang sebenarnya.
 - Langkah 4: `jest.setup.ts` memasang `matchMedia` palsu dengan lebar desktop (1280) di setiap test DOM (`test/viewport.ts`, `setViewportWidth`), karena jsdom tidak punya `matchMedia`.
 - Langkah 4: output `tsc` beberapa kali tertelan oleh pipe/wrapper shell. Dibuat script cek di scratchpad yang menjalankan tsc, eslint, dan jest lewat `node` langsung, lalu mencetak exit code masing-masing.
+- Langkah 5: **penyimpangan dari plan.** Filter tipe memakai `ChipRadioGroup` baru (chip berisi radio native, di `components/ui/chip.tsx` bersama `ChipSelect`), bukan `SegmentedControl`. Alasannya, di wireframe 04 (desktop dan HP) tipe tampil sebagai chip sebaris dengan chip lain. Di HP, segmented control setinggi 44px tidak serasi dengan chip 32px. Chip memakai `h-8 lg:h-10` sesuai tabel Ukuran kontrol (HP di baris sendiri, desktop sebaris dengan kolom cari). Filter yang aktif juga ditandai `data-active` (select) atau `checked` (radio), jadi tidak hanya lewat warna.
+- Langkah 5: `pageItems` selalu menghasilkan 7 item (mis. `1 2 3 4 5 … 9`), supaya bar pagination tidak berubah lebar saat pindah halaman.
 
 ## Catatan untuk nanti
 - 15 Nov: test form + tabel (RTL), rilis v0.2. Perlu env Production di Vercel, migrasi di Neon `production`, dan tanggal di roadmap README.
