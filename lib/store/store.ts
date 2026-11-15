@@ -6,6 +6,7 @@ import {
 } from "@reduxjs/toolkit";
 
 import { toastReducer } from "./toast-slice";
+import { transactionEditorReducer } from "./transaction-editor-slice";
 
 // Redux holds client UI state only; data from the API lives in TanStack
 // Query (AGENTS.md). One store per app mount (app/providers.tsx), never a
@@ -20,7 +21,10 @@ export type ThunkExtra = {
 // Combined once, when the module loads: combineReducers checks each reducer
 // with a randomly named action, and Next.js (cacheComponents) flags
 // Math.random() if that happens while Providers renders.
-const rootReducer = combineReducers({ toast: toastReducer });
+const rootReducer = combineReducers({
+  toast: toastReducer,
+  transactionEditor: transactionEditorReducer,
+});
 
 export function makeStore() {
   const extra: ThunkExtra = { toastActions: new Map() };

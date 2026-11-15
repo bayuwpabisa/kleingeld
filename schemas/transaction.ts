@@ -21,9 +21,9 @@ const fields = {
   // Whole rupiah. The sign is in `type`, so the amount is always positive.
   amount: z
     .number({
-      // An empty amount field in the form gives undefined.
+      // An empty amount field in the form gives undefined or NaN.
       error: (issue) =>
-        issue.input === undefined
+        issue.input === undefined || Number.isNaN(issue.input)
           ? "Isi nominal"
           : "Nominal harus berupa angka",
     })

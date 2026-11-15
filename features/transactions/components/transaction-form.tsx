@@ -132,12 +132,16 @@ export function TransactionForm({
       <Controller
         control={control}
         name="amount"
+        // An emptied amount is NaN here, not undefined: for undefined,
+        // React Hook Form shows the default value again, so the amount of
+        // an edited transaction could never be cleared. Zod rejects NaN with
+        // "Isi nominal" (schemas/transaction.ts).
         render={({ field }) => (
           <AmountInput
             ref={field.ref}
             name={field.name}
-            value={field.value}
-            onChange={field.onChange}
+            value={Number.isNaN(field.value) ? undefined : field.value}
+            onChange={(value) => field.onChange(value ?? Number.NaN)}
             onBlur={field.onBlur}
             error={errors.amount?.message}
           />

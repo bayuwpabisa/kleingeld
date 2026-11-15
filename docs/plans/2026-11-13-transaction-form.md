@@ -76,7 +76,7 @@ Setiap langkah: test dulu sampai gagal, lalu implementasi. Sebelum commit: revie
 - [x] 3. Textarea + AmountInput + pesan nominal kosong. Commit `feat(ui): add amount input and textarea`
 - [x] 4. `TransactionForm`. Commit `feat(transactions): add transaction form`
 - [x] 5. Fungsi cache + mutation optimistic + toast + Urungkan. Commit `feat(transactions): add optimistic create, update and delete`
-- [ ] 6. Slice editor + dialog global + kolom Aksi + tombol header. Commit `feat(transactions): add and edit transactions in a dialog on desktop`
+- [x] 6. Slice editor + dialog global + kolom Aksi + tombol header. Commit `feat(transactions): add and edit transactions in a dialog on desktop`
 - [ ] 7. Halaman HP new/edit + baris → link + hapus lewat sheet. Commit `feat(transactions): add and edit transactions on phones`
 - [ ] 8. DESIGN.md + README + AGENTS. Commit `docs: document the transaction form`
 - [ ] 9. Verifikasi, push, PR `feat: add transaction form`, `ci` + Vercel hijau, squash merge (kamu), titik cek ke 14 Nov.
@@ -99,6 +99,10 @@ Setiap langkah: test dulu sampai gagal, lalu implementasi. Sebelum commit: revie
 - Langkah 4: urutan tombol mengikuti konvensi `DialogActions` yang sudah ada (DOM = urutan desktop, HP dibalik dengan `flex-col-reverse` supaya Simpan di atas). Di HP urutan Tab tidak sama persis dengan urutan visual, sama seperti `DialogActions`. Dicatat untuk audit a11y 21 Nov.
 - Langkah 5: penyimpangan nama file dari plan. Fungsi fetch tulis ada di `requests.ts` (bukan `mutations.ts`), dan langkah optimistic yang dipakai bersama (snapshot, restore, cari di cache, kategori dari cache, toast gagal) ada di `optimistic.ts`, supaya tiga hook tidak menyalin logika yang sama. Mutation update menerima `{ id, values }` berisi semua field form (PATCH dengan isi lengkap, sah menurut schema update).
 - Langkah 5: callback mutation (`onMutate`/`onError`/`onSuccess`/`onSettled`) sengaja ditaruh di opsi `useMutation`, bukan di `mutate()`. Callback di `mutate()` tidak jalan kalau komponennya sudah unmount, padahal form ditutup atau halaman pindah tepat saat submit.
+- Langkah 6: **bug sebelum test dijalankan.** `EditForm` di dialog merender form *tambah* selama data transaksi belum termuat, sehingga Simpan di dialog "Ubah transaksi" justru menambah transaksi baru. Diganti `TransactionFormSkeleton`.
+- Langkah 6: **bug nyata yang ditemukan test integrasi.** Mengosongkan nominal di form ubah lalu mengetik ulang mengirim `3.500.040.000` ("35000" + "40000"). Penyebabnya `useController` milik RHF mengembalikan nilai *default* saat nilai field `undefined`, sehingga nominal transaksi lama tidak pernah bisa dikosongkan. Diperbaiki: di dalam form, nominal kosong disimpan sebagai `NaN` (Zod menolaknya dengan "Isi nominal"), dan API `AmountInput` tidak berubah. Ditambah test form "nominal bisa dikosongkan dan diketik ulang" yang gagal sebelum diperbaiki. Penyebabnya ditelusuri dengan log debug sementara di test, yang lalu dikembalikan dari backup (`git diff` kosong).
+- Langkah 6: `useTransaction` memakai `placeholderData` berupa fungsi, sehingga TanStack salah menebak tipe data (TS2769). Generik `useQuery<TransactionDto>` ditulis eksplisit.
+- Langkah 6: tombol Ubah/Hapus dinonaktifkan untuk baris yang masih tersimpan sementara (`optimistic-…`), karena id itu belum ada di server. `AddTransactionLink` diganti `AddTransactionButton` (membuka dialog lewat Redux) di halaman Transaksi dan Dashboard. Ditambah `TransactionFormLoader` (skeleton/error kategori) yang dipakai bersama dialog dan halaman HP.
 
 ## Catatan untuk nanti
 - 14 Nov: filter/sort/cari/pagination di URL; fungsi cache harus tetap benar untuk list dengan filter (sisipan optimistic hanya ke list tanpa filter, atau cukup invalidate); kartu ringkasan + endpoint agregat diputuskan di plan 14 Nov.

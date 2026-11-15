@@ -125,6 +125,26 @@ describe("TransactionForm", () => {
     );
   });
 
+  it("lets the amount of an edited transaction be cleared and retyped", async () => {
+    const { onSubmit } = setup({ transaction: existing, onDelete: () => {} });
+
+    await userEvent.clear(amount());
+    expect(amount()).toHaveValue("");
+    await userEvent.click(
+      screen.getByRole("button", { name: "Simpan perubahan" }),
+    );
+    expect(await screen.findByText("Isi nominal")).toBeInTheDocument();
+
+    await userEvent.type(amount(), "40000");
+    expect(amount()).toHaveValue("40.000");
+    await userEvent.click(
+      screen.getByRole("button", { name: "Simpan perubahan" }),
+    );
+    expect(onSubmit).toHaveBeenCalledWith(
+      expect.objectContaining({ amount: 40_000 }),
+    );
+  });
+
   it("has a Batal button only where it is given one", async () => {
     const onCancel = jest.fn();
     setup({ onCancel });
