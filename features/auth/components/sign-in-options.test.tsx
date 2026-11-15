@@ -1,9 +1,9 @@
-import { render, screen } from "@testing-library/react";
+import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { axe } from "jest-axe";
 import { useRouter } from "next/navigation";
-import { ToastProvider } from "@/components/ui/toast";
 import { authClient } from "@/lib/auth-client";
+import { renderWithProviders } from "@/test/render-with-providers";
 import { SignInOptions } from "./sign-in-options";
 
 jest.mock("next/navigation", () => ({ useRouter: jest.fn() }));
@@ -26,11 +26,7 @@ const failed = {
 } as unknown as Result;
 
 function renderOptions(props: Parameters<typeof SignInOptions>[0] = {}) {
-  return render(
-    <ToastProvider>
-      <SignInOptions {...props} />
-    </ToastProvider>,
-  );
+  return renderWithProviders(<SignInOptions {...props} />);
 }
 
 beforeEach(() => {

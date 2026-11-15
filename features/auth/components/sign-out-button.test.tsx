@@ -1,8 +1,8 @@
-import { render, screen } from "@testing-library/react";
+import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useRouter } from "next/navigation";
-import { ToastProvider } from "@/components/ui/toast";
 import { authClient } from "@/lib/auth-client";
+import { renderWithProviders } from "@/test/render-with-providers";
 import { SignOutButton } from "./sign-out-button";
 
 jest.mock("next/navigation", () => ({ useRouter: jest.fn() }));
@@ -25,11 +25,7 @@ beforeEach(() => {
 afterEach(() => jest.clearAllMocks());
 
 function renderButton() {
-  render(
-    <ToastProvider>
-      <SignOutButton />
-    </ToastProvider>,
-  );
+  renderWithProviders(<SignOutButton />);
   return screen.getByRole("button", { name: "Keluar" });
 }
 
@@ -60,11 +56,7 @@ describe("SignOutButton", () => {
 
   it("can look like a sidebar item", async () => {
     signOut.mockResolvedValue({ data: {}, error: null } as unknown as Result);
-    render(
-      <ToastProvider>
-        <SignOutButton appearance="nav" />
-      </ToastProvider>,
-    );
+    renderWithProviders(<SignOutButton appearance="nav" />);
 
     await userEvent.click(screen.getByRole("button", { name: "Keluar" }));
 

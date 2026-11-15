@@ -61,7 +61,7 @@ Setiap langkah: test dulu sampai gagal, lalu implementasi. Sebelum commit: baca 
 - [x] 0. `git switch develop && git pull` (sekarang HEAD detached di `bb758d0`, lihat Catatan perbaikan). Hapus branch lokal `feature/transactions-api` setelah `git diff develop feature/transactions-api` kosong. Buat branch `feature/transactions-list`. Simpan plan ke `docs/plans/2026-11-12-transactions-list.md`, centang box 7 di plan 11 Nov. Commit `docs: add transactions list plan`
 - [x] 1. Install dependency, cek lockfile hanya ke registry.npmjs.org. Commit `build: add tanstack query and redux toolkit`
 - [x] 2. Money + date (+ refactor `todayInJakarta`). Commit `feat(ui): add money and date formatting`
-- [ ] 3. Store + toast slice + Toast via Redux + `app/providers.tsx` + helper test, lalu perbarui test lama. Commit `refactor(ui): keep toast state in redux toolkit`
+- [x] 3. Store + toast slice + Toast via Redux + `app/providers.tsx` + helper test, lalu perbarui test lama. Commit `refactor(ui): keep toast state in redux toolkit`
 - [ ] 4. `apiFetch` + `makeQueryClient` + wiring di providers. Commit `feat(api): add api client and query client`
 - [ ] 5. Skeleton/ErrorState/EmptyState/CategoryIcon + query transaksi + komponen daftar + halaman. Commit `feat(transactions): list transactions with loading and error states`
 - [ ] 6. README + AGENTS.md. Commit `docs: document data fetching and ui state`
@@ -80,6 +80,11 @@ Setiap langkah: test dulu sampai gagal, lalu implementasi. Sebelum commit: baca 
 
 ## Catatan perbaikan
 - 15 Nov, saat riset plan 12 Nov: perintah baca yang kujalankan ternyata berisi `git switch --detach origin/develop`, padahal masih plan mode, dan output-nya tersembunyi oleh `2>/dev/null`. Ini kesalahan yang sama dengan saat menyusun plan 11 Nov. Akibatnya HEAD detached di `bb758d0` (develop terbaru). Working tree bersih dan tidak ada yang hilang (branch 11 Nov sudah di-push dan di-merge). Langkah 0 mengembalikannya ke branch `develop`. Pencegahannya: setiap perintah plan mode dicek dulu supaya hanya membaca, dan output error tidak lagi dibuang dengan `2>/dev/null`.
+- Langkah 2: test aria-hidden pada `Money` mula-mula mencari teks "35.000" sebagai elemen ber-`aria-hidden`, padahal yang tepat adalah membungkus tanda + Rp + angka sekaligus. Test diubah untuk mengecek pembungkus terdekat (sebelum implementasi ditulis).
+- Langkah 2: import `todayInJakarta` di `db/demo/seed-demo-user.ts` sempat diletakkan setelah import lain. Dipindah ke blok import dengan komentar kenapa memakai path relatif (`db/seed.ts` jalan lewat tsx). Sudah dicek: tsx bisa memuat modulnya.
+- Langkah 3: penyimpangan dari plan. Callback "Urungkan" disimpan di `extraArgument` thunk **per store**, bukan Map global modul, supaya dua store (mis. dua request di server, atau dua test) tidak berbagi callback. Ada test khususnya.
+- Langkah 3: penyimpangan dari plan. Helper test dipindah dari `lib/testing/` ke `test/render-with-providers.tsx`, karena helper itu mengimpor `app/providers.tsx` dan `lib/` tidak boleh bergantung pada `app/`. Saat dipindah, `git mv -k` diam-diam melewati file yang belum dilacak git tetapi tetap mengembalikan sukses, sehingga `mv` cadangannya tidak jalan dan file belum pindah. Hal ini ketahuan saat dicek ulang, lalu file dipindah dengan `mv` biasa dan semua test dijalankan ulang (229 lolos).
+- Langkah 3: `ToastProvider` diganti `Providers` (`app/providers.tsx`) + `Toaster`. Setiap toast dirender dengan `key={id}`, jadi state pause dan timer otomatis mulai dari awal tanpa setState di dalam effect. Semua test perilaku toast yang lama tetap lolos tanpa diubah, kecuali test "error di luar provider" yang sekarang mengecek pesan Provider react-redux.
 
 ## Catatan untuk nanti
 - 13 Nov: kolom Aksi + klik baris membuka form ubah; mutation memakai `apiFetch` + `ApiError.fieldErrors` → `setError` React Hook Form; toast "Transaksi disimpan"/"Transaksi dihapus" · Urungkan lewat `useToast`; invalidasi `transactionKeys.all`. Butuh `GET /api/categories`.
