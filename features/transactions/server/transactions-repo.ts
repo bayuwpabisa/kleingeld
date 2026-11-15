@@ -1,12 +1,26 @@
-import { and, desc, eq } from "drizzle-orm";
+import {
+  and,
+  asc,
+  count,
+  desc,
+  eq,
+  gte,
+  ilike,
+  lte,
+  or,
+  sum,
+  type SQL,
+} from "drizzle-orm";
 
 import { categories, transactions } from "@/db/schema";
 import type { AppDb, DbExecutor } from "@/db/types";
 import type {
   TransactionDto,
+  TransactionFilters,
   TransactionInput,
   TransactionListQuery,
   TransactionPage,
+  TransactionSummary,
   TransactionType,
   TransactionUpdate,
 } from "@/schemas/transaction";
@@ -81,26 +95,109 @@ async function checkCategory(
   return null;
 }
 
+/** "50%" must find "50%", not everything that starts with 50. */
+function escapeLike(text: string) {
+  return text.replace(/[\\%_]/g, (char) => `\\${char}`);
+}
+
+/**
+ * The user's rows that match the filters. It reads the category name, so the
+ * query must join categories.
+ */
+function filterConditions(
+  userId: string,
+  filters: TransactionFilters,
+): SQL | undefined {
+  // A row without a note shows its category name, so the search covers both.
+  const pattern = filters.q && `%${escapeLike(filters.q)}%`;
+  return and(
+    eq(transactions.userId, userId),
+    pattern
+      ? or(ilike(transactions.note, pattern), ilike(categories.name, pattern))
+      : undefined,
+    filters.type ? eq(transactions.type, filters.type) : undefined,
+    filters.category
+      ? eq(transactions.categoryId, filters.category)
+      : undefined,
+    filters.from ? gte(transactions.date, filters.from) : undefined,
+    filters.to ? lte(transactions.date, filters.to) : undefined,
+  );
+}
+
+/**
+ * The list's order. Equal values are broken by date, entry time and id, so
+ * the order is total and pages never overlap. The client copies these rules
+ * for optimistic rows (features/transactions/api/cache.ts).
+ */
+function orderOf({
+  sort,
+  order,
+}: Pick<TransactionListQuery, "sort" | "order">) {
+  const direction = order === "asc" ? asc : desc;
+  if (sort === "amount") {
+    return [
+      direction(transactions.amount),
+      desc(transactions.date),
+      desc(transactions.createdAt),
+      desc(transactions.id),
+    ];
+  }
+  // Same date: newest first lists the one entered last first; oldest first
+  // lists the one entered first first.
+  return [
+    direction(transactions.date),
+    direction(transactions.createdAt),
+    direction(transactions.id),
+  ];
+}
+
 export async function listTransactions(
   db: AppDb,
   userId: string,
-  { page, pageSize }: TransactionListQuery,
+  query: TransactionListQuery,
 ): Promise<TransactionPage> {
-  const where = eq(transactions.userId, userId);
-  const [rows, total] = await Promise.all([
+  const { page, pageSize } = query;
+  const where = filterConditions(userId, query);
+  const [rows, [counted]] = await Promise.all([
     selectDtos(db)
       .where(where)
-      // Same date: the one entered last comes first; id keeps it stable.
-      .orderBy(
-        desc(transactions.date),
-        desc(transactions.createdAt),
-        desc(transactions.id),
-      )
+      .orderBy(...orderOf(query))
       .limit(pageSize)
       .offset((page - 1) * pageSize),
-    db.$count(transactions, where),
+    db
+      .select({ total: count() })
+      .from(transactions)
+      .innerJoin(categories, eq(categories.id, transactions.categoryId))
+      .where(where),
   ]);
-  return { data: rows.map(toDto), page, pageSize, total };
+  return { data: rows.map(toDto), page, pageSize, total: counted?.total ?? 0 };
+}
+
+/** Income, expense and balance of the user's transactions that match. */
+export async function summarizeTransactions(
+  db: AppDb,
+  userId: string,
+  filters: TransactionFilters,
+): Promise<TransactionSummary> {
+  const rows = await db
+    .select({
+      type: transactions.type,
+      count: count(),
+      // Postgres sums a bigint as numeric, which arrives as a string.
+      total: sum(transactions.amount).mapWith(Number),
+    })
+    .from(transactions)
+    .innerJoin(categories, eq(categories.id, transactions.categoryId))
+    .where(filterConditions(userId, filters))
+    .groupBy(transactions.type);
+
+  const of = (type: TransactionType) => {
+    const row = rows.find((r) => r.type === type);
+    return { total: row?.total ?? 0, count: row?.count ?? 0 };
+  };
+  const income = of("income");
+  const expense = of("expense");
+  return { income, expense, balance: income.total - expense.total };
 }
 
 export function getTransaction(db: AppDb, userId: string, id: string) {

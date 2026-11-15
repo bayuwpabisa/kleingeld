@@ -10,13 +10,17 @@ import {
   resetTestDb,
   type TestDb,
 } from "@/db/testing/test-db";
-import type { TransactionInput } from "@/schemas/transaction";
+import type {
+  TransactionInput,
+  TransactionListQuery,
+} from "@/schemas/transaction";
 
 import {
   createTransaction,
   deleteTransaction,
   getTransaction,
   listTransactions,
+  summarizeTransactions,
   updateTransaction,
 } from "./transactions-repo";
 
@@ -283,5 +287,194 @@ describe("deleteTransaction", () => {
 
     expect(await deleteTransaction(db, alice.id, bobs.id)).toBe(false);
     expect(await rowById(bobs.id)).toBeDefined();
+  });
+});
+
+describe("listTransactions with filters and sort", () => {
+  const all = { ...NEWEST, page: 1, pageSize: 20 };
+
+  async function notes(query: Partial<TransactionListQuery>) {
+    const page = await listTransactions(db, alice.id, { ...all, ...query });
+    return page.data.map((t) => t.note ?? `(${t.category.name})`);
+  }
+
+  beforeEach(async () => {
+    await create(alice, {
+      note: "Kopi susu",
+      date: "2026-10-31",
+      amount: 28_000,
+    });
+    await create(alice, {
+      note: "Makan siang",
+      date: "2026-11-01",
+      amount: 35_000,
+    });
+    await create(alice, {
+      note: null,
+      categoryId: alice.byName("Transport").id,
+      date: "2026-11-02",
+      amount: 50_000,
+    });
+    await create(alice, {
+      type: "income",
+      categoryId: alice.byName("Gaji").id,
+      note: "Gaji November",
+      date: "2026-11-25",
+      amount: 8_500_000,
+    });
+    await create(alice, {
+      note: "Diskon 50% kopi_kenangan",
+      date: "2026-11-03",
+      amount: 20_000,
+    });
+    // Bob's coffee must never show up in Alice's results.
+    await create(bob, { note: "Kopi bob", date: "2026-11-01" });
+  });
+
+  it("searches the note, ignoring case", async () => {
+    expect(await notes({ q: "KOPI" })).toEqual([
+      "Diskon 50% kopi_kenangan",
+      "Kopi susu",
+    ]);
+  });
+
+  it("searches the category name, for rows without a note", async () => {
+    expect(await notes({ q: "trans" })).toEqual(["(Transport)"]);
+  });
+
+  it("treats % and _ as plain characters", async () => {
+    expect(await notes({ q: "50%" })).toEqual(["Diskon 50% kopi_kenangan"]);
+    // Unescaped, "_" would match the space in "Makan siang".
+    expect(await notes({ q: "makan_siang" })).toEqual([]);
+    expect(await notes({ q: "%" })).toEqual(["Diskon 50% kopi_kenangan"]);
+  });
+
+  it("filters by type and category", async () => {
+    expect(await notes({ type: "income" })).toEqual(["Gaji November"]);
+    expect(await notes({ category: alice.byName("Transport").id })).toEqual([
+      "(Transport)",
+    ]);
+  });
+
+  it("does not show anything for a category of another user", async () => {
+    expect(await notes({ category: bob.byName("Makan").id })).toEqual([]);
+  });
+
+  it("filters by a date range, including both ends", async () => {
+    expect(await notes({ from: "2026-11-01", to: "2026-11-02" })).toEqual([
+      "(Transport)",
+      "Makan siang",
+    ]);
+    expect(await notes({ from: "2026-11-03" })).toEqual([
+      "Gaji November",
+      "Diskon 50% kopi_kenangan",
+    ]);
+    expect(await notes({ to: "2026-10-31" })).toEqual(["Kopi susu"]);
+  });
+
+  it("counts only the matching rows", async () => {
+    const page = await listTransactions(db, alice.id, {
+      ...all,
+      q: "kopi",
+      pageSize: 1,
+    });
+    expect(page.total).toBe(2);
+    expect(page.data).toHaveLength(1);
+  });
+
+  it("sorts by date or amount in both directions", async () => {
+    expect(await notes({ order: "asc" })).toEqual([
+      "Kopi susu",
+      "Makan siang",
+      "(Transport)",
+      "Diskon 50% kopi_kenangan",
+      "Gaji November",
+    ]);
+    expect(await notes({ sort: "amount" })).toEqual([
+      "Gaji November",
+      "(Transport)",
+      "Makan siang",
+      "Kopi susu",
+      "Diskon 50% kopi_kenangan",
+    ]);
+    expect(await notes({ sort: "amount", order: "asc" })).toEqual([
+      "Diskon 50% kopi_kenangan",
+      "Kopi susu",
+      "Makan siang",
+      "(Transport)",
+      "Gaji November",
+    ]);
+  });
+
+  it("keeps equal amounts in a stable order, so pages never overlap", async () => {
+    await resetTestDb(db);
+    alice = await createTestUser(db, "alice");
+    for (let day = 1; day <= 5; day += 1) {
+      await create(alice, { date: `2026-11-0${day}`, amount: 10_000 });
+    }
+    const pages = await Promise.all(
+      [1, 2, 3].map((page) =>
+        listTransactions(db, alice.id, {
+          ...all,
+          sort: "amount",
+          page,
+          pageSize: 2,
+        }),
+      ),
+    );
+    const dates = pages.flatMap((p) => p.data.map((t) => t.date));
+    expect(dates).toEqual([
+      "2026-11-05",
+      "2026-11-04",
+      "2026-11-03",
+      "2026-11-02",
+      "2026-11-01",
+    ]);
+  });
+});
+
+describe("summarizeTransactions", () => {
+  it("adds up income and expense of the user's matching transactions", async () => {
+    await create(alice, { amount: 35_000, date: "2026-11-01" });
+    await create(alice, { amount: 15_000, date: "2026-11-02" });
+    await create(alice, { amount: 99_000, date: "2026-10-01" });
+    await create(alice, {
+      type: "income",
+      categoryId: alice.byName("Gaji").id,
+      amount: 8_500_000,
+      date: "2026-11-25",
+    });
+    await create(bob, { amount: 1_000_000, date: "2026-11-01" });
+
+    expect(
+      await summarizeTransactions(db, alice.id, {
+        from: "2026-11-01",
+        to: "2026-11-30",
+      }),
+    ).toEqual({
+      income: { total: 8_500_000, count: 1 },
+      expense: { total: 50_000, count: 2 },
+      balance: 8_450_000,
+    });
+  });
+
+  it("uses the same filters as the list", async () => {
+    await create(alice, { note: "Kopi", amount: 28_000 });
+    await create(alice, { note: "Makan siang", amount: 35_000 });
+
+    expect(await summarizeTransactions(db, alice.id, { q: "kopi" })).toEqual({
+      income: { total: 0, count: 0 },
+      expense: { total: 28_000, count: 1 },
+      balance: -28_000,
+    });
+  });
+
+  it("is all zero without transactions", async () => {
+    await create(bob);
+    expect(await summarizeTransactions(db, alice.id, {})).toEqual({
+      income: { total: 0, count: 0 },
+      expense: { total: 0, count: 0 },
+      balance: 0,
+    });
   });
 });
