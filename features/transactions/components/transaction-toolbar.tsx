@@ -93,15 +93,18 @@ export function TransactionToolbar({
 
   return (
     <div className="flex flex-col gap-3">
-      {/* One row on wide screens; when the chips need a second row, the
-          search stays level with the first. */}
-      <div className="flex flex-col gap-3 lg:flex-row lg:items-start">
+      {/* From 1440px everything fits in one row (wireframe 04). Narrower,
+          the search has its own row and the chips (type on the right) the
+          next, so the Tab order always follows the visual order. If a long
+          range label makes the chips wrap, the search stays level with the
+          first row. */}
+      <div className="flex flex-col gap-3 min-[1440px]:flex-row min-[1440px]:items-start">
         <SearchField
           value={query.q}
           setFilters={setFilters}
           inputRef={searchRef}
         />
-        <div className="flex flex-wrap items-center gap-2 lg:flex-1">
+        <div className="flex flex-wrap items-center gap-2 min-[1440px]:flex-1">
           <PeriodChip
             query={query}
             showRange={showRange}
@@ -203,7 +206,11 @@ function SearchField({
   }
 
   return (
-    <form role="search" onSubmit={submit} className="relative lg:w-80">
+    <form
+      role="search"
+      onSubmit={submit}
+      className="relative min-[1440px]:w-80 min-[1440px]:shrink-0"
+    >
       <label htmlFor={inputId} className="sr-only">
         Cari transaksi
       </label>
