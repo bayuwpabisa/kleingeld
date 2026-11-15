@@ -133,7 +133,7 @@ Setiap langkah: test dulu sampai gagal, lalu implementasi. Sebelum commit: revie
 - [x] 3. Keys/hooks (paged, infinite, summary) + cache sadar filter + `updateLists` dua bentuk. Commit `feat(transactions): keep filtered lists correct after optimistic changes`
 - [x] 4. `useListQuery` (URL) + `useMediaQuery` + debounce. Commit `feat(transactions): keep search, filters, sort and page in the url`
 - [x] 5. `ChipSelect` + `Pagination`. Commit `feat(ui): add chip select and pagination`
-- [ ] 6. Toolbar + kartu ringkasan + header sort + list desktop/HP + states. Commit `feat(transactions): add search, filters, sort and pagination`
+- [x] 6. Toolbar + kartu ringkasan + header sort + list desktop/HP + states. Commit `feat(transactions): add search, filters, sort and pagination`
 - [ ] 7. DESIGN.md + README + AGENTS. Commit `docs: document transaction filters`
 - [ ] 8. Verifikasi, push, PR `feat: add transaction search, filters and pagination`, `ci` + Vercel hijau, squash merge (kamu), titik cek ke 15 Nov.
 
@@ -167,6 +167,12 @@ Setiap langkah: test dulu sampai gagal, lalu implementasi. Sebelum commit: revie
 - Langkah 4: output `tsc` beberapa kali tertelan oleh pipe/wrapper shell. Dibuat script cek di scratchpad yang menjalankan tsc, eslint, dan jest lewat `node` langsung, lalu mencetak exit code masing-masing.
 - Langkah 5: **penyimpangan dari plan.** Filter tipe memakai `ChipRadioGroup` baru (chip berisi radio native, di `components/ui/chip.tsx` bersama `ChipSelect`), bukan `SegmentedControl`. Alasannya, di wireframe 04 (desktop dan HP) tipe tampil sebagai chip sebaris dengan chip lain. Di HP, segmented control setinggi 44px tidak serasi dengan chip 32px. Chip memakai `h-8 lg:h-10` sesuai tabel Ukuran kontrol (HP di baris sendiri, desktop sebaris dengan kolom cari). Filter yang aktif juga ditandai `data-active` (select) atau `checked` (radio), jadi tidak hanya lewat warna.
 - Langkah 5: `pageItems` selalu menghasilkan 7 item (mis. `1 2 3 4 5 … 9`), supaya bar pagination tidak berubah lebar saat pindah halaman.
+- Langkah 6: draf pertama toolbar memuat stub kosong (`RangeChosenMarker`, `RangeFields` yang hanya `return null`) dan cast `as [TransactionSort, SortOrder]`. Ketahuan saat review sebelum test dijalankan, lalu ditulis ulang: state "rentang dipilih" diangkat ke toolbar (dipakai chip Periode dan input Dari/Sampai), dan pilihan urutan memakai tabel `SORT_OPTIONS` tanpa cast.
+- Langkah 6: dua masalah logika ditemukan saat review. (1) Kalau rentang yang diketik kebetulan pas satu bulan, periode berubah menjadi bulan dan input tanggal bisa hilang saat masih difokus. (2) Memilih "Semua waktu" saat periode sudah "Semua waktu" tidak menutup input tanggal. Sekarang chip Periode selalu menentukan buka/tutup secara eksplisit, dan perubahan dari luar (Hapus filter, Back) hanya menutup saat periode kembali ke "Semua waktu".
+- Langkah 6: kotak cari menyimpan teks lokal plus pencarian terakhir yang ia kirim (`sent`), sehingga URL yang berasal dari debounce-nya sendiri tidak menimpa ketikan yang lebih baru, sedangkan perubahan dari luar (Hapus filter) mengosongkan kotak. Ada test untuk keduanya.
+- Langkah 6: penyimpangan nama file. `periods.ts` berisi `monthRange`, `recentMonths`, `periodOf`, `periodLabel`, dan `periodPhrase`, yang dipakai chip Periode, kartu Saldo, dan kalimat kosong. File ini tidak ada di plan.
+- Langkah 6: ekspektasi test kartu ringkasan awalnya lupa bahwa teks Money berisi "Rp". Selain itu, satu test axe memicu warning `act(...)` dari `next/link`: jsdom tidak punya `IntersectionObserver`, sehingga Link memakai timer yang bisa berjalan setelah test selesai. `jest.setup.ts` diberi `IntersectionObserver` minimal yang tidak pernah terpicu, dan output test sekarang tanpa `console.error`.
+- Langkah 6: nominal kartu ringkasan di HP memakai `text-xl` (desktop `text-2xl`), supaya dua kartu berdampingan di lebar 390px muat sampai ratusan juta. Untuk nominal miliaran perlu dicek saat audit 21 Nov.
 
 ## Catatan untuk nanti
 - 15 Nov: test form + tabel (RTL), rilis v0.2. Perlu env Production di Vercel, migrasi di Neon `production`, dan tanggal di roadmap README.
