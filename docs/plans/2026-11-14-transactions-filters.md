@@ -230,7 +230,7 @@ Kamu meminta semua kesalahan task ini diperbaiki dan dicegah supaya tidak terula
 - [x] R0. Cek awal (branch bersih, sama dengan origin `e38e6c8`, PR belum ada), lalu catatan ini. Commit `docs: plan fixes after the filters review`
 - [x] R1. Test regresi toolbar (`transaction-toolbar.test.tsx`): kotak cari (URL terlambat, perubahan dari luar, Enter, tombol hapus), rentang/periode (rentang satu bulan penuh tetap terbuka, "Semua waktu" menutup, Hapus filter menutup, pilih bulan menutup), tipe/kategori, dan axe. Mutation check per kelompok. Commit `test(transactions): cover the toolbar's search and period states`
 - [x] R1b. Chip Kategori dengan id tidak dikenal: test merah dulu, lalu perbaikan. Commit `fix(transactions): name an unknown category filter honestly`
-- [ ] R2. Mutation check test escape `_` dan `%` (tanpa commit kode)
+- [x] R2. Mutation check test escape `_` dan `%` (tanpa commit kode)
 - [ ] R3. Penjaga `console.error` di `jest.setup.ts` + bukti penjaganya bekerja + AGENTS.md. Commit `test: fail tests that log console errors`
 - [ ] R4. Cek ulang di browser: 1024/1280/1440, tanpa `field-sizing`, penilaian ulang `field-sizing`, optimistic tambah/ubah sebelum server menjawab, nominal besar di HP, log network tanpa `_rsc`, axe per kondisi + isi "incomplete"
 - [ ] R5. Koreksi catatan dan memory. Commit `docs: correct the filters notes`
@@ -255,6 +255,11 @@ Kamu meminta semua kesalahan task ini diperbaiki dan dicegah supaya tidak terula
 - R1b: `CategoryOptions` menambah opsi cadangan kalau kategori di URL tidak ada di daftar yang tampil: nama kategorinya (kalau disembunyikan filter tipe), "Memuat kategori…", atau "Kategori tidak ditemukan". Kalimat kosong untuk kategori yang tidak dikenal: "Tidak ada transaksi di kategori yang tidak ditemukan." (`describeEmptyFilter` menerima `null` = tidak ditemukan, `undefined` = belum termuat).
 - R1b: kesalahan test saya sendiri: `renderToolbar(…, undefined)` memakai nilai default parameter, jadi "kategori masih dimuat" tidak pernah teruji. Diganti opsi eksplisit `{ loading: true }`.
 - Penyimpangan dari plan: R1, R1b, dan perbaikan Hapus filter masuk **satu commit**, karena ketiganya mengubah `transaction-toolbar.tsx`. Memecahnya menjadi commit yang masing-masing hijau butuh staging per hunk interaktif (`git add -p`), yang tidak tersedia di sini. Isinya dirinci di body commit.
+- R2, mutation check `escapeLike` (setiap mutasi dikembalikan, lalu `git diff --exit-code` repo dicek kosong):
+  - tanpa `_` → gagal di `q: "makan_siang"` ✓
+  - tanpa `%` → gagal di `q: "%"` ✓. Baris `q: "50%"` sendiri tetap lolos tanpa escape (lemah), tetapi baris `"%"` menutupinya.
+  - tanpa `\` → **tidak ada test yang menjaganya**. Ditambah test "treats a backslash as a plain character". Versi pertamanya (`q: "\%"`) **juga lolos** di bawah mutasi: tanpa escape `\`, versi mutan menjadi `\\%` (backslash literal + wildcard), yang juga tidak menemukan apa-apa. Analisis saya salah. Diganti `q: "\a"` (tanpa escape berarti huruf "a" dan menemukan banyak baris), lalu tertangkap ✓.
+  - Karena ada test baru, R2 tetap butuh satu commit test (plan semula: tanpa commit).
 
 ## Catatan untuk nanti
 - 15 Nov: test form + tabel (RTL), rilis v0.2. Perlu env Production di Vercel, migrasi di Neon `production`, dan tanggal di roadmap README.

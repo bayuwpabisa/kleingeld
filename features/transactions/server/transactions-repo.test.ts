@@ -349,6 +349,12 @@ describe("listTransactions with filters and sort", () => {
     expect(await notes({ q: "%" })).toEqual(["Diskon 50% kopi_kenangan"]);
   });
 
+  it("treats a backslash as a plain character", async () => {
+    // Unescaped, "\a" would mean a plain "a" and find most rows; escaped,
+    // it looks for a backslash followed by "a", which no note has.
+    expect(await notes({ q: "\\a" })).toEqual([]);
+  });
+
   it("filters by type and category", async () => {
     expect(await notes({ type: "income" })).toEqual(["Gaji November"]);
     expect(await notes({ category: alice.byName("Transport").id })).toEqual([
