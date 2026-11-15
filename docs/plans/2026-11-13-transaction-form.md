@@ -75,7 +75,7 @@ Setiap langkah: test dulu sampai gagal, lalu implementasi. Sebelum commit: revie
 - [x] 2. `GET /api/categories` + hook. Commit `feat(api): add categories endpoint`
 - [x] 3. Textarea + AmountInput + pesan nominal kosong. Commit `feat(ui): add amount input and textarea`
 - [x] 4. `TransactionForm`. Commit `feat(transactions): add transaction form`
-- [ ] 5. Fungsi cache + mutation optimistic + toast + Urungkan. Commit `feat(transactions): add optimistic create, update and delete`
+- [x] 5. Fungsi cache + mutation optimistic + toast + Urungkan. Commit `feat(transactions): add optimistic create, update and delete`
 - [ ] 6. Slice editor + dialog global + kolom Aksi + tombol header. Commit `feat(transactions): add and edit transactions in a dialog on desktop`
 - [ ] 7. Halaman HP new/edit + baris → link + hapus lewat sheet. Commit `feat(transactions): add and edit transactions on phones`
 - [ ] 8. DESIGN.md + README + AGENTS. Commit `docs: document the transaction form`
@@ -97,6 +97,8 @@ Setiap langkah: test dulu sampai gagal, lalu implementasi. Sebelum commit: revie
 - Langkah 4: test fokus gagal. RHF memfokuskan error menurut urutan registrasi, dan `register("categoryId")` (dipanggil saat render parent) terdaftar sebelum `Controller` nominal (terdaftar saat child dirender). `shouldFocusError` dimatikan, lalu fokus diatur di `onInvalid` mengikuti urutan visual (`FIELD_ORDER`).
 - Langkah 4: review ulang menemukan cast `undefined as unknown as number` untuk nominal default. Diganti tipe `DefaultValues<FormValues>` dari RHF, yang memang mengizinkan field kosong, sehingga tidak ada cast.
 - Langkah 4: urutan tombol mengikuti konvensi `DialogActions` yang sudah ada (DOM = urutan desktop, HP dibalik dengan `flex-col-reverse` supaya Simpan di atas). Di HP urutan Tab tidak sama persis dengan urutan visual, sama seperti `DialogActions`. Dicatat untuk audit a11y 21 Nov.
+- Langkah 5: penyimpangan nama file dari plan. Fungsi fetch tulis ada di `requests.ts` (bukan `mutations.ts`), dan langkah optimistic yang dipakai bersama (snapshot, restore, cari di cache, kategori dari cache, toast gagal) ada di `optimistic.ts`, supaya tiga hook tidak menyalin logika yang sama. Mutation update menerima `{ id, values }` berisi semua field form (PATCH dengan isi lengkap, sah menurut schema update).
+- Langkah 5: callback mutation (`onMutate`/`onError`/`onSuccess`/`onSettled`) sengaja ditaruh di opsi `useMutation`, bukan di `mutate()`. Callback di `mutate()` tidak jalan kalau komponennya sudah unmount, padahal form ditutup atau halaman pindah tepat saat submit.
 
 ## Catatan untuk nanti
 - 14 Nov: filter/sort/cari/pagination di URL; fungsi cache harus tetap benar untuk list dengan filter (sisipan optimistic hanya ke list tanpa filter, atau cukup invalidate); kartu ringkasan + endpoint agregat diputuskan di plan 14 Nov.
