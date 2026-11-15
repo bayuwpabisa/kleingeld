@@ -29,9 +29,9 @@ What v0.1 contains:
 
 ## Tech stack
 
-**In use:** Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS v4, Lucide icons, Neon Postgres + Drizzle ORM, Better Auth, Zod, Jest + React Testing Library + jest-axe, PGlite (Postgres in tests), GitHub Actions, Vercel.
+**In use:** Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS v4, Lucide icons, Neon Postgres + Drizzle ORM, Better Auth, Zod, TanStack Query, Redux Toolkit, Jest + React Testing Library + jest-axe, PGlite (Postgres in tests), GitHub Actions, Vercel.
 
-**Coming in later releases:** TanStack Query, Redux Toolkit, React Hook Form, Recharts, Cypress + cypress-axe, Docker.
+**Coming in later releases:** React Hook Form, Recharts, Cypress + cypress-axe, Docker.
 
 ## Getting started
 
@@ -130,6 +130,10 @@ curl -c cookies.txt -X POST http://localhost:3000/api/auth/sign-in/demo \
 curl -b cookies.txt "http://localhost:3000/api/transactions?pageSize=5"
 ```
 
+### Client state
+
+Data from the API is server state and lives in TanStack Query: hooks in `features/<name>/api/` call `apiFetch` (`lib/api/client.ts`), which turns error answers into `ApiError`. Redux Toolkit holds client UI state only, for now the toast (`useToast()`); `app/providers.tsx` creates one store and one QueryClient per mount. A failed refetch while data is on screen shows a toast; a 401 sends the user back to sign in.
+
 ## Scripts
 
 | Command | What it does |
@@ -151,8 +155,10 @@ curl -b cookies.txt "http://localhost:3000/api/transactions?pageSize=5"
 app/            routes and layouts; app/(app)/ holds the signed-in pages, app/api/ the API
 components/     shared UI: ui/ (base components), app-shell/, theme/, brand/, landing/
 features/       feature code per domain (auth, transactions, budgets, bills, dashboard)
-lib/            helpers, auth config (auth.ts, auth-client.ts, session.ts), api/ (JSON responses)
+lib/            helpers, auth config, api/ (JSON responses and the browser client), store/ (Redux),
+                query-client.ts, money.ts, date.ts
 schemas/        Zod schemas shared by the API and the forms
+test/           test helpers (renderWithProviders)
 proxy.ts        redirects signed-out visitors to /login
 db/             Drizzle schema, migrations, demo seed, testing/ (PGlite for tests)
 docs/           scope, plans, wireframes, design tokens, learning notes

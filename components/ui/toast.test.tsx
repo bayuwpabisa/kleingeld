@@ -1,7 +1,8 @@
 import { act, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { axe } from "jest-axe";
-import { ToastProvider, useToast } from "@/components/ui/toast";
+import { useToast } from "@/components/ui/toast";
+import { renderWithProviders } from "@/test/render-with-providers";
 
 function Triggers({ onUndo = () => {} }: { onUndo?: () => void }) {
   const toast = useToast();
@@ -27,11 +28,7 @@ function Triggers({ onUndo = () => {} }: { onUndo?: () => void }) {
 function setup(onUndo?: () => void) {
   jest.useFakeTimers();
   const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
-  render(
-    <ToastProvider>
-      <Triggers onUndo={onUndo} />
-    </ToastProvider>,
-  );
+  renderWithProviders(<Triggers onUndo={onUndo} />);
   return { user, status: screen.getByRole("status") };
 }
 
@@ -152,10 +149,10 @@ describe("Toast", () => {
     expect(await axe(document.body)).toHaveNoViolations();
   });
 
-  it("throws a clear error outside ToastProvider", () => {
+  it("throws a clear error outside the app providers", () => {
     const spy = jest.spyOn(console, "error").mockImplementation(() => {});
 
-    expect(() => render(<Triggers />)).toThrow(/ToastProvider/);
+    expect(() => render(<Triggers />)).toThrow(/Provider/);
     spy.mockRestore();
   });
 });

@@ -1,17 +1,12 @@
 import { eq } from "drizzle-orm";
 
+// Relative, not "@/": db/seed.ts runs this file with tsx, outside Next.
+import { todayInJakarta } from "../../lib/date";
 import { defaultCategoriesFor } from "../default-categories";
 import type { Db } from "../index";
 import { categories, transactions, users } from "../schema";
 import { buildDemoTransactions } from "./build-demo-transactions";
 import { DEMO_CUSTOM_CATEGORIES, DEMO_USER } from "./demo-user";
-
-// The demo's "today" follows Indonesian time (WIB), not the server's zone.
-function todayInJakarta() {
-  return new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Jakarta" }).format(
-    new Date(),
-  );
-}
 
 /**
  * Resets the demo account to fresh data: about three months of transactions

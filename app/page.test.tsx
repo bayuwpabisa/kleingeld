@@ -1,8 +1,8 @@
-import { render as rtlRender, screen } from "@testing-library/react";
+import { screen } from "@testing-library/react";
 import { axe } from "jest-axe";
 import type { ReactElement } from "react";
 import LandingPage from "@/app/page";
-import { ToastProvider } from "@/components/ui/toast";
+import { renderWithProviders } from "@/test/render-with-providers";
 
 jest.mock("next/navigation", () => ({
   useRouter: () => ({ replace: jest.fn() }),
@@ -12,8 +12,7 @@ jest.mock("@/lib/auth-client", () => ({
 }));
 
 // The demo button shows its errors in the app-wide toast.
-const render = (ui: ReactElement) =>
-  rtlRender(<ToastProvider>{ui}</ToastProvider>);
+const render = (ui: ReactElement) => renderWithProviders(ui);
 
 describe("Landing page", () => {
   it("has one h1 with the promise", () => {
