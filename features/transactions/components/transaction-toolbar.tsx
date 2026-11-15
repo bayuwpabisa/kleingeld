@@ -90,7 +90,9 @@ export function TransactionToolbar({
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
+      {/* One row on wide screens; when the chips need a second row, the
+          search stays level with the first. */}
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-start">
         <SearchField value={query.q} setFilters={setFilters} />
         <div className="flex flex-wrap items-center gap-2 lg:flex-1">
           <PeriodChip

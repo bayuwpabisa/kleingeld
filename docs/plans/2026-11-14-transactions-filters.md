@@ -173,6 +173,18 @@ Setiap langkah: test dulu sampai gagal, lalu implementasi. Sebelum commit: revie
 - Langkah 6: penyimpangan nama file. `periods.ts` berisi `monthRange`, `recentMonths`, `periodOf`, `periodLabel`, dan `periodPhrase`, yang dipakai chip Periode, kartu Saldo, dan kalimat kosong. File ini tidak ada di plan.
 - Langkah 6: ekspektasi test kartu ringkasan awalnya lupa bahwa teks Money berisi "Rp". Selain itu, satu test axe memicu warning `act(...)` dari `next/link`: jsdom tidak punya `IntersectionObserver`, sehingga Link memakai timer yang bisa berjalan setelah test selesai. `jest.setup.ts` diberi `IntersectionObserver` minimal yang tidak pernah terpicu, dan output test sekarang tanpa `console.error`.
 - Langkah 6: nominal kartu ringkasan di HP memakai `text-xl` (desktop `text-2xl`), supaya dua kartu berdampingan di lebar 390px muat sampai ratusan juta. Untuk nominal miliaran perlu dicek saat audit 21 Nov.
+- Cek browser: chip select yang aktif memakai `font-medium`, padahal select native selebar opsi terpanjang dalam huruf normal. Teks tebal jadi lebih lebar, baris chip ter-wrap di 1440px, dan kotak cari ikut turun karena `items-center`. Diperbaiki tiga hal: chip aktif tidak menebal (DESIGN.md hanya menyebut border, latar, dan warna); `field-sizing: content` membuat chip selebar opsi yang dipilih (seperti "1–30 Nov 2026 ▾" di wireframe), dan browser tanpa dukungan tetap memakai lebar intrinsik; toolbar memakai `lg:items-start`, supaya kotak cari sejajar baris pertama kalau chip ter-wrap di layar `lg` yang sempit. Sempat dikira "Rentang tanggal…" terpotong, ternyata "…" memang bagian label.
+- Cek browser: `fill` dan ketikan keyboard dari agent-browser tidak masuk ke `<input type="date">` headless (segmen dd/mm/yyyy). Tanggal diisi lewat setter `value` native + event `input`, yaitu jalur yang dipakai React. Di test RTL, `user.type` bekerja.
+- Hasil cek browser (agent-browser, demo, `next dev`):
+  - **Desktop 1440**: mengetik "kopi" menghasilkan satu request list + satu request summary `q=kopi` (tanpa `q=k`/`q=ko`), dan pencarian ikut cocok ke kategori "Kopi & jajan". Header Nominal → `?type=expense&sort=amount` dengan `aria-sort="descending"`. Halaman 2 → `&page=2`, dan Back kembali ke halaman 1 tanpa request RSC.
+  - **Filter tanpa hasil**: kalimat "Tidak ada transaksi untuk “zzzz” di November 2026." + Hapus filter → URL, kotak cari, dan Periode kembali kosong.
+  - **Rentang**: Dari 10 Nov → `?from=2026-11-10`. Sampai 1 Nov → pesan error dan tidak diterapkan. Sampai 20 Nov → `&to=2026-11-20`, dan chip serta kartu Saldo menulis "10–20 Nov 2026".
+  - **HP 390**: `?type=expense&page=3` (page diabaikan) menampilkan 20 dari 177, Muat lebih banyak → 40 dari 177, tanpa scroll horizontal.
+  - **Tema gelap** dengan `category=x` (tidak valid, diabaikan) dan urutan nominal naik: nominal yang sama diurutkan menurut tanggal terbaru.
+  - **Filter Makan + POST diblokir**: baris ditarik kembali + toast Coba lagi. Setelah blokir dibuka, Coba lagi berhasil dan baris muncul di list Makan (93 → 94).
+  - Axe 0 pelanggaran di semua kondisi di atas (terang/gelap, desktop/HP, kosong, rentang dengan error). `get_compilation_issues` dan `get_errors` kosong.
+  - Pembatalan request lama tidak bisa dipicu di dev lokal, karena respons terlalu cepat. Bukti pembatalannya adalah test `use-transactions.test.tsx` (`signal.aborted`).
+- Verifikasi akhir: lint, typecheck, format, 437 test (tanpa `console.error`), dan build dengan env dummy CI semuanya hijau. `/transactions` tetap ◐. Dev server dimatikan lewat PID port, dan port 3000 kosong.
 
 ## Catatan untuk nanti
 - 15 Nov: test form + tabel (RTL), rilis v0.2. Perlu env Production di Vercel, migrasi di Neon `production`, dan tanggal di roadmap README.

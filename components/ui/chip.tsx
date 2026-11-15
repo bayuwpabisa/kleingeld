@@ -13,7 +13,9 @@ import { cn } from "@/lib/cn";
 const chipBase =
   "h-8 rounded-full border text-sm whitespace-nowrap transition-colors lg:h-10";
 const chipIdle = "border-border bg-surface text-fg hover:bg-surface-muted";
-const chipActive = "border-primary bg-primary-soft font-medium text-primary";
+// No bolder weight: a native select is as wide as its longest option in the
+// normal weight, so bold text would be cut off ("Rentang tanggal...").
+const chipActive = "border-primary bg-primary-soft text-primary";
 
 type ChipSelectProps = Omit<ComponentProps<"select">, "className"> & {
   /**
@@ -43,7 +45,9 @@ export function ChipSelect({
         className={cn(
           chipBase,
           active ? chipActive : chipIdle,
-          "cursor-pointer appearance-none pr-8 pl-3.5 [&>option]:bg-surface [&>option]:font-normal [&>option]:text-fg",
+          // field-sizing: as wide as the chosen option, like a chip; without
+          // it the select is as wide as its longest option.
+          "field-sizing-content cursor-pointer appearance-none pr-8 pl-3.5 [&>option]:bg-surface [&>option]:text-fg",
         )}
       >
         {children}
