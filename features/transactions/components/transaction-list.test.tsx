@@ -370,6 +370,33 @@ describe("TransactionList on desktop", () => {
     await table();
   });
 
+  it("closes empty date fields and keeps the focus when the filters are cleared", async () => {
+    const user = userEvent.setup();
+    respond(async (path) => (path.includes("q=") ? empty : page));
+    setup("/transactions?q=kopi");
+    await screen.findByText("Tidak ada transaksi untuk “kopi”.");
+
+    // The date fields are open, but no date is set yet.
+    await user.selectOptions(
+      screen.getByRole("combobox", { name: "Periode" }),
+      "Rentang tanggal…",
+    );
+    expect(screen.getByLabelText("Dari")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Hapus filter" }));
+
+    expect(window.location.search).toBe("");
+    expect(screen.queryByLabelText("Dari")).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("combobox", { name: "Periode" }),
+    ).toHaveDisplayValue("Semua waktu");
+    // The button is gone, so the focus goes to the start of the filters
+    // instead of being lost.
+    expect(
+      screen.getByRole("searchbox", { name: "Cari transaksi" }),
+    ).toHaveFocus();
+  });
+
   it("filters by a month of the period list", async () => {
     const user = userEvent.setup();
     respond();

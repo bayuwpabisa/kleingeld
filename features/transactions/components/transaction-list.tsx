@@ -3,7 +3,7 @@
 import type { FetchStatus } from "@tanstack/react-query";
 import { Plus, ReceiptText, SearchX, WifiOff } from "lucide-react";
 import Link from "next/link";
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 
 import { Button, buttonClasses } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -41,19 +41,39 @@ type ListControls = ReturnType<typeof useListQuery>;
  * refetch while data is shown is reported by a toast (lib/query-client.ts).
  */
 export function TransactionList() {
-  const controls = useListQuery();
+  const listQuery = useListQuery();
   const categories = useCategories();
   const isDesktop = useMediaQuery(DESKTOP);
-  const { query } = controls;
+  const { query } = listQuery;
 
-  const categoryName = categories.data?.find(
-    (c) => c.id === query.category,
-  )?.name;
+  // "Hapus filter" starts the toolbar afresh (a new key), which also closes
+  // date fields opened without a date. The button disappears with the empty
+  // state, so the focus moves to the search box instead of being lost.
+  const [resets, setResets] = useState(0);
+  const searchRef = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    if (resets > 0) searchRef.current?.focus();
+  }, [resets]);
+  const controls: ListControls = {
+    ...listQuery,
+    clearFilters: () => {
+      listQuery.clearFilters();
+      setResets((count) => count + 1);
+    },
+  };
+
+  // undefined while the categories load; null when the URL names a category
+  // the user does not have.
+  const categoryName = categories.data
+    ? (categories.data.find((c) => c.id === query.category)?.name ?? null)
+    : undefined;
   const emptyMessage = describeEmptyFilter(query, categoryName);
 
   return (
     <div className="flex flex-col gap-4 lg:gap-6">
       <TransactionToolbar
+        key={resets}
+        searchRef={searchRef}
         query={query}
         categories={categories.data}
         setFilters={controls.setFilters}

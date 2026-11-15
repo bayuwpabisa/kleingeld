@@ -228,8 +228,8 @@ Kamu meminta semua kesalahan task ini diperbaiki dan dicegah supaya tidak terula
 
 ### Langkah perbaikan
 - [x] R0. Cek awal (branch bersih, sama dengan origin `e38e6c8`, PR belum ada), lalu catatan ini. Commit `docs: plan fixes after the filters review`
-- [ ] R1. Test regresi toolbar (`transaction-toolbar.test.tsx`): kotak cari (URL terlambat, perubahan dari luar, Enter, tombol hapus), rentang/periode (rentang satu bulan penuh tetap terbuka, "Semua waktu" menutup, Hapus filter menutup, pilih bulan menutup), tipe/kategori, dan axe. Mutation check per kelompok. Commit `test(transactions): cover the toolbar's search and period states`
-- [ ] R1b. Chip Kategori dengan id tidak dikenal: test merah dulu, lalu perbaikan. Commit `fix(transactions): name an unknown category filter honestly`
+- [x] R1. Test regresi toolbar (`transaction-toolbar.test.tsx`): kotak cari (URL terlambat, perubahan dari luar, Enter, tombol hapus), rentang/periode (rentang satu bulan penuh tetap terbuka, "Semua waktu" menutup, Hapus filter menutup, pilih bulan menutup), tipe/kategori, dan axe. Mutation check per kelompok. Commit `test(transactions): cover the toolbar's search and period states`
+- [x] R1b. Chip Kategori dengan id tidak dikenal: test merah dulu, lalu perbaikan. Commit `fix(transactions): name an unknown category filter honestly`
 - [ ] R2. Mutation check test escape `_` dan `%` (tanpa commit kode)
 - [ ] R3. Penjaga `console.error` di `jest.setup.ts` + bukti penjaganya bekerja + AGENTS.md. Commit `test: fail tests that log console errors`
 - [ ] R4. Cek ulang di browser: 1024/1280/1440, tanpa `field-sizing`, penilaian ulang `field-sizing`, optimistic tambah/ubah sebelum server menjawab, nominal besar di HP, log network tanpa `_rsc`, axe per kondisi + isi "incomplete"
@@ -237,7 +237,24 @@ Kamu meminta semua kesalahan task ini diperbaiki dan dicegah supaya tidak terula
 - [ ] R6. Verifikasi akhir, self-review `git diff e38e6c8..HEAD`, push, lalu PR (kamu)
 
 ### Catatan perbaikan ronde ini
-(diisi saat pengerjaan)
+- R1: `transaction-toolbar.test.tsx` berisi 18 test. Dijalankan terhadap kode lama: 15 hijau, dan hanya 3 test kategori (R1b) yang merah, sesuai harapan. Hasil mutation check (setiap mutasi dibalik sesudahnya, lalu `git diff --exit-code` toolbar dicek kosong):
+
+  | Mutasi | Ditangkap oleh |
+  |---|---|
+  | 1. cek `ownSearch` dihapus | "keeps newer typing when its own search reaches the URL late" |
+  | 2. `setRangeOpen(false)` tanpa syarat | "keeps the date fields open while typing a range that is a whole month" |
+  | 3. chip Periode hanya membuka input | "closes the date fields when Semua waktu is picked again" + "… when a month is picked" |
+  | 4. kategori tidak dibuang saat tipe berganti | **awalnya lolos**: `toHaveBeenCalledWith` menganggap `{ category: undefined }` sama dengan tidak ada key. Kesalahan yang sama dengan #2. Assertion diganti `toStrictEqual` pada `mock.calls`, lalu tertangkap |
+  | 5. pengosongan cari tanpa key `q` | "clears the search and keeps the focus in the box" (sudah `toStrictEqual`) |
+  | 6. Enter tanpa `debounced.cancel()` | "searches at once on Enter, and only once" |
+  | 7. opsi cadangan kategori dimatikan (R1b) | 3 test label kategori |
+  | 8. `key` toolbar dibuat konstan | "closes empty date fields and keeps the focus when the filters are cleared" |
+  | 9. efek fokus dimatikan | test yang sama (`toHaveFocus`) |
+
+- R1, **temuan baru** saat menyusun test: input rentang yang dibuka tanpa diisi tidak tertutup oleh Hapus filter (periode tetap "Semua waktu"). Selain itu, fokus jatuh ke `body` karena tombol Hapus filter hilang. Test merah dulu, lalu diperbaiki: `TransactionList` memberi toolbar `key` baru setiap Hapus filter (state UI toolbar kembali awal), dan efek memindahkan fokus ke kotak cari (`searchRef`).
+- R1b: `CategoryOptions` menambah opsi cadangan kalau kategori di URL tidak ada di daftar yang tampil: nama kategorinya (kalau disembunyikan filter tipe), "Memuat kategori…", atau "Kategori tidak ditemukan". Kalimat kosong untuk kategori yang tidak dikenal: "Tidak ada transaksi di kategori yang tidak ditemukan." (`describeEmptyFilter` menerima `null` = tidak ditemukan, `undefined` = belum termuat).
+- R1b: kesalahan test saya sendiri: `renderToolbar(…, undefined)` memakai nilai default parameter, jadi "kategori masih dimuat" tidak pernah teruji. Diganti opsi eksplisit `{ loading: true }`.
+- Penyimpangan dari plan: R1, R1b, dan perbaikan Hapus filter masuk **satu commit**, karena ketiganya mengubah `transaction-toolbar.tsx`. Memecahnya menjadi commit yang masing-masing hijau butuh staging per hunk interaktif (`git add -p`), yang tidak tersedia di sini. Isinya dirinci di body commit.
 
 ## Catatan untuk nanti
 - 15 Nov: test form + tabel (RTL), rilis v0.2. Perlu env Production di Vercel, migrasi di Neon `production`, dan tanggal di roadmap README.

@@ -27,6 +27,18 @@ describe("describeEmptyFilter", () => {
     ).toBe("Tidak ada pengeluaran di kategori Makan pada 1–15 Nov 2026.");
   });
 
+  it("says so when the category is not one of the user's", () => {
+    expect(describeEmptyFilter({ category: "c" }, null)).toBe(
+      "Tidak ada transaksi di kategori yang tidak ditemukan.",
+    );
+  });
+
+  it("leaves the category out while the categories load", () => {
+    expect(describeEmptyFilter({ category: "c", q: "kopi" }, undefined)).toBe(
+      "Tidak ada transaksi untuk “kopi”.",
+    );
+  });
+
   it("falls back to a general sentence", () => {
     expect(describeEmptyFilter({ type: "income" }, undefined)).toBe(
       "Tidak ada pemasukan yang cocok dengan filter ini.",

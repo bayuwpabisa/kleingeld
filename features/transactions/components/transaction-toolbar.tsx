@@ -1,7 +1,7 @@
 "use client";
 
 import { Search, X } from "lucide-react";
-import { useId, useState, type FormEvent } from "react";
+import { useId, useState, type FormEvent, type Ref } from "react";
 
 import { ChipRadioGroup, ChipSelect } from "@/components/ui/chip";
 import { Input } from "@/components/ui/input";
@@ -30,6 +30,8 @@ type SetFilters = ListControls["setFilters"];
 type ToolbarProps = ListControls & {
   query: TransactionListQuery;
   categories: CategoryDto[] | undefined;
+  /** The search box, for moving the focus there (after Hapus filter). */
+  searchRef?: Ref<HTMLInputElement>;
 };
 
 const TYPE_OPTIONS = [
@@ -67,6 +69,7 @@ export function TransactionToolbar({
   categories,
   setFilters,
   setSort,
+  searchRef,
 }: ToolbarProps) {
   const period = periodOf(query);
   // "Rentang tanggal…" was picked: the date fields show before any date is set.
@@ -93,7 +96,11 @@ export function TransactionToolbar({
       {/* One row on wide screens; when the chips need a second row, the
           search stays level with the first. */}
       <div className="flex flex-col gap-3 lg:flex-row lg:items-start">
-        <SearchField value={query.q} setFilters={setFilters} />
+        <SearchField
+          value={query.q}
+          setFilters={setFilters}
+          inputRef={searchRef}
+        />
         <div className="flex flex-wrap items-center gap-2 lg:flex-1">
           <PeriodChip
             query={query}
@@ -110,7 +117,11 @@ export function TransactionToolbar({
             }
           >
             <option value="">Semua kategori</option>
-            <CategoryOptions categories={categories} type={query.type} />
+            <CategoryOptions
+              categories={categories}
+              type={query.type}
+              selected={query.category}
+            />
           </ChipSelect>
           <ChipSelect
             label="Urutkan"
@@ -157,9 +168,11 @@ export function TransactionToolbar({
 function SearchField({
   value,
   setFilters,
+  inputRef,
 }: {
   value: string | undefined;
   setFilters: SetFilters;
+  inputRef: Ref<HTMLInputElement> | undefined;
 }) {
   const inputId = useId();
   const [text, setText] = useState(value ?? "");
@@ -200,6 +213,7 @@ function SearchField({
         strokeWidth={1.75}
       />
       <input
+        ref={inputRef}
         id={inputId}
         type="search"
         value={text}
@@ -327,29 +341,50 @@ function RangeFields({
   );
 }
 
+const CATEGORY_GROUPS = [
+  { type: "expense", label: "Pengeluaran" },
+  { type: "income", label: "Pemasukan" },
+] as const;
+
+/**
+ * The categories of the chosen type, grouped. A category filter that is not
+ * among them still gets an option, so the chip never claims "Semua
+ * kategori" while a category filters the list: its name when the type filter
+ * hides it, "Memuat kategori…" while loading, or "Kategori tidak ditemukan"
+ * for an id the user does not have (deleted, or a link from another account).
+ */
 function CategoryOptions({
   categories,
   type,
+  selected,
 }: {
   categories: CategoryDto[] | undefined;
   type: TransactionType | undefined;
+  selected: string | undefined;
 }) {
-  if (!categories) return null;
-  const groups = [
-    { type: "expense", label: "Pengeluaran" },
-    { type: "income", label: "Pemasukan" },
-  ] as const;
-  return groups
-    .filter((group) => !type || group.type === type)
-    .map((group) => (
-      <optgroup key={group.type} label={group.label}>
-        {categories
-          .filter((c) => c.type === group.type)
-          .map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.name}
-            </option>
-          ))}
-      </optgroup>
-    ));
+  const chosen = categories?.find((c) => c.id === selected);
+  const listed = chosen !== undefined && (!type || chosen.type === type);
+  const fallback = !categories
+    ? "Memuat kategori…"
+    : (chosen?.name ?? "Kategori tidak ditemukan");
+
+  return (
+    <>
+      {categories &&
+        CATEGORY_GROUPS.filter((group) => !type || group.type === type).map(
+          (group) => (
+            <optgroup key={group.type} label={group.label}>
+              {categories
+                .filter((c) => c.type === group.type)
+                .map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
+            </optgroup>
+          ),
+        )}
+      {selected && !listed && <option value={selected}>{fallback}</option>}
+    </>
+  );
 }
