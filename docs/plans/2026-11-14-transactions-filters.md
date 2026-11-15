@@ -1,0 +1,164 @@
+# Plan 14 Nov 2026: Cari, filter, sort, dan pagination transaksi di URL (±2 jam, kemungkinan lebih)
+
+## Context
+Tugas jadwal 14 Nov: **"Tabel transaksi: search debounce, filter tanggal/kategori/tipe, sort, pagination server-side; filter di URL"**. Output: *filter bisa dibagikan lewat URL, request lama dibatalkan*.
+
+Status: PR #13 (form transaksi) sudah di-squash-merge ke develop (`36d0dca`). Daftar sekarang selalu menampilkan halaman 1 (`FIRST_PAGE` di `transaction-list.tsx`), dan API hanya menerima `page`/`pageSize`. Setelah task ini: task 15 Nov (test form + tabel, rilis v0.2).
+
+Keputusanmu untuk task ini:
+- **Paging ikut wireframe**: desktop memakai nomor halaman (`page` di URL), HP memakai "Muat lebih banyak" (`useInfiniteQuery`, jumlah yang sudah dimuat tidak masuk URL).
+- **Filter tanggal = Periode + rentang**: select "Periode" berisi Semua waktu (default), 12 bulan terakhir, dan "Rentang tanggal…" (input Dari/Sampai). API memakai `from`/`to`.
+- **Kartu ringkasan lewat endpoint terpisah** `GET /api/transactions/summary` dengan filter yang sama. Setelah mutation, ringkasan di-invalidate (tidak optimistic).
+
+Yang sudah ada dan dipakai ulang:
+- `schemas/transaction.ts` (`transactionListQuerySchema`, `TransactionPage`, `DEFAULT_PAGE_SIZE`), repo `features/transactions/server/transactions-repo.ts` (`selectDtos`, `toDto`, scope per user), test PGlite (`db/testing/test-db.ts`).
+- `features/transactions/api/`: `keys.ts`, `fetch-transactions.ts` (sudah meneruskan `signal`), `use-transactions.ts` (`keepPreviousData`), `cache.ts`, `optimistic.ts` (`snapshotLists`, `updateLists`, `restoreLists`), tiga hook mutation (sudah `invalidateQueries(transactionKeys.all)`).
+- `components/ui/`: `Input`, `Select` (native, chevron), `SegmentedControl`, `Button` (`sm`), `Money`, `EmptyState`, `ErrorState`, `Skeleton`, `Card`. `useCategories()`. `lib/date.ts` (`todayInJakarta`, `formatDate`).
+- `transaction-table.tsx`, `transaction-groups.tsx`, `transaction-list-skeleton.tsx`, `test/render-with-providers.tsx`.
+- Wireframe `04 Transaksi` (Desktop/Mobile), DESIGN.md (Chip/filter, Kartu ringkasan, Tabel transaksi dengan `aria-sort`, States "Kosong karena filter/cari"), review.md (chip "Pemasukan/Pengeluaran", bukan "Masuk/Keluar"; "Saldo", bukan "Selisih").
+
+## Cara kerja (sama seperti 11–13 Nov)
+Setiap langkah: test dulu sampai gagal, lalu implementasi. Sebelum commit: review ulang diff terhadap plan + AGENTS.md, lalu jalankan lint/typecheck/test. Setiap kesalahan dicatat di **Catatan perbaikan** + dirangkum di chat. Sebelum langkah 4, baca docs Next 16 di `node_modules/next/dist/docs/` untuk `useSearchParams` dan `useRouter` (Suspense + cacheComponents). Server dev dimatikan lewat PID port (`taskkill /T`).
+
+## Keputusan
+
+### Kontrak query (`schemas/transaction.ts`)
+- Nama parameter sama di API dan URL: `q`, `type`, `category`, `from`, `to`, `sort`, `order`, `page` (`pageSize` hanya di API).
+  - `q`: trim, maksimal 100 karakter, kosong → tidak ada filter.
+  - `type`: `income` | `expense`. `category`: uuid.
+  - `from`/`to`: `YYYY-MM-DD`, inklusif. Refine: `from` ≤ `to` (pesan "Tanggal awal harus sebelum tanggal akhir").
+  - `sort`: `date` | `amount` (default `date`), `order`: `asc` | `desc` (default `desc`).
+- `transactionFiltersSchema` (q, type, category, from, to) dipakai bersama oleh list dan summary. `transactionListQuerySchema` = filters + sort/order + page/pageSize.
+- Tipe `TransactionSummary = { income: { total, count }, expense: { total, count }, balance }`.
+- URL ↔ query (`features/transactions/list-query-url.ts`, murni):
+  - `parseListQuery(searchParams)`: nilai yang tidak valid di URL diabaikan (kembali ke default) dan tidak menimbulkan error, karena URL bisa diketik tangan.
+  - `toSearchParams(query)`: hanya nilai yang berbeda dari default, dengan urutan tetap, supaya URL pendek dan stabil, mis. `/transactions?q=kopi&type=expense&page=2`.
+
+### Server
+- `listTransactions` mendapat pembangun kondisi `filterConditions(userId, filters)` yang juga dipakai summary:
+  - `q` = `ILIKE` pada `note` **atau** nama kategori (baris tanpa catatan tampil dengan nama kategori). `%`, `_`, `\` di-escape.
+  - `sort`: tanggal atau nominal, ditambah tie-breaker tetap (`date desc`, `createdAt desc`, `id desc`), supaya halaman tidak saling tumpang tindih.
+  - `total` dihitung dengan `count()` + join kategori (`$count` tidak bisa join).
+- `summarizeTransactions(db, userId, filters)`: `count` + `sum(amount)` per tipe (hasil `sum` dari Postgres berupa string → `Number`). Fungsi ini bisa dipakai lagi oleh dashboard SSR (16 Nov).
+- `GET /api/transactions` menerima semua parameter (400 untuk nilai tidak valid). Route baru `app/api/transactions/summary/route.ts`: 401 tanpa sesi, 400, 200. Segmen statis `summary` didahulukan oleh Next daripada `[id]`.
+- Index yang ada (`user_id, date`) cukup untuk data per user di MVP. Tidak ada index trigram.
+
+### Data di client
+- Keys: `list(query)` (desktop, berhalaman), `infinite(queryTanpaPage)` (HP), `summary(filters)`. Dua key pertama berada di bawah `lists()`, sehingga snapshot/cancel/invalidate tetap mencakup keduanya.
+- Hook: `useTransactions` (tetap `keepPreviousData`), `useInfiniteTransactions` (`getNextPageParam` dari `page*pageSize < total`), `useTransactionSummary` (`keepPreviousData`).
+- **Request lama dibatalkan**: `signal` dari TanStack diteruskan ke `fetch`. Saat key berganti, query lama kehilangan observer dan dibatalkan (TanStack membatalkan query yang memakai signal). Pencarian juga di-debounce 300 ms. Keduanya dites.
+- **Cache optimistic tetap benar untuk list yang difilter** (`cache.ts`, murni):
+  - `matchesFilters(tx, filters)`: q (huruf besar/kecil diabaikan, cocok ke catatan/kategori), tipe, kategori, dan rentang tanggal.
+  - `compareTransactions(sort, order)` menggantikan urutan tetap di `sortTransactions`.
+  - `insertTransaction(page, tx, query)` hanya menyisipkan ke list yang filternya cocok.
+  - `replaceTransaction` menghapus baris yang tidak lagi cocok (`total − 1`).
+  - Kunci query dibaca dari `QueryKey` di `updateLists`.
+- `updateLists` menangani dua bentuk data: `TransactionPage` dan `InfiniteData<TransactionPage>`. Untuk infinite, sisipan masuk ke halaman pertama tanpa dipotong ke `pageSize`, supaya tidak ada baris yang hilang sementara.
+- Summary tidak diubah secara optimistic: `invalidateQueries(transactionKeys.all)` yang sudah ada ikut memuat ulang summary (key-nya di bawah `all`).
+
+### State URL (`features/transactions/use-list-query.ts`)
+- `useSearchParams` → `parseListQuery`. Setter `setFilters` (selalu reset ke halaman 1, dan kategori dikosongkan kalau tipenya tidak cocok), `setSort` (reset halaman), `setPage`, `clearFilters` (sort tetap).
+- `router.push` (scroll: false) untuk pilihan filter/sort/halaman, sehingga tombol Back bekerja. `router.replace` untuk ketikan pencarian, supaya riwayat tidak penuh.
+- `TransactionList` dibungkus `<Suspense>` dengan skeleton di `page.tsx` (cacheComponents). Halaman tetap prerender.
+- `useMediaQuery("(min-width: 1024px)")` (`lib/use-media-query.ts`, `useSyncExternalStore`, server snapshot `null` → skeleton) memilih `DesktopList` (berhalaman) atau `PhoneList` (infinite). Jadi hanya satu query yang berjalan, tidak keduanya.
+- `useDebouncedCallback` milik sendiri (`lib/use-debounced-callback.ts`), tanpa dependency baru.
+
+### UI (wireframe 04, DESIGN.md)
+- **Toolbar** (`transaction-toolbar.tsx`):
+  - Cari (`type="search"`, label "Cari transaksi", ikon kaca pembesar, tombol hapus). Teks input disimpan lokal dan hanya diganti dari URL kalau URL diubah dari luar (Hapus filter, Back), bukan oleh debounce sendiri. Ketikan yang sedang berlangsung tidak terpotong.
+  - Chip select native **Periode** ("Semua waktu", "November 2026", …, "Rentang tanggal…"). Rentang memunculkan input Dari/Sampai, dengan error di bawah field kalau Dari > Sampai, dan filter tidak diterapkan selama error.
+  - **Kategori** ("Semua kategori", `<optgroup>` Pengeluaran/Pemasukan, difilter sesuai tipe).
+  - **Urutkan** (Terbaru, Terlama, Nominal terbesar, Nominal terkecil).
+  - Tipe **Semua / Pemasukan / Pengeluaran** (`SegmentedControl`).
+  - Desktop satu baris (`md` 40px). HP: cari, lalu chip di baris sendiri (`sm`), sesuai DESIGN.md.
+  - Chip select = varian baru di `components/ui/` (`ChipSelect`, rounded-full, terpilih `bg-primary-soft border-primary text-primary`), dengan label aksesibel.
+- **Kartu ringkasan** (`transaction-summary.tsx`):
+  - Pemasukan (N transaksi), Pengeluaran (N transaksi), Saldo (bertanda, keterangan periode: "Semua waktu" / "November 2026" / "1–15 Nov 2026").
+  - Desktop 3 kartu. HP 2 kartu (Pemasukan, Pengeluaran) sesuai wireframe.
+  - Ada skeleton dan error kecil + Coba lagi.
+- **Tabel**: header Tanggal dan Nominal menjadi `<button>` dengan ikon arah, dan `<th aria-sort>`. Klik kolom aktif membalik urutan. Klik Nominal saat belum aktif → terbesar dulu.
+- **Pagination** (`components/ui/pagination.tsx`): `<nav aria-label="Halaman">`, ‹ 1 … 4 5 6 … 9 ›, `aria-current="page"`, ukuran `sm`. Teks "Menampilkan 21–40 dari 42 transaksi".
+- **HP**: tombol "Muat lebih banyak" (secondary, busy saat memuat, hilang di halaman terakhir), dan teks "Menampilkan 40 dari 42 transaksi".
+- **States**:
+  - Tanpa filter dan `total` 0 → state pertama kali (yang sudah ada).
+  - Dengan filter dan 0 hasil → "Tidak ada transaksi untuk "kopi" di November 2026." + **Hapus filter**. Kalimatnya dibuat oleh fungsi murni `describeEmptyFilter`.
+  - `page` melebihi halaman terakhir (URL lama atau setelah menghapus) → `router.replace` ke halaman terakhir.
+  - Saat memuat filter baru, data lama tetap tampil (`aria-busy`, sedikit pudar).
+  - Region `aria-live="polite"` (sr-only) mengumumkan "12 transaksi ditemukan" setelah cari/filter.
+
+## File
+- `schemas/transaction.ts` (+test), `features/transactions/list-query-url.ts` (+test), `features/transactions/describe-empty-filter.ts` (+test).
+- `features/transactions/server/transactions-repo.ts` (+test PGlite), `app/api/transactions/route.ts` (+test), `app/api/transactions/summary/route.ts` (+test).
+- `features/transactions/api/`: `keys.ts`, `fetch-transactions.ts`, `fetch-summary.ts`, `use-transactions.ts`, `use-infinite-transactions.ts`, `use-transaction-summary.ts`, `cache.ts` (+test), `optimistic.ts`, `use-*-transaction.ts`, `mutations.test.tsx`.
+- `features/transactions/use-list-query.ts`, `lib/use-media-query.ts`, `lib/use-debounced-callback.ts` (+test).
+- `components/ui/chip-select.tsx`, `components/ui/pagination.tsx` (+test, axe).
+- `features/transactions/components/`: `transaction-toolbar.tsx`, `transaction-summary.tsx`, `transaction-list.tsx` (Desktop/Phone), `transaction-table.tsx` (header sort), `transaction-list.test.tsx` (+test toolbar/integrasi).
+- `app/(app)/transactions/page.tsx` (Suspense), `jest.setup.ts` (stub `matchMedia`) + helper `test/viewport.ts`.
+- `DESIGN.md` (chip Pemasukan/Pengeluaran, Saldo di halaman transaksi), `README.md` (roadmap), `AGENTS.md` › Structure, `docs/plans/2026-11-14-transactions-filters.md`.
+
+## Test (ditulis dulu)
+- **schema/URL**:
+  - Parameter valid diterima, dan `from` > `to` ditolak.
+  - `parseListQuery` mengabaikan nilai rusak (`page=abc`, `type=x`, uuid salah).
+  - `toSearchParams` hanya menulis nilai non-default. Bolak-balik URL → query → URL hasilnya sama.
+- **repo (PGlite)**:
+  - Cari ke catatan dan nama kategori, tanpa membedakan huruf besar/kecil. `%`/`_` dicari sebagai huruf biasa.
+  - Filter tipe, kategori, dan rentang (inklusif).
+  - Sort nominal/tanggal kedua arah, dengan tie-breaker stabil antar halaman.
+  - `total` sesuai filter. Summary per tipe dan saldo. Data user lain tidak pernah ikut.
+- **routes**: 401, 400 (`from` > `to`, `sort=x`), 200 meneruskan filter ke repo, summary 200.
+- **cache**:
+  - `matchesFilters`.
+  - Sisipan hanya ke list yang cocok, sesuai urutan sort.
+  - Ubah yang keluar dari filter → hilang + `total − 1`.
+  - Bentuk infinite ditangani.
+- **mutation**: tambah saat filter "Makan" aktif → muncul di list Makan, tidak muncul di list "Gaji". Gagal → semua list (termasuk infinite) kembali seperti semula.
+- **hooks**:
+  - Debounce memanggil sekali setelah 300 ms (fake timers).
+  - Ganti filter saat request lama belum selesai → `signal.aborted === true`.
+- **UI** (`renderWithProviders`, mock `next/navigation` + `apiFetch`):
+  - Ketik "kopi" → satu request dengan `q=kopi` + URL `?q=kopi`.
+  - Pilih Pengeluaran → `type=expense&page` hilang. Kategori difilter sesuai tipe.
+  - Klik header Nominal → `aria-sort="descending"`.
+  - Pagination ke halaman 2.
+  - Filter tanpa hasil → kalimat + Hapus filter.
+  - HP: Muat lebih banyak menambah baris.
+  - Kartu ringkasan.
+  - Axe tanpa pelanggaran untuk toolbar, tabel, dan pagination.
+
+## Langkah dan commit
+- [x] 0. `git switch develop && git pull`, cek `git diff develop feature/transaction-form` kosong, lalu `git branch -D feature/transaction-form`. Branch `feature/transactions-filters`. Simpan plan ke `docs/plans/2026-11-14-transactions-filters.md`, centang box 9 plan 13 Nov. Commit `docs: add transactions filters plan`
+- [ ] 1. Schema filter/sort + URL helpers. Commit `feat(transactions): add filters and sort to the list query`
+- [ ] 2. Repo filter/cari/sort + summary + routes. Commit `feat(api): filter, sort and summarize transactions`
+- [ ] 3. Keys/hooks (paged, infinite, summary) + cache sadar filter + `updateLists` dua bentuk. Commit `feat(transactions): keep filtered lists correct after optimistic changes`
+- [ ] 4. `useListQuery` (URL) + `useMediaQuery` + debounce. Commit `feat(transactions): keep search, filters, sort and page in the url`
+- [ ] 5. `ChipSelect` + `Pagination`. Commit `feat(ui): add chip select and pagination`
+- [ ] 6. Toolbar + kartu ringkasan + header sort + list desktop/HP + states. Commit `feat(transactions): add search, filters, sort and pagination`
+- [ ] 7. DESIGN.md + README + AGENTS. Commit `docs: document transaction filters`
+- [ ] 8. Verifikasi, push, PR `feat: add transaction search, filters and pagination`, `ci` + Vercel hijau, squash merge (kamu), titik cek ke 15 Nov.
+
+## Verifikasi
+1. Lint, typecheck, test, format:check, dan build dengan env dummy CI semuanya hijau. `/transactions` tetap prerender sebagian.
+2. Manual di `npm run dev` lewat agent-browser (akun demo):
+   - **Desktop**:
+     - Ketik "kopi" → satu request setelah jeda, URL `?q=kopi`, ringkasan berubah.
+     - Ketik cepat → request lama berstatus canceled di log network.
+     - Pilih Periode bulan lalu, kategori, dan tipe.
+     - Klik header Nominal → urutan berubah.
+     - Halaman 2 → reload: filter dan halaman tetap.
+     - Salin URL ke tab baru: sama. Back mengembalikan filter sebelumnya.
+     - Rentang Dari > Sampai → pesan error.
+     - Filter tanpa hasil → Hapus filter.
+   - **Optimistic dengan filter**: tambah transaksi Makan saat filter Makan aktif → langsung muncul. Ubah kategorinya → hilang dari list itu.
+   - **HP 390px**: chip di baris sendiri, Muat lebih banyak sampai habis, dan filter di URL.
+   - **Keyboard**: Tab melewati toolbar → header sort → pagination. Fokus terlihat.
+   - Axe 0 pelanggaran (terang dan gelap, desktop dan HP). `get_errors` kosong.
+3. Self-review `git diff develop...HEAD` terhadap checklist Keputusan.
+
+## Catatan perbaikan
+(diisi saat pengerjaan)
+
+## Catatan untuk nanti
+- 15 Nov: test form + tabel (RTL), rilis v0.2. Perlu env Production di Vercel, migrasi di Neon `production`, dan tanggal di roadmap README.
+- 16 Nov: dashboard SSR memakai `summarizeTransactions` untuk "bulan ini" (ingat: Gaji demo baru masuk tanggal 25).
+- F4 sebelum rilis v1.0.
