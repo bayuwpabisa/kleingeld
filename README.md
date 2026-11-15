@@ -91,13 +91,15 @@ REST Route Handlers under `/api`, used by the app itself. Requests and responses
 
 | Method | Path | Body | Answer |
 |---|---|---|---|
-| `GET` | `/api/transactions?page=1&pageSize=20` | | `200 { data, page, pageSize, total }`, newest first; `pageSize` up to 100 |
+| `GET` | `/api/transactions?q=&type=&category=&from=&to=&sort=&order=&page=&pageSize=` | | `200 { data, page, pageSize, total }`; all parameters optional (see below) |
+| `GET` | `/api/transactions/summary?q=&type=&category=&from=&to=` | | `200 { income: { total, count }, expense: { total, count }, balance }` for the same filters |
 | `POST` | `/api/transactions` | `{ type, categoryId, amount, date, note? }` | `201` with the transaction and a `Location` header |
 | `GET` | `/api/transactions/{id}` | | `200` with the transaction |
 | `PATCH` | `/api/transactions/{id}` | any of the fields above | `200` with the updated transaction |
 | `DELETE` | `/api/transactions/{id}` | | `204` |
 | `GET` | `/api/categories` | | `200` with the user's categories (`id`, `name`, `type`, `icon`), expenses first |
 
+- List and summary parameters: `q` searches the note and the category name (case-insensitive, up to 100 characters); `type`; `category` (a category id); `from` and `to` (`YYYY-MM-DD`, both included, `from` ≤ `to`); `sort` is `date` (default) or `amount`, `order` is `desc` (default) or `asc`; `page` from 1, `pageSize` 1–100 (default 20). Ties are broken by date, entry time and id, so pages never overlap.
 - `type` is `income` or `expense`; `amount` is whole rupiah (integer, 1 to 1,000,000,000,000); `date` is `YYYY-MM-DD`; `note` is up to 200 characters (blank or `null` clears it). The category must be one of the user's own, of the same type.
 - Unknown fields such as `userId` are refused: the user always comes from the session.
 - Bodies must be sent as `application/json` (otherwise `415`).
@@ -136,6 +138,8 @@ curl -b cookies.txt "http://localhost:3000/api/transactions?pageSize=5"
 Data from the API is server state and lives in TanStack Query: hooks in `features/<name>/api/` call `apiFetch` (`lib/api/client.ts`), which turns error answers into `ApiError`. Redux Toolkit holds client UI state only: the toast (`useToast()`) and which transaction dialog is open on desktop; `app/providers.tsx` creates one store and one QueryClient per mount. A failed refetch while data is on screen shows a toast; a 401 sends the user back to sign in.
 
 Adding, editing and deleting transactions is optimistic: the list changes at once, goes back if the server refuses (with a toast and, for network errors, Coba lagi), and refetches when done. Deleting can be undone from its toast. The form (React Hook Form) validates with the same Zod schema as the API. On desktop it opens in a dialog from any page; on phones it is a page (`/transactions/new`, `/transactions/[id]/edit`).
+
+The transactions page keeps its search, filters (period, category, type), order and page in the URL, with the same names as the API, so a filtered list can be bookmarked and shared (`/transactions?q=kopi&type=expense&sort=amount`). Changes use the browser's history API, which Next.js syncs with `useSearchParams`: no server round trip, and Back returns to the previous filters. The search waits until typing stops (300 ms), and a request whose answer is no longer wanted is cancelled through its `AbortSignal`. Desktop pages through a table; phones load more rows with "Muat lebih banyak". Optimistic changes follow each cached list's filters and order, so a new row only appears in lists it belongs to.
 
 ## Scripts
 

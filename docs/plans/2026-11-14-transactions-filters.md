@@ -134,7 +134,7 @@ Setiap langkah: test dulu sampai gagal, lalu implementasi. Sebelum commit: revie
 - [x] 4. `useListQuery` (URL) + `useMediaQuery` + debounce. Commit `feat(transactions): keep search, filters, sort and page in the url`
 - [x] 5. `ChipSelect` + `Pagination`. Commit `feat(ui): add chip select and pagination`
 - [x] 6. Toolbar + kartu ringkasan + header sort + list desktop/HP + states. Commit `feat(transactions): add search, filters, sort and pagination`
-- [ ] 7. DESIGN.md + README + AGENTS. Commit `docs: document transaction filters`
+- [x] 7. DESIGN.md + README + AGENTS. Commit `docs: document transaction filters`
 - [ ] 8. Verifikasi, push, PR `feat: add transaction search, filters and pagination`, `ci` + Vercel hijau, squash merge (kamu), titik cek ke 15 Nov.
 
 ## Verifikasi
