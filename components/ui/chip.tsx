@@ -45,9 +45,9 @@ export function ChipSelect({
         className={cn(
           chipBase,
           active ? chipActive : chipIdle,
-          // field-sizing: as wide as the chosen option, like a chip; without
-          // it the select is as wide as its longest option.
-          "field-sizing-content cursor-pointer appearance-none pr-8 pl-3.5 [&>option]:bg-surface [&>option]:text-fg",
+          // As wide as its longest option, so picking another option never
+          // moves the chips after it (no field-sizing: content).
+          "cursor-pointer appearance-none pr-8 pl-3.5 [&>option]:bg-surface [&>option]:text-fg",
         )}
       >
         {children}
