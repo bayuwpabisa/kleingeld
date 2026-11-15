@@ -74,7 +74,7 @@ Setiap langkah: test dulu sampai gagal, lalu implementasi. Sebelum commit: revie
 - [x] 1. Install RHF + resolvers. Commit `build: add react hook form`
 - [x] 2. `GET /api/categories` + hook. Commit `feat(api): add categories endpoint`
 - [x] 3. Textarea + AmountInput + pesan nominal kosong. Commit `feat(ui): add amount input and textarea`
-- [ ] 4. `TransactionForm`. Commit `feat(transactions): add transaction form`
+- [x] 4. `TransactionForm`. Commit `feat(transactions): add transaction form`
 - [ ] 5. Fungsi cache + mutation optimistic + toast + Urungkan. Commit `feat(transactions): add optimistic create, update and delete`
 - [ ] 6. Slice editor + dialog global + kolom Aksi + tombol header. Commit `feat(transactions): add and edit transactions in a dialog on desktop`
 - [ ] 7. Halaman HP new/edit + baris → link + hapus lewat sheet. Commit `feat(transactions): add and edit transactions on phones`
@@ -92,7 +92,11 @@ Setiap langkah: test dulu sampai gagal, lalu implementasi. Sebelum commit: revie
 3. Self-review `git diff develop...HEAD` terhadap checklist Keputusan.
 
 ## Catatan perbaikan
-(diisi selama pengerjaan)
+- Langkah 2: `categoryKeys` diletakkan di `use-categories.ts`, tidak di `keys.ts` terpisah, karena hanya satu key. Urutan kategori dibuat di JS (`Intl.Collator("id-ID")`), karena enum Postgres mengurutkan `income` sebelum `expense` dan collation Neon dan PGlite bisa berbeda.
+- Langkah 3: `controlClasses` memakai tinggi tetap `h-11`, dan tanpa tailwind-merge tinggi itu tidak bisa ditimpa untuk textarea. Ditambah parameter bentuk `"single" | "multi"`. Ditambah juga pesan "Pilih tanggal" untuk tanggal kosong (tidak ada di plan, tetapi sejalan dengan "Isi nominal").
+- Langkah 4: test fokus gagal. RHF memfokuskan error menurut urutan registrasi, dan `register("categoryId")` (dipanggil saat render parent) terdaftar sebelum `Controller` nominal (terdaftar saat child dirender). `shouldFocusError` dimatikan, lalu fokus diatur di `onInvalid` mengikuti urutan visual (`FIELD_ORDER`).
+- Langkah 4: review ulang menemukan cast `undefined as unknown as number` untuk nominal default. Diganti tipe `DefaultValues<FormValues>` dari RHF, yang memang mengizinkan field kosong, sehingga tidak ada cast.
+- Langkah 4: urutan tombol mengikuti konvensi `DialogActions` yang sudah ada (DOM = urutan desktop, HP dibalik dengan `flex-col-reverse` supaya Simpan di atas). Di HP urutan Tab tidak sama persis dengan urutan visual, sama seperti `DialogActions`. Dicatat untuk audit a11y 21 Nov.
 
 ## Catatan untuk nanti
 - 14 Nov: filter/sort/cari/pagination di URL; fungsi cache harus tetap benar untuk list dengan filter (sisipan optimistic hanya ke list tanpa filter, atau cukup invalidate); kartu ringkasan + endpoint agregat diputuskan di plan 14 Nov.
