@@ -78,7 +78,7 @@ Setiap langkah: test dulu sampai gagal, lalu implementasi. Sebelum commit: revie
 - [x] 5. Fungsi cache + mutation optimistic + toast + Urungkan. Commit `feat(transactions): add optimistic create, update and delete`
 - [x] 6. Slice editor + dialog global + kolom Aksi + tombol header. Commit `feat(transactions): add and edit transactions in a dialog on desktop`
 - [x] 7. Halaman HP new/edit + baris → link + hapus lewat sheet. Commit `feat(transactions): add and edit transactions on phones`
-- [ ] 8. DESIGN.md + README + AGENTS. Commit `docs: document the transaction form`
+- [x] 8. DESIGN.md + README + AGENTS. Commit `docs: document the transaction form`
 - [ ] 9. Verifikasi, push, PR `feat: add transaction form`, `ci` + Vercel hijau, squash merge (kamu), titik cek ke 14 Nov.
 
 ## Verifikasi

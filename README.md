@@ -29,9 +29,9 @@ What v0.1 contains:
 
 ## Tech stack
 
-**In use:** Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS v4, Lucide icons, Neon Postgres + Drizzle ORM, Better Auth, Zod, TanStack Query, Redux Toolkit, Jest + React Testing Library + jest-axe, PGlite (Postgres in tests), GitHub Actions, Vercel.
+**In use:** Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS v4, Lucide icons, Neon Postgres + Drizzle ORM, Better Auth, Zod, React Hook Form, TanStack Query, Redux Toolkit, Jest + React Testing Library + jest-axe, PGlite (Postgres in tests), GitHub Actions, Vercel.
 
-**Coming in later releases:** React Hook Form, Recharts, Cypress + cypress-axe, Docker.
+**Coming in later releases:** Recharts, Cypress + cypress-axe, Docker.
 
 ## Getting started
 
@@ -96,6 +96,7 @@ REST Route Handlers under `/api`, used by the app itself. Requests and responses
 | `GET` | `/api/transactions/{id}` | | `200` with the transaction |
 | `PATCH` | `/api/transactions/{id}` | any of the fields above | `200` with the updated transaction |
 | `DELETE` | `/api/transactions/{id}` | | `204` |
+| `GET` | `/api/categories` | | `200` with the user's categories (`id`, `name`, `type`, `icon`), expenses first |
 
 - `type` is `income` or `expense`; `amount` is whole rupiah (integer, 1 to 1,000,000,000,000); `date` is `YYYY-MM-DD`; `note` is up to 200 characters (blank or `null` clears it). The category must be one of the user's own, of the same type.
 - Unknown fields such as `userId` are refused: the user always comes from the session.
@@ -132,7 +133,9 @@ curl -b cookies.txt "http://localhost:3000/api/transactions?pageSize=5"
 
 ### Client state
 
-Data from the API is server state and lives in TanStack Query: hooks in `features/<name>/api/` call `apiFetch` (`lib/api/client.ts`), which turns error answers into `ApiError`. Redux Toolkit holds client UI state only, for now the toast (`useToast()`); `app/providers.tsx` creates one store and one QueryClient per mount. A failed refetch while data is on screen shows a toast; a 401 sends the user back to sign in.
+Data from the API is server state and lives in TanStack Query: hooks in `features/<name>/api/` call `apiFetch` (`lib/api/client.ts`), which turns error answers into `ApiError`. Redux Toolkit holds client UI state only: the toast (`useToast()`) and which transaction dialog is open on desktop; `app/providers.tsx` creates one store and one QueryClient per mount. A failed refetch while data is on screen shows a toast; a 401 sends the user back to sign in.
+
+Adding, editing and deleting transactions is optimistic: the list changes at once, goes back if the server refuses (with a toast and, for network errors, Coba lagi), and refetches when done. Deleting can be undone from its toast. The form (React Hook Form) validates with the same Zod schema as the API. On desktop it opens in a dialog from any page; on phones it is a page (`/transactions/new`, `/transactions/[id]/edit`).
 
 ## Scripts
 

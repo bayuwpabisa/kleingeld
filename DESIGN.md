@@ -179,7 +179,7 @@ Setiap layar yang memuat data harus punya state ini. Pakai komponen di atas, jan
 | Validasi | Saat keluar field atau submit, pesan di bawah field | "Nominal harus lebih dari 0." |
 | Busy | Tombol disabled + spinner, tidak bisa dikirim dua kali | |
 | Sukses | Toast singkat, nama aksi sama dengan tombolnya | "Transaksi disimpan", "Tagihan ditandai dibayar. Transaksi dibuat." |
-| Hapus | Dialog konfirmasi + toast dengan Urungkan | "Transaksi dihapus" · **Urungkan** |
+| Hapus | Dialog konfirmasi + toast dengan Urungkan. Dialog berisi pratinjau baris dan apa yang berubah; jangan menulis "tidak bisa dikembalikan", karena Urungkan ada | "Hapus transaksi ini?" · "Saldo dan budget Makan bulan ini akan dihitung ulang." → "Transaksi dihapus" · **Urungkan** |
 | Konten ekstrem | Judul panjang di-truncate (teks lengkap di `title`/detail), nominal miliaran tetap muat (kolom nominal `whitespace-nowrap`) | |
 
 ## Aksesibilitas
