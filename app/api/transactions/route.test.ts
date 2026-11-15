@@ -132,7 +132,7 @@ describe("POST /api/transactions", () => {
     const response = await POST(postRequest({ ...input, userId: "bob" }));
     expect(response.status).toBe(400);
     expect((await response.json()).error.formErrors).toEqual([
-      'Unrecognized key: "userId"',
+      "Field tidak dikenal: userId",
     ]);
     expect(create).not.toHaveBeenCalled();
   });

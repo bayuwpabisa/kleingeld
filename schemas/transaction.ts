@@ -39,10 +39,18 @@ const fields = {
 };
 
 // strictObject: unknown keys such as `userId` are rejected, not ignored.
-export const transactionInputSchema = z.strictObject(fields);
+// This message covers problems with the body itself; fields have their own.
+const bodyOptions = {
+  error: (issue: z.core.$ZodRawIssue) =>
+    issue.code === "unrecognized_keys"
+      ? `Field tidak dikenal: ${issue.keys.join(", ")}`
+      : "Data harus berupa objek JSON",
+};
+
+export const transactionInputSchema = z.strictObject(fields, bodyOptions);
 
 export const transactionUpdateSchema = z
-  .strictObject(fields)
+  .strictObject(fields, bodyOptions)
   .partial()
   .refine((patch) => Object.values(patch).some((v) => v !== undefined), {
     error: "Tidak ada perubahan",

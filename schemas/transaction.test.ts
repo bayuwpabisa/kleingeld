@@ -99,8 +99,20 @@ describe("transactionInputSchema", () => {
       ...valid,
       userId: "someone-else",
     });
-    expect(result.success).toBe(false);
+    expect(result.error && z.flattenError(result.error).formErrors).toEqual([
+      "Field tidak dikenal: userId",
+    ]);
   });
+
+  it.each(["teks", 5, null, [valid]])(
+    "rejects a body that is not an object: %p",
+    (body) => {
+      const result = transactionInputSchema.safeParse(body);
+      expect(result.error && z.flattenError(result.error).formErrors).toEqual([
+        "Data harus berupa objek JSON",
+      ]);
+    },
+  );
 
   it("gives Indonesian messages", () => {
     const result = transactionInputSchema.safeParse({ ...valid, amount: 0 });
