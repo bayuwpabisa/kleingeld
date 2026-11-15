@@ -64,7 +64,7 @@ Setiap langkah: test dulu sampai gagal, lalu implementasi. Sebelum commit: baca 
 - [x] 3. Store + toast slice + Toast via Redux + `app/providers.tsx` + helper test, lalu perbarui test lama. Commit `refactor(ui): keep toast state in redux toolkit`
 - [x] 4. `apiFetch` + `makeQueryClient` + wiring di providers. Commit `feat(api): add api client and query client`
 - [x] 5. Skeleton/ErrorState/EmptyState/CategoryIcon + query transaksi + komponen daftar + halaman. Commit `feat(transactions): list transactions with loading and error states`
-- [ ] 6. README + AGENTS.md. Commit `docs: document data fetching and ui state`
+- [x] 6. README + AGENTS.md. Commit `docs: document data fetching and ui state`
 - [ ] 7. Verifikasi, push, PR `feat: add transactions list` (judul diketik ulang), `ci` + Vercel hijau, squash merge (kamu), lalu titik cek: lanjut ke 13 Nov atau berhenti.
 
 ## Verifikasi
