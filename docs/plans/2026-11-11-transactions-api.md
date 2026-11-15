@@ -61,7 +61,7 @@ Setelah setiap langkah, sebelum commit: aku membaca ulang `git diff` dan mencoco
 - [x] 2. Test schema → `schemas/transaction.ts`. Commit `feat(transactions): add shared zod schemas`
 - [x] 3. `db/types.ts`, `db/testing/test-db.ts`, test repo → repo. Commit `feat(transactions): add per-user data access`
 - [x] 4. Test `lib/api/http` → helper, `getCurrentUser` di `lib/session.ts`. Commit `feat(api): add json helpers and session check for routes`
-- [ ] 5. Test route → `app/api/transactions/**/route.ts`. Commit `feat(api): add transactions route handlers`
+- [x] 5. Test route → `app/api/transactions/**/route.ts`. Commit `feat(api): add transactions route handlers`
 - [ ] 6. README › API, AGENTS.md › Structure. Commit `docs: document transactions api`
 - [ ] 7. Verifikasi di bawah, push, PR `feat: add transactions api` ke `develop` (judul PR diketik ulang supaya tidak tercampur nama branch); `ci` + Vercel hijau; squash merge (kamu); hapus branch lokal; perbarui memori; centang box 7 di branch berikutnya (12 Nov).
 
