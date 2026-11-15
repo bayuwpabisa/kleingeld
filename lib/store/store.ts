@@ -1,4 +1,5 @@
 import {
+  combineReducers,
   configureStore,
   type ThunkAction,
   type UnknownAction,
@@ -16,10 +17,15 @@ export type ThunkExtra = {
   toastActions: Map<string, () => void>;
 };
 
+// Combined once, when the module loads: combineReducers checks each reducer
+// with a randomly named action, and Next.js (cacheComponents) flags
+// Math.random() if that happens while Providers renders.
+const rootReducer = combineReducers({ toast: toastReducer });
+
 export function makeStore() {
   const extra: ThunkExtra = { toastActions: new Map() };
   return configureStore({
-    reducer: { toast: toastReducer },
+    reducer: rootReducer,
     middleware: (getDefaultMiddleware) =>
       getDefaultMiddleware({ thunk: { extraArgument: extra } }),
   });
