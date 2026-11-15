@@ -131,7 +131,7 @@ Setiap langkah: test dulu sampai gagal, lalu implementasi. Sebelum commit: revie
 - [x] 1. Schema filter/sort + URL helpers. Commit `feat(transactions): add filters and sort to the list query`
 - [x] 2. Repo filter/cari/sort + summary + routes. Commit `feat(api): filter, sort and summarize transactions`
 - [x] 3. Keys/hooks (paged, infinite, summary) + cache sadar filter + `updateLists` dua bentuk. Commit `feat(transactions): keep filtered lists correct after optimistic changes`
-- [ ] 4. `useListQuery` (URL) + `useMediaQuery` + debounce. Commit `feat(transactions): keep search, filters, sort and page in the url`
+- [x] 4. `useListQuery` (URL) + `useMediaQuery` + debounce. Commit `feat(transactions): keep search, filters, sort and page in the url`
 - [ ] 5. `ChipSelect` + `Pagination`. Commit `feat(ui): add chip select and pagination`
 - [ ] 6. Toolbar + kartu ringkasan + header sort + list desktop/HP + states. Commit `feat(transactions): add search, filters, sort and pagination`
 - [ ] 7. DESIGN.md + README + AGENTS. Commit `docs: document transaction filters`
@@ -162,6 +162,9 @@ Setiap langkah: test dulu sampai gagal, lalu implementasi. Sebelum commit: revie
 - Langkah 3: penyimpangan nama file. `fetchTransactionSummary` berada di `fetch-transactions.ts`, bukan di `fetch-summary.ts` terpisah, karena memakai helper URL yang sama. Query sebuah list dibaca kembali dari key-nya lewat schema (`listQueryFromKey`), jadi tidak ada cast. List infinite di-update sebagai satu list, lalu dibagi lagi sesuai panjang halaman, dan semua halaman mendapat `total` yang sama.
 - Langkah 3: request default sempat menjadi `/api/transactions?` (tanda tanya kosong). Sekarang `?` hanya ditulis kalau ada parameter. Mock di `transaction-dialogs.test.tsx` mencocokkan `"/api/transactions?"`, jadi ikut diperbarui.
 - Langkah 3: di awal, test mutation memakai variabel `utilsCategories` yang tidak ada (salah tulis), dan typecheck menangkapnya. Push kategori itu ternyata tidak perlu, sehingga dihapus.
+- Langkah 4: **penyimpangan dari plan, berdasarkan docs Next 16.** `router.push`/`replace` diganti `window.history.pushState`/`replaceState`. Docs `linking-and-navigating.md` › Native History API menyebutkan keduanya tersinkron dengan `useSearchParams`, jadi mengganti filter tidak memicu request RSC ke server dan halaman tidak di-scroll ke atas. Back tetap mengembalikan filter sebelumnya (push), dan ketikan pencarian memakai replace. Untuk test dibuat `test/url-navigation.ts`, pengganti `next/navigation` yang membaca `window.location` jsdom, sehingga test bisa memeriksa URL dan panjang history yang sebenarnya.
+- Langkah 4: `jest.setup.ts` memasang `matchMedia` palsu dengan lebar desktop (1280) di setiap test DOM (`test/viewport.ts`, `setViewportWidth`), karena jsdom tidak punya `matchMedia`.
+- Langkah 4: output `tsc` beberapa kali tertelan oleh pipe/wrapper shell. Dibuat script cek di scratchpad yang menjalankan tsc, eslint, dan jest lewat `node` langsung, lalu mencetak exit code masing-masing.
 
 ## Catatan untuk nanti
 - 15 Nov: test form + tabel (RTL), rilis v0.2. Perlu env Production di Vercel, migrasi di Neon `production`, dan tanggal di roadmap README.

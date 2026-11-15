@@ -1,7 +1,15 @@
 import "@testing-library/jest-dom";
 import { toHaveNoViolations } from "jest-axe";
 
+import { DESKTOP_WIDTH, setViewportWidth } from "./test/viewport";
+
 expect.extend(toHaveNoViolations);
+
+// jsdom has no matchMedia. Every DOM test starts on a desktop-wide window;
+// a test switches with setViewportWidth(PHONE_WIDTH).
+if (typeof window !== "undefined") {
+  beforeEach(() => setViewportWidth(DESKTOP_WIDTH));
+}
 
 // jsdom has <dialog> but not showModal()/close(). This stub only toggles the
 // `open` attribute and fires `close`, so components can run in tests. The real
