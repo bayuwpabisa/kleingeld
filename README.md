@@ -29,9 +29,9 @@ What v0.1 contains:
 
 ## Tech stack
 
-**In use:** Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS v4, Lucide icons, Neon Postgres + Drizzle ORM, Better Auth, Jest + React Testing Library + jest-axe, GitHub Actions, Vercel.
+**In use:** Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS v4, Lucide icons, Neon Postgres + Drizzle ORM, Better Auth, Zod, Jest + React Testing Library + jest-axe, PGlite (Postgres in tests), GitHub Actions, Vercel.
 
-**Coming in later releases:** Zod, TanStack Query, Redux Toolkit, React Hook Form, Recharts, Cypress + cypress-axe, Docker.
+**Coming in later releases:** TanStack Query, Redux Toolkit, React Hook Form, Recharts, Cypress + cypress-axe, Docker.
 
 ## Getting started
 
@@ -85,6 +85,51 @@ The demo sign-in ("Masuk dengan akun demo") needs only the database and the secr
 
 `proxy.ts` sends signed-out visitors from the app pages to `/login`. It only checks that a session cookie exists; the server checks the session itself in `lib/session.ts`.
 
+## API
+
+REST Route Handlers under `/api`, used by the app itself. Requests and responses are checked with the Zod schemas in [schemas/](schemas/), and the forms use the same schemas. Every endpoint needs a session cookie and only sees the signed-in user's data.
+
+| Method | Path | Body | Answer |
+|---|---|---|---|
+| `GET` | `/api/transactions?page=1&pageSize=20` | | `200 { data, page, pageSize, total }`, newest first; `pageSize` up to 100 |
+| `POST` | `/api/transactions` | `{ type, categoryId, amount, date, note? }` | `201` with the transaction and a `Location` header |
+| `GET` | `/api/transactions/{id}` | | `200` with the transaction |
+| `PATCH` | `/api/transactions/{id}` | any of the fields above | `200` with the updated transaction |
+| `DELETE` | `/api/transactions/{id}` | | `204` |
+
+- `type` is `income` or `expense`; `amount` is whole rupiah (integer, 1 to 1,000,000,000,000); `date` is `YYYY-MM-DD`; `note` is up to 200 characters (blank or `null` clears it). The category must be one of the user's own, of the same type.
+- Unknown fields such as `userId` are refused: the user always comes from the session.
+- Bodies must be sent as `application/json` (otherwise `415`).
+- A transaction of another user answers `404`, the same as one that does not exist.
+
+Errors share one shape. Messages are in Indonesian because the UI shows them:
+
+```json
+{
+  "error": {
+    "code": "validation_error",
+    "message": "Data tidak valid",
+    "fieldErrors": { "amount": ["Nominal harus lebih dari 0"] },
+    "formErrors": ["Field tidak dikenal: userId"]
+  }
+}
+```
+
+| `code` | Status |
+|---|---|
+| `unauthorized` | 401 |
+| `not_found` | 404 |
+| `invalid_json`, `validation_error` | 400 |
+| `unsupported_media_type` | 415 |
+
+Trying it locally with the demo account (the sign-in resets the demo data):
+
+```bash
+curl -c cookies.txt -X POST http://localhost:3000/api/auth/sign-in/demo \
+  -H "Content-Type: application/json" -H "Origin: http://localhost:3000" -d '{}'
+curl -b cookies.txt "http://localhost:3000/api/transactions?pageSize=5"
+```
+
 ## Scripts
 
 | Command | What it does |
@@ -93,7 +138,7 @@ The demo sign-in ("Masuk dengan akun demo") needs only the database and the secr
 | `npm run build` | Production build |
 | `npm run lint` | ESLint |
 | `npm run typecheck` | Generate route types, then `tsc --noEmit` |
-| `npm test` | Jest (`npm run test:watch` for watch mode) |
+| `npm test` | Jest (`npm run test:watch` for watch mode); database tests run on PGlite, so no database is needed |
 | `npm run format` / `npm run format:check` | Prettier |
 | `npm run db:generate` | Create a migration in `db/migrations/` from changes in `db/schema.ts` |
 | `npm run db:migrate` | Apply pending migrations |
@@ -103,12 +148,13 @@ The demo sign-in ("Masuk dengan akun demo") needs only the database and the secr
 ## Project structure
 
 ```
-app/            routes and layouts; app/(app)/ holds the signed-in pages
+app/            routes and layouts; app/(app)/ holds the signed-in pages, app/api/ the API
 components/     shared UI: ui/ (base components), app-shell/, theme/, brand/, landing/
 features/       feature code per domain (auth, transactions, budgets, bills, dashboard)
-lib/            helpers, auth config (auth.ts, auth-client.ts, session.ts)
+lib/            helpers, auth config (auth.ts, auth-client.ts, session.ts), api/ (JSON responses)
+schemas/        Zod schemas shared by the API and the forms
 proxy.ts        redirects signed-out visitors to /login
-db/             Drizzle schema, migrations, demo seed
+db/             Drizzle schema, migrations, demo seed, testing/ (PGlite for tests)
 docs/           scope, plans, wireframes, design tokens, learning notes
 ```
 

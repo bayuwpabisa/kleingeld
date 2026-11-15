@@ -34,7 +34,7 @@ Package manager: npm.
 - `npm run typecheck` — `next typegen && tsc --noEmit` (route types are generated first, so a fresh clone checks them too)
 - CI: `.github/workflows/ci.yml` runs lint, typecheck, test, format:check and build on every PR to `develop`/`main`; Vercel builds a preview for every non-`main` branch
 - `npm run format` / `npm run format:check` — Prettier (Markdown and `docs/` are ignored)
-- `npm test` / `npm run test:watch` — Jest + React Testing Library + jest-axe (jsdom). Test files sit next to their code as `*.test.tsx`; `jest.setup.ts` adds the jest-dom and axe matchers and a `<dialog>` stub
+- `npm test` / `npm run test:watch` — Jest + React Testing Library + jest-axe (jsdom). Test files sit next to their code as `*.test.ts(x)`; `jest.setup.ts` adds the jest-dom and axe matchers and a `<dialog>` stub. Database tests use PGlite (`db/testing/test-db.ts`, real Postgres in memory, same migrations) in files marked `@jest-environment node`; that is why `npm test` runs Jest with `--experimental-vm-modules`. Route handler tests mock `@/lib/session` and the data access
 - `npx cypress run` — e2e (add when Cypress is set up)
 - Database: `npm run db:generate` (migration from `db/schema.ts` into `db/migrations/`), `npm run db:migrate`, `npm run db:seed` (resets the demo account), `npm run db:studio`. Env: `DATABASE_URL` (pooled, app) and `DATABASE_URL_UNPOOLED` (direct, migrations) in `.env.local`; scripts outside Next load it via `db/load-env.ts`
 
@@ -48,11 +48,11 @@ Adjust this to match the real layout as it grows.
 
 - `app/` — routes, layouts, route handlers (`app/api/...`). `app/page.tsx` is the static landing page; signed-in pages live in the route group `app/(app)/` (English paths: `/dashboard`, `/transactions`, `/budgets`, `/bills`, `/settings`), which wraps them in the app shell
 - `components/` — reusable UI components: `ui/` (base components), `app-shell/` (sidebar, bottom nav, mobile header, page header), `theme/` (`ThemeProvider`, `useTheme`, `ThemePicker`), `brand/`, `landing/`
-- `features/<name>/` — feature code (auth, transactions, budgets, bills, dashboard): components, hooks, queries. Layout, import rules and safe-indexing patterns (`noUncheckedIndexedAccess` is on) are in `features/README.md`
-- `lib/` — helpers, auth config (`auth.ts` server, `auth-client.ts` client, `session.ts` = `getSession`/`requireUser`, the only server-side session reads), query client
+- `features/<name>/` — feature code (auth, transactions, budgets, bills, dashboard): components, hooks, queries; `server/` holds server-only data access (e.g. `features/transactions/server/transactions-repo.ts`: Drizzle queries that take `db` and the user id and scope every query to that user). Layout, import rules and safe-indexing patterns (`noUncheckedIndexedAccess` is on) are in `features/README.md`
+- `lib/` — helpers, auth config (`auth.ts` server, `auth-client.ts` client, `session.ts` = `getSession`, `getCurrentUser` (null when signed out, for route handlers → 401) and `requireUser` (redirects, for pages); the only server-side session reads), `api/http.ts` (JSON error shape, `readJson` with Content-Type check), query client
 - `proxy.ts` — Next 16 middleware: optimistic session-cookie check for the app pages, redirects to `/login?next=`
-- `db/` — Drizzle schema, migrations, queries
-- `schemas/` — Zod schemas shared by forms and route handlers
+- `db/` — Drizzle schema, migrations, demo seed; `types.ts` (`AppDb`, works for node-postgres and PGlite), `testing/` (PGlite test database)
+- `schemas/` — Zod schemas shared by forms and route handlers (`transaction.ts`: input, update, list query, DTO types). No database imports, so the browser can use them
 
 ## Conventions
 
