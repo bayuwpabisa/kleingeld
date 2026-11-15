@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { CategoryIcon } from "@/components/ui/category-icon";
 import { Money } from "@/components/ui/money";
 import { dateGroupLabel, todayInJakarta } from "@/lib/date";
@@ -5,6 +7,8 @@ import type { TransactionDto } from "@/schemas/transaction";
 
 import { groupByDate } from "../group-by-date";
 import { transactionTitle } from "./transaction-title";
+
+const ROW = "flex items-center gap-3 py-3";
 
 /**
  * The list on phones (DESIGN.md, Baris transaksi): one section per day,
@@ -31,11 +35,8 @@ export function TransactionGroups({
             <ul className="divide-y divide-border">
               {group.items.map((transaction) => {
                 const title = transactionTitle(transaction);
-                return (
-                  <li
-                    key={transaction.id}
-                    className="flex items-center gap-3 py-3"
-                  >
+                const content = (
+                  <>
                     <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-surface-muted text-fg-muted">
                       <CategoryIcon name={transaction.category.icon} />
                     </span>
@@ -51,6 +52,23 @@ export function TransactionGroups({
                       amount={transaction.amount}
                       type={transaction.type}
                     />
+                  </>
+                );
+                // The whole row opens the edit page (DESIGN.md, Baris
+                // transaksi), except a row still being saved: it has no id
+                // on the server yet.
+                return (
+                  <li key={transaction.id}>
+                    {transaction.id.startsWith("optimistic-") ? (
+                      <div className={ROW}>{content}</div>
+                    ) : (
+                      <Link
+                        href={`/transactions/${transaction.id}/edit`}
+                        className={`${ROW} -mx-2 rounded-lg px-2 hover:bg-surface-muted`}
+                      >
+                        {content}
+                      </Link>
+                    )}
                   </li>
                 );
               })}

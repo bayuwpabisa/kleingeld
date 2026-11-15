@@ -77,7 +77,7 @@ Setiap langkah: test dulu sampai gagal, lalu implementasi. Sebelum commit: revie
 - [x] 4. `TransactionForm`. Commit `feat(transactions): add transaction form`
 - [x] 5. Fungsi cache + mutation optimistic + toast + Urungkan. Commit `feat(transactions): add optimistic create, update and delete`
 - [x] 6. Slice editor + dialog global + kolom Aksi + tombol header. Commit `feat(transactions): add and edit transactions in a dialog on desktop`
-- [ ] 7. Halaman HP new/edit + baris → link + hapus lewat sheet. Commit `feat(transactions): add and edit transactions on phones`
+- [x] 7. Halaman HP new/edit + baris → link + hapus lewat sheet. Commit `feat(transactions): add and edit transactions on phones`
 - [ ] 8. DESIGN.md + README + AGENTS. Commit `docs: document the transaction form`
 - [ ] 9. Verifikasi, push, PR `feat: add transaction form`, `ci` + Vercel hijau, squash merge (kamu), titik cek ke 14 Nov.
 
@@ -103,6 +103,7 @@ Setiap langkah: test dulu sampai gagal, lalu implementasi. Sebelum commit: revie
 - Langkah 6: **bug nyata yang ditemukan test integrasi.** Mengosongkan nominal di form ubah lalu mengetik ulang mengirim `3.500.040.000` ("35000" + "40000"). Penyebabnya `useController` milik RHF mengembalikan nilai *default* saat nilai field `undefined`, sehingga nominal transaksi lama tidak pernah bisa dikosongkan. Diperbaiki: di dalam form, nominal kosong disimpan sebagai `NaN` (Zod menolaknya dengan "Isi nominal"), dan API `AmountInput` tidak berubah. Ditambah test form "nominal bisa dikosongkan dan diketik ulang" yang gagal sebelum diperbaiki. Penyebabnya ditelusuri dengan log debug sementara di test, yang lalu dikembalikan dari backup (`git diff` kosong).
 - Langkah 6: `useTransaction` memakai `placeholderData` berupa fungsi, sehingga TanStack salah menebak tipe data (TS2769). Generik `useQuery<TransactionDto>` ditulis eksplisit.
 - Langkah 6: tombol Ubah/Hapus dinonaktifkan untuk baris yang masih tersimpan sementara (`optimistic-…`), karena id itu belum ada di server. `AddTransactionLink` diganti `AddTransactionButton` (membuka dialog lewat Redux) di halaman Transaksi dan Dashboard. Ditambah `TransactionFormLoader` (skeleton/error kategori) yang dipakai bersama dialog dan halaman HP.
+- Langkah 7: dokumentasi Next 16 (`use-params.md` › Cache Components) mengonfirmasi `useParams` di route dinamis tanpa `generateStaticParams` akan suspend, dan tanpa `<Suspense>` build gagal. `EditTransactionScreen` dibungkus Suspense dengan skeleton form, dan halaman lainnya tetap prerender. Ditambah `BackLink` ("‹ Transaksi") di kedua halaman. Baris HP yang masih tersimpan sementara tidak dijadikan link.
 
 ## Catatan untuk nanti
 - 14 Nov: filter/sort/cari/pagination di URL; fungsi cache harus tetap benar untuk list dengan filter (sisipan optimistic hanya ke list tanpa filter, atau cukup invalidate); kartu ringkasan + endpoint agregat diputuskan di plan 14 Nov.
