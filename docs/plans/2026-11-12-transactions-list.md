@@ -59,8 +59,8 @@ Setiap langkah: test dulu sampai gagal, lalu implementasi. Sebelum commit: baca 
 
 ## Langkah dan commit
 - [x] 0. `git switch develop && git pull` (sekarang HEAD detached di `bb758d0`, lihat Catatan perbaikan). Hapus branch lokal `feature/transactions-api` setelah `git diff develop feature/transactions-api` kosong. Buat branch `feature/transactions-list`. Simpan plan ke `docs/plans/2026-11-12-transactions-list.md`, centang box 7 di plan 11 Nov. Commit `docs: add transactions list plan`
-- [ ] 1. Install dependency, cek lockfile hanya ke registry.npmjs.org. Commit `build: add tanstack query and redux toolkit`
-- [ ] 2. Money + date (+ refactor `todayInJakarta`). Commit `feat(ui): add money and date formatting`
+- [x] 1. Install dependency, cek lockfile hanya ke registry.npmjs.org. Commit `build: add tanstack query and redux toolkit`
+- [x] 2. Money + date (+ refactor `todayInJakarta`). Commit `feat(ui): add money and date formatting`
 - [ ] 3. Store + toast slice + Toast via Redux + `app/providers.tsx` + helper test, lalu perbarui test lama. Commit `refactor(ui): keep toast state in redux toolkit`
 - [ ] 4. `apiFetch` + `makeQueryClient` + wiring di providers. Commit `feat(api): add api client and query client`
 - [ ] 5. Skeleton/ErrorState/EmptyState/CategoryIcon + query transaksi + komponen daftar + halaman. Commit `feat(transactions): list transactions with loading and error states`
