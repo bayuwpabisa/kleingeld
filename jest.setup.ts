@@ -5,6 +5,35 @@ import { DESKTOP_WIDTH, setViewportWidth } from "./test/viewport";
 
 expect.extend(toHaveNoViolations);
 
+// Any console.error fails the test. React's act() and prop warnings, and
+// errors a component swallows, only show up there; an ignored one hides a
+// bug. A test that expects an error mocks console.error itself
+// (jest.spyOn(console, "error").mockImplementation(...)), which replaces
+// this wrapper until the spy is restored.
+const consoleError = console.error;
+let loggedErrors: unknown[][] = [];
+
+beforeEach(() => {
+  loggedErrors = [];
+  console.error = (...args: unknown[]) => {
+    loggedErrors.push(args);
+    consoleError(...args);
+  };
+});
+
+afterEach(() => {
+  console.error = consoleError;
+  if (loggedErrors.length === 0) return;
+  const messages = loggedErrors.map((args) =>
+    args
+      .map((arg) => (arg instanceof Error ? arg.message : String(arg)))
+      .join(" "),
+  );
+  throw new Error(
+    `console.error was called during this test:\n- ${messages.join("\n- ")}`,
+  );
+});
+
 // jsdom has no matchMedia. Every DOM test starts on a desktop-wide window;
 // a test switches with setViewportWidth(PHONE_WIDTH).
 if (typeof window !== "undefined") {

@@ -231,7 +231,7 @@ Kamu meminta semua kesalahan task ini diperbaiki dan dicegah supaya tidak terula
 - [x] R1. Test regresi toolbar (`transaction-toolbar.test.tsx`): kotak cari (URL terlambat, perubahan dari luar, Enter, tombol hapus), rentang/periode (rentang satu bulan penuh tetap terbuka, "Semua waktu" menutup, Hapus filter menutup, pilih bulan menutup), tipe/kategori, dan axe. Mutation check per kelompok. Commit `test(transactions): cover the toolbar's search and period states`
 - [x] R1b. Chip Kategori dengan id tidak dikenal: test merah dulu, lalu perbaikan. Commit `fix(transactions): name an unknown category filter honestly`
 - [x] R2. Mutation check test escape `_` dan `%` (tanpa commit kode)
-- [ ] R3. Penjaga `console.error` di `jest.setup.ts` + bukti penjaganya bekerja + AGENTS.md. Commit `test: fail tests that log console errors`
+- [x] R3. Penjaga `console.error` di `jest.setup.ts` + bukti penjaganya bekerja + AGENTS.md. Commit `test: fail tests that log console errors`
 - [ ] R4. Cek ulang di browser: 1024/1280/1440, tanpa `field-sizing`, penilaian ulang `field-sizing`, optimistic tambah/ubah sebelum server menjawab, nominal besar di HP, log network tanpa `_rsc`, axe per kondisi + isi "incomplete"
 - [ ] R5. Koreksi catatan dan memory. Commit `docs: correct the filters notes`
 - [ ] R6. Verifikasi akhir, self-review `git diff e38e6c8..HEAD`, push, lalu PR (kamu)
@@ -260,6 +260,9 @@ Kamu meminta semua kesalahan task ini diperbaiki dan dicegah supaya tidak terula
   - tanpa `%` → gagal di `q: "%"` ✓. Baris `q: "50%"` sendiri tetap lolos tanpa escape (lemah), tetapi baris `"%"` menutupinya.
   - tanpa `\` → **tidak ada test yang menjaganya**. Ditambah test "treats a backslash as a plain character". Versi pertamanya (`q: "\%"`) **juga lolos** di bawah mutasi: tanpa escape `\`, versi mutan menjadi `\\%` (backslash literal + wildcard), yang juga tidak menemukan apa-apa. Analisis saya salah. Diganti `q: "\a"` (tanpa escape berarti huruf "a" dan menemukan banyak baris), lalu tertangkap ✓.
   - Karena ada test baru, R2 tetap butuh satu commit test (plan semula: tanpa commit).
+- R3: `jest.setup.ts` membungkus `console.error` di setiap test, dan `afterEach` menggagalkan test kalau ada panggilan. Sengaja tanpa `jest.spyOn`, supaya test yang memasang mock sendiri (`theme-provider.test.tsx` dengan `restoreAllMocks`, `toast.test.tsx` dengan `mockRestore`) tetap bekerja. Bukti penjaganya bekerja: `console.error("guard probe")` sementara di `card.test.tsx` → hanya test itu yang gagal, dengan pesan "console.error was called during this test: - guard probe". Probe dihapus, dan `git diff --exit-code` file itu kosong.
+- R3, **temuan dari penjaga**: `components/ui/dialog.test.tsx` › "reports a close done by the browser (Esc)" memanggil `dialog.close()` di luar `act()`, dan event `close` memperbarui state React → warning `act()`. Di run penuh sebelumnya hitungan `console.error` saya 0. Saya tidak tahu pasti kenapa saat itu tidak muncul (kemungkinan timing); justru karena itu penjaga ini perlu. Diperbaiki dengan `act(() => dialog.close())`. Dialog test 3× hijau tanpa warning, dan suite penuh 2× hijau (459 test, 0 kegagalan penjaga).
+- R3: aturan penjaga, mutation check, dan `toStrictEqual` untuk key `undefined` ditulis di AGENTS.md › Commands.
 
 ## Catatan untuk nanti
 - 15 Nov: test form + tabel (RTL), rilis v0.2. Perlu env Production di Vercel, migrasi di Neon `production`, dan tanggal di roadmap README.
