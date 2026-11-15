@@ -72,7 +72,7 @@ Setiap langkah: test dulu sampai gagal, lalu implementasi. Sebelum commit: revie
 ## Langkah dan commit
 - [x] 0. `git switch develop && git pull`, cek `git diff develop feature/transactions-list` kosong, lalu `git branch -D feature/transactions-list`. Branch `feature/transaction-form`. Simpan plan ke `docs/plans/2026-11-13-transaction-form.md`, centang box 7 plan 12 Nov. Commit `docs: add transaction form plan`
 - [x] 1. Install RHF + resolvers. Commit `build: add react hook form`
-- [ ] 2. `GET /api/categories` + hook. Commit `feat(api): add categories endpoint`
+- [x] 2. `GET /api/categories` + hook. Commit `feat(api): add categories endpoint`
 - [ ] 3. Textarea + AmountInput + pesan nominal kosong. Commit `feat(ui): add amount input and textarea`
 - [ ] 4. `TransactionForm`. Commit `feat(transactions): add transaction form`
 - [ ] 5. Fungsi cache + mutation optimistic + toast + Urungkan. Commit `feat(transactions): add optimistic create, update and delete`
