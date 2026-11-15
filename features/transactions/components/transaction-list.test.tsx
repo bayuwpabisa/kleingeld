@@ -4,7 +4,7 @@ import userEvent from "@testing-library/user-event";
 import { axe } from "jest-axe";
 
 import { ApiError, apiFetch } from "@/lib/api/client";
-import { todayInJakarta } from "@/lib/date";
+import { shortDate, todayInJakarta } from "@/lib/date";
 import type { CategoryDto } from "@/schemas/category";
 import type {
   TransactionDto,
@@ -588,6 +588,63 @@ describe("TransactionList on phones", () => {
     respond({ ...page, total: 30 });
     const { container } = setup();
     await screen.findByRole("button", { name: "Muat lebih banyak" });
+
+    expect(await axe(container)).toHaveNoViolations();
+  });
+
+  // Sorted by amount, one date can come back several times (today, yesterday,
+  // today). Day headings would repeat, so the list has none and each row
+  // names its date first, so a long category is cut off before the date is
+  // (DESIGN.md, Daftar transaksi (HP)).
+  const day = (daysBack: number) => shortDate(daysAgo(daysBack), daysAgo(0));
+  const byAmount: TransactionPage = {
+    ...page,
+    data: [
+      transaction({ note: "Sewa kos", amount: 1_500_000 }),
+      transaction({ note: "Bensin", amount: 80_000, date: daysAgo(1) }),
+      transaction({ note: "Kopi", amount: 25_000 }),
+    ],
+  };
+
+  it("lists the rows without day headings when sorted by amount", async () => {
+    respond(byAmount);
+    setup("/transactions?sort=amount");
+
+    const list = await screen.findByRole("list", { name: "Daftar transaksi" });
+    const rows = within(list).getAllByRole("listitem");
+    expect(rows).toHaveLength(3);
+    expect(rows.map((row) => row.textContent)).toStrictEqual([
+      expect.stringContaining(`Sewa kos${day(0)} · Makan`),
+      expect.stringContaining(`Bensin${day(1)} · Makan`),
+      expect.stringContaining(`Kopi${day(0)} · Makan`),
+    ]);
+    expect(
+      screen.queryByRole("heading", { name: /^(Hari ini|Kemarin) · / }),
+    ).toBeNull();
+  });
+
+  it("keeps the day headings when sorted by date, oldest first", async () => {
+    respond({
+      ...page,
+      data: [
+        transaction({ note: "Bensin", date: daysAgo(1) }),
+        transaction({ note: "Sewa kos" }),
+        transaction({ note: "Kopi" }),
+      ],
+    });
+    setup("/transactions?order=asc");
+
+    await screen.findByRole("heading", { name: /^Kemarin · / });
+    const days = screen
+      .getAllByRole("heading", { name: /^(Hari ini|Kemarin) · / })
+      .map((heading) => heading.textContent?.split(" · ")[0]);
+    expect(days).toStrictEqual(["Kemarin", "Hari ini"]);
+  });
+
+  it("has no axe violations when sorted by amount", async () => {
+    respond(byAmount);
+    const { container } = setup("/transactions?sort=amount");
+    await screen.findByText("Sewa kos");
 
     expect(await axe(container)).toHaveNoViolations();
   });

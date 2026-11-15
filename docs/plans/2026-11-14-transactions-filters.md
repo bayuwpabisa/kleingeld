@@ -277,6 +277,26 @@ Kamu meminta semua kesalahan task ini diperbaiki dan dicegah supaya tidak terula
 - R3: `jest.setup.ts` membungkus `console.error` di setiap test, dan `afterEach` menggagalkan test kalau ada panggilan. Sengaja tanpa `jest.spyOn`, supaya test yang memasang mock sendiri (`theme-provider.test.tsx` dengan `restoreAllMocks`, `toast.test.tsx` dengan `mockRestore`) tetap bekerja. Bukti penjaganya bekerja: `console.error("guard probe")` sementara di `card.test.tsx` → hanya test itu yang gagal, dengan pesan "console.error was called during this test: - guard probe". Probe dihapus, dan `git diff --exit-code` file itu kosong.
 - R3, **temuan dari penjaga**: `components/ui/dialog.test.tsx` › "reports a close done by the browser (Esc)" memanggil `dialog.close()` di luar `act()`, dan event `close` memperbarui state React → warning `act()`. Di run penuh sebelumnya hitungan `console.error` saya 0. Saya tidak tahu pasti kenapa saat itu tidak muncul (kemungkinan timing); justru karena itu penjaga ini perlu. Diperbaiki dengan `act(() => dialog.close())`. Dialog test 3× hijau tanpa warning, dan suite penuh 2× hijau (459 test, 0 kegagalan penjaga).
 - R3: aturan penjaga, mutation check, dan `toStrictEqual` untuk key `undefined` ditulis di AGENTS.md › Commands.
+- **H1** (file handoff `2026-11-15-review-fixes-handoff.md`; K1 = A, K3): list HP yang diurutkan menurut nominal tidak lagi dikelompokkan per hari.
+  - Test baru di `transaction-list.test.tsx` › "on phones", dijalankan terhadap kode lama:
+    - "lists the rows without day headings when sorted by amount": **merah**. List bernama tidak ada, dan penjaga `console.error` menangkap key ganda `2026-11-15`.
+    - "keeps the day headings when sorted by date, oldest first": **hijau**, sesuai harapan. Ini penjaga perilaku lama.
+    - "has no axe violations when sorted by amount": **merah** dengan `landmark-unique` (dua `<section>` berlabel sama). Sebelumnya hasil ini belum diketahui. Ternyata bug ini juga pelanggaran aksesibilitas.
+  - Perbaikan:
+    - `TransactionGroups` mendapat `grouping: "day" | "none"`. `PhoneList` mengirim `"day"` hanya untuk `sort=date`.
+    - Mode `none`: satu `<ul aria-label="Daftar transaksi">`, dan baris dipisah menjadi `TransactionRow`.
+    - Komentar `groupByDate` menegaskan fungsinya hanya untuk urutan tanggal.
+    - DESIGN.md › Baris transaksi dan Daftar transaksi (HP) diperbarui.
+  - Mutation check (`grouping="day"` dipaksa): kedua test `sort=amount` gagal. Dicek dua kali, sebelum dan sesudah K3. File dikembalikan, dan `cmp` dengan salinan versi perbaikan exit 0.
+  - **K3, dari cek browser:** di 320px keterangan "Tagihan · 1 Nov 2…" terpotong, sehingga tanggal (pengganti judul hari) hilang. Pilihanmu: tanggal di depan, tahun hanya kalau bukan tahun ini. Ditambah `shortDate(date, today)` di `lib/date.ts`, dengan test "leaves out the year of this year" dan "adds the year for other years" yang merah dulu (3 test merah, termasuk test list), lalu hijau.
+  - Browser (agent-browser, demo, `?type=expense&sort=amount`):
+    - 390 terang: satu daftar bernama, 20 baris, tanpa judul hari, tanpa id ganda. Muat lebih banyak → 40 baris, tetap tanpa id ganda.
+    - 390 gelap, 320 terang, dan 320 gelap: "1 Nov · Tagihan", dan tidak ada keterangan yang terpotong di 320px (`scrollWidth > clientWidth` = 0 dari 20 baris).
+    - `?type=expense&order=asc` di 320 gelap: tetap per hari, judul naik (Sel 1 Sep, Rab 2 Sep, …), tanpa id ganda.
+    - `get_errors` kosong setelah semua kondisi.
+    - Baris tahun lain ("12 Des 2025") **belum dicek di browser**, karena data demo semuanya 2026. Kondisi itu dibuktikan oleh test `shortDate`.
+  - Temuan saat cek: di 320px halaman bisa di-scroll ke samping. Dugaan pertama saya (kartu ringkasan) **salah**. Pengukuran menunjukkan chip tipe "Pengeluaran" berakhir di 328px (K4 → H1b).
+  - Cek: tsc 0, eslint 0, prettier 0 (sempat 1, karena import `date.test.ts` yang saya pecah ternyata muat satu baris; dirapikan dengan `prettier --write` untuk file itu), jest `features/transactions` + `lib` 237 hijau.
 
 ## Catatan untuk nanti
 - 15 Nov: test form + tabel (RTL), rilis v0.2. Perlu env Production di Vercel, migrasi di Neon `production`, dan tanggal di roadmap README.

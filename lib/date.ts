@@ -13,6 +13,11 @@ const fullDate = new Intl.DateTimeFormat("id-ID", {
   month: "short",
   year: "numeric",
 });
+const dayMonth = new Intl.DateTimeFormat("id-ID", {
+  timeZone: "UTC",
+  day: "numeric",
+  month: "short",
+});
 const weekdayDate = new Intl.DateTimeFormat("id-ID", {
   timeZone: "UTC",
   weekday: "short",
@@ -45,6 +50,13 @@ export function todayInJakarta(now = new Date()): string {
 /** "2026-11-01" → "1 Nov 2026" */
 export function formatDate(date: string): string {
   return fullDate.format(toUtcDate(date));
+}
+
+/** "1 Nov" this year, "12 Des 2025" in another year (`today` is "YYYY-MM-DD"). */
+export function shortDate(date: string, today: string): string {
+  return date.slice(0, 4) === today.slice(0, 4)
+    ? dayMonth.format(toUtcDate(date))
+    : formatDate(date);
 }
 
 /**

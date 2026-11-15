@@ -52,6 +52,8 @@ Sebelum menawarkan A, cek dulu bahwa A tidak melanggar DESIGN.md (Baris transaks
 - Kamu memilih **K1 = A**.
 - **K2. Kartu ringkasan 1 kolom (di bawah 360px):** ukuran bertahap hanya berlaku saat 2 kolom (360–1023px). Di bawah 360px nominal tetap `text-xl`, karena kartunya ±248px. Desktop (`lg`) mendapat ukuran hasil ukur sendiri.
 - Eksekusi dibagi per bagian, dan setiap bagian berhenti untuk konfirmasimu: H0 → H1 → H2a (ukur) → H2b (kode) → H3 → H4 → H5a (cek akhir) → H5b (push).
+- **K3 (saat cek browser H1):** di 320px keterangan "Tagihan · 1 Nov 2…" terpotong, sehingga tanggal hilang. Kamu memilih **tanggal di depan, tahun hanya kalau bukan tahun ini**: "1 Nov · Tagihan".
+- **K4 (temuan baru di 320px):** chip tipe butuh 308px, padahal ruangnya 280px, sehingga halaman bisa di-scroll ke samping. Kamu memilih **chip boleh turun baris** (`flex-wrap`). Dikerjakan sebagai H1b, commit terpisah sebelum H2.
 
 **Koreksi plan ini sebelum eksekusi** (hasil cek ulang di awal sesi):
 1. H0 menulis "6 di depan origin". Yang benar 7, karena commit file ini ikut dihitung.
@@ -78,7 +80,7 @@ Sebelum menawarkan A, cek dulu bahwa A tidak melanggar DESIGN.md (Baris transaks
   - Buat ulang helper di scratchpad (scratchpad tidak terbawa antar sesi): script cek `node` (typegen, tsc, eslint, jest, prettier) dan fungsi `measure()` (lihat Lampiran).
   - Hasil: fetch exit 0; `ahead 7`, bersih, tip `bdef128`; PR terakhir #13 (`feat: add transaction form`, merged), jadi PR task ini belum ada; agent-browser 0.39.4 punya `network route <url> --body <json>` dan `a11y --json` (violations + incomplete); helper `check.sh` dan `measure.js` ditulis dengan Write; K1 = A, K2 = ukuran bertahap hanya saat 2 kolom.
 
-- [ ] **H1. Bug list HP: key grup ganda saat diurutkan menurut nominal**
+- [x] **H1. Bug list HP: key grup ganda saat diurutkan menurut nominal** (catatan dan bukti: plan 14 Nov › "Catatan perbaikan ronde ini" › H1)
   - Bukti bug: `get_errors` di `/transactions?type=expense&sort=amount` (390px) → "Encountered two children with the same key, `2026-11-05`" dari `transaction-groups.tsx:31` (`<section key={group.date}>`).
   - Penyebab: `groupByDate` (`features/transactions/group-by-date.ts`) mengelompokkan tanggal yang *berurutan*. Urutan nominal memisahkan tanggal yang sama, sehingga satu tanggal menjadi beberapa grup dengan key dan `id` judul (`transaksi-${date}`) yang sama.
   - Test dulu, di `transaction-list.test.tsx` › "on phones", lalu dijalankan dan hasil per test dicatat apa adanya:
@@ -96,6 +98,12 @@ Sebelum menawarkan A, cek dulu bahwa A tidak melanggar DESIGN.md (Baris transaks
   - Browser (390 dan 320, terang dan gelap): `sort=amount`, `sort=date&order=asc`, Muat lebih banyak di `sort=amount` (halaman 2 bergabung tanpa key ganda), dan `get_errors` kosong.
   - Centang H1 dan tulis catatannya di plan 14 Nov › "Catatan perbaikan ronde ini" di commit yang sama.
   - Commit `fix(transactions): list phones by amount without day groups`.
+
+- [ ] **H1b. Chip tipe turun baris di HP sempit** (K4)
+  - Penyebab (dibaca dari kode dan diukur): `ChipRadioGroup` (`components/ui/chip.tsx`) memakai `flex` tanpa `flex-wrap`, dan setiap chip `shrink-0`. Di 320px: 75 + 105 + 112 + 2×8 = 308px, sedangkan ruangnya 280px. Chip "Pengeluaran" berakhir di 328px.
+  - Tata letak tidak bisa diuji di jsdom, jadi buktinya pengukuran browser (`overflow.js`) di 320/360/390/1024/1440, terang dan gelap, sebelum dan sesudah perubahan. Test chip yang ada tetap hijau.
+  - DESIGN.md › Chip/filter: grup tipe boleh turun baris.
+  - Commit `fix(ui): let the type chips wrap on narrow phones`.
 
 - [ ] **H2a. Ukur ambang ukuran nominal** (keputusanmu: ukuran huruf mengikuti panjang angka, 2 kolom mulai 360px, 1 kolom di bawahnya; K2: ukuran bertahap hanya saat 2 kolom). Bagian ini tanpa kode produksi dan tanpa commit.
   - Bukti masalah (R4): di 320px dengan data asli Rp19.898.000, konten 140px di kartu 132px dan halaman bisa di-scroll horizontal. Di 390px, Rp1 triliun memakai 212px di kartu 167px.

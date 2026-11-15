@@ -174,7 +174,10 @@ function PhoneList({ controls, emptyMessage }: ListProps) {
       onClearFilters={controls.clearFilters}
       emptyMessage={emptyMessage}
     >
-      <TransactionGroups transactions={rows} />
+      <TransactionGroups
+        transactions={rows}
+        grouping={query.sort === "date" ? "day" : "none"}
+      />
       <div className="mt-4 flex flex-col items-center gap-3">
         <p className="text-sm text-fg-muted">
           Menampilkan {rows.length} dari {total} transaksi
