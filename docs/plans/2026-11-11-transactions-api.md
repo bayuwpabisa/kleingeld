@@ -63,7 +63,7 @@ Setelah setiap langkah, sebelum commit: aku membaca ulang `git diff` dan mencoco
 - [x] 4. Test `lib/api/http` → helper, `getCurrentUser` di `lib/session.ts`. Commit `feat(api): add json helpers and session check for routes`
 - [x] 5. Test route → `app/api/transactions/**/route.ts`. Commit `feat(api): add transactions route handlers`
 - [x] 6. README › API, AGENTS.md › Structure. Commit `docs: document transactions api`
-- [ ] 7. Verifikasi di bawah, push, PR `feat: add transactions api` ke `develop` (judul PR diketik ulang supaya tidak tercampur nama branch); `ci` + Vercel hijau; squash merge (kamu); hapus branch lokal; perbarui memori; centang box 7 di branch berikutnya (12 Nov).
+- [x] 7. Verifikasi di bawah, push, PR `feat: add transactions api` ke `develop` (judul PR diketik ulang supaya tidak tercampur nama branch); `ci` + Vercel hijau; squash merge (kamu); hapus branch lokal; perbarui memori; centang box 7 di branch berikutnya (12 Nov).
 
 Kalau Jest gagal memuat PGlite (WASM/ESM), aku coba dulu `@jest-environment node` + penyesuaian `transformIgnorePatterns`. Kalau masih gagal, aku berhenti dan bertanya. Aku tidak akan diam-diam pindah ke mock saja.
 
