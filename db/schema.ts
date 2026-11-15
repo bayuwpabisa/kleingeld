@@ -13,6 +13,8 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 
+import { TRANSACTION_TYPES } from "../schemas/transaction";
+
 // Column names are camelCase here and snake_case in Postgres
 // (`casing: "snake_case"` in db/index.ts and drizzle.config.ts).
 
@@ -24,10 +26,8 @@ const timestamps = {
     .$onUpdate(() => new Date()),
 };
 
-export const transactionType = pgEnum("transaction_type", [
-  "income",
-  "expense",
-]);
+// The values live in schemas/ so the browser can use them without Drizzle.
+export const transactionType = pgEnum("transaction_type", TRANSACTION_TYPES);
 
 // Core user fields of Better Auth, so its Drizzle adapter (usePlural) can use
 // this table as is.

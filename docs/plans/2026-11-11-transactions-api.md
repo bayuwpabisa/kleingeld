@@ -57,8 +57,8 @@ Setelah setiap langkah, sebelum commit: aku membaca ulang `git diff` dan mencoco
 
 ## Langkah dan commit
 - [x] 0. `git switch develop && git pull`. Cek `git diff develop feature/auth` kosong, lalu `git branch -D feature/auth`. Buat branch `feature/transactions-api`. Simpan plan ke `docs/plans/2026-11-11-transactions-api.md`, centang box 7 di plan 10 Nov. Commit `docs: add transactions api plan`
-- [ ] 1. `npm i zod@^4.6.7` dan `npm i -D @electric-sql/pglite`. Pastikan `package-lock` hanya me-resolve ke registry.npmjs.org dan zod tidak terduplikasi (`npm ls zod`). Commit `build: add zod and pglite`
-- [ ] 2. Test schema → `schemas/transaction.ts`. Commit `feat(transactions): add shared zod schemas`
+- [x] 1. `npm i zod@^4.6.7` dan `npm i -D @electric-sql/pglite`. Pastikan `package-lock` hanya me-resolve ke registry.npmjs.org dan zod tidak terduplikasi (`npm ls zod`). Commit `build: add zod and pglite`
+- [x] 2. Test schema → `schemas/transaction.ts`. Commit `feat(transactions): add shared zod schemas`
 - [ ] 3. `db/types.ts`, `db/testing/test-db.ts`, test repo → repo. Commit `feat(transactions): add per-user data access`
 - [ ] 4. Test `lib/api/http` → helper, `getCurrentUser` di `lib/session.ts`. Commit `feat(api): add json helpers and session check for routes`
 - [ ] 5. Test route → `app/api/transactions/**/route.ts`. Commit `feat(api): add transactions route handlers`
@@ -82,6 +82,11 @@ Kalau Jest gagal memuat PGlite (WASM/ESM), aku coba dulu `@jest-environment node
 (diisi selama pengerjaan: setiap kesalahan yang ditemukan saat review ulang, penyebabnya, dan perbaikannya)
 
 - 15 Nov, saat menyusun plan: aku sempat menjalankan `git checkout develop` padahal masih plan mode, yang seharusnya hanya membaca. Working tree bersih dan tidak ada yang berubah. Langkah 0 tetap memakai `git switch develop && git pull` seperti biasa.
+- Langkah 1: commit pertama ditolak commitlint karena body lebih dari 100 karakter per baris. Pesan dipecah ke beberapa baris, lalu di-commit ulang (hook tidak dilewati).
+- Langkah 1: versi PGlite dipilih 0.5.13 (rilis 28 Okt), bukan versi terbaru 0.5.16 (rilis 9 Nov), supaya versinya sudah teruji beberapa minggu.
+- Langkah 2: nilai `income`/`expense` tertulis di dua tempat (`db/schema.ts` dan `schemas/transaction.ts`), jadi bisa tidak sinkron. `pgEnum` sekarang memakai `TRANSACTION_TYPES` dari `schemas/`. `drizzle-kit generate` → "No schema changes", migrasi tidak berubah.
+- Langkah 2: satu perintah shell sempat menggantung karena sisa `cat > /tmp/x` yang menunggu input. Proses dihentikan, file kosong yang terlanjur dibuat dihapus, dan edit diulang dengan tool Edit. Tidak ada file repo yang berubah karena kejadian itu.
+- Langkah 2: ESLint memberi warning `_note` tidak terpakai di test, dan CI memakai `--max-warnings=0` sehingga pasti gagal. Destructuring diganti objek eksplisit. Prettier juga merapikan dua file baru.
 
 ## Catatan untuk nanti
 - 12 Nov: hook TanStack Query memakai tipe `TransactionDto`/`TransactionPage` dari `schemas/transaction.ts` dan format error di atas.
