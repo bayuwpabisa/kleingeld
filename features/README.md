@@ -9,6 +9,7 @@ features/transactions/
   components/   komponen UI khusus fitur ini (TransactionForm, TransactionTable)
   hooks/        custom hook fitur (useTransactionFilters)
   api/          query dan mutation TanStack Query (useTransactions, useCreateTransaction)
+  server/       kode khusus server: query Drizzle per user (transactions-repo.ts), dipakai Route Handler
   index.ts      pintu ekspor: hanya yang dipakai di luar fitur
 ```
 
@@ -19,6 +20,7 @@ Subfolder dibuat saat dibutuhkan, tidak perlu lengkap sejak awal.
 - Fitur boleh mengimpor dari `components/`, `lib/`, `schemas/`, dan `db/` (hanya kode server).
 - Fitur lain hanya boleh mengimpor lewat `index.ts`, jangan langsung ke file di dalamnya.
 - `components/`, `lib/`, dan `schemas/` tidak boleh mengimpor dari `features/`.
+- `server/` hanya diimpor oleh Route Handler dan Server Component, jangan dari komponen client. Fungsinya menerima `db` sebagai parameter, supaya test bisa memakai PGlite.
 - Route di `app/` merangkai fitur, sedangkan logikanya tetap di `features/`.
 
 ## Akses data aman

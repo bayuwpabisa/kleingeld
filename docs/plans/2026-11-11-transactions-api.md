@@ -62,7 +62,7 @@ Setelah setiap langkah, sebelum commit: aku membaca ulang `git diff` dan mencoco
 - [x] 3. `db/types.ts`, `db/testing/test-db.ts`, test repo → repo. Commit `feat(transactions): add per-user data access`
 - [x] 4. Test `lib/api/http` → helper, `getCurrentUser` di `lib/session.ts`. Commit `feat(api): add json helpers and session check for routes`
 - [x] 5. Test route → `app/api/transactions/**/route.ts`. Commit `feat(api): add transactions route handlers`
-- [ ] 6. README › API, AGENTS.md › Structure. Commit `docs: document transactions api`
+- [x] 6. README › API, AGENTS.md › Structure. Commit `docs: document transactions api`
 - [ ] 7. Verifikasi di bawah, push, PR `feat: add transactions api` ke `develop` (judul PR diketik ulang supaya tidak tercampur nama branch); `ci` + Vercel hijau; squash merge (kamu); hapus branch lokal; perbarui memori; centang box 7 di branch berikutnya (12 Nov).
 
 Kalau Jest gagal memuat PGlite (WASM/ESM), aku coba dulu `@jest-environment node` + penyesuaian `transformIgnorePatterns`. Kalau masih gagal, aku berhenti dan bertanya. Aku tidak akan diam-diam pindah ke mock saja.
@@ -93,6 +93,10 @@ Kalau Jest gagal memuat PGlite (WASM/ESM), aku coba dulu `@jest-environment node
 - Langkah 3: untuk membuktikan test otorisasi benar-benar menangkap bug, `ownedBy` sengaja diubah sementara agar tanpa `userId`. Hasilnya 3 test gagal (get/patch/delete milik user lain), jadi test-nya bekerja. Saat dikembalikan, `git checkout` gagal karena file itu belum dilacak git. File dipulihkan dari backup yang dibuat sebelum mutasi, `diff` dicek (hanya baris itu yang berbeda), dan 17 test lolos lagi. `features/transactions/.gitkeep` dihapus.
 - Langkah 4: test dan implementasi `lib/api/http.ts` terlanjur ditulis dalam satu batch, jadi tahap "test gagal dulu" tidak sempat terlihat. Cakupannya tetap lengkap (11 test). Ditambah `lib/session.test.ts` (5 test) untuk `getCurrentUser`/`requireUser`, yang sebelumnya belum punya test.
 - Langkah 4: respons `validation_error` juga membawa `formErrors` (mis. `Unrecognized key: "userId"`), bukan hanya `fieldErrors`, supaya error di level body tidak hilang.
+- Langkah 5 → 6: urutan sedikit diubah. Verifikasi manual (curl) dijalankan sebelum dokumentasi, supaya contoh curl di README sudah pasti jalan. Contohnya juga sudah dicoba persis seperti tertulis.
+- Verifikasi manual: pesan untuk field asing (`Unrecognized key: "userId"`) dan untuk body yang bukan objek (`expected object`) masih memakai default Zod berbahasa Inggris, berbeda dengan pesan lain. Diperbaiki lewat opsi `error` di `strictObject` ("Field tidak dikenal: userId", "Data harus berupa objek JSON"), dengan test ditulis dulu sampai gagal. Commit terpisah `fix(transactions): use indonesian messages for body errors`.
+- Verifikasi lintas user dilakukan di Neon `dev`: satu transaksi sementara dibuat untuk user GitHub lewat script sementara, lalu dibuka dengan cookie demo (GET/PATCH/DELETE → 404, tidak muncul di list, data di DB tidak berubah). Setelah itu transaksi dan script-nya dihapus.
+- Hasil verifikasi manual: 401 tanpa cookie; list demo 20 baris, total 178; POST 201 + Location (note di-trim); GET/PATCH 200; PATCH type saja → 400 categoryId; DELETE 204, lalu GET 404; input invalid → 400 + fieldErrors; tanpa Content-Type → 415; JSON rusak → 400; id bukan uuid → 404; pageSize 1000 → 400. `/`, `/login`, `/dashboard`, dan `/transactions` 200, `/dashboard` tanpa cookie → 307 ke login. Log dev server bersih.
 
 ## Catatan untuk nanti
 - 12 Nov: hook TanStack Query memakai tipe `TransactionDto`/`TransactionPage` dari `schemas/transaction.ts` dan format error di atas.
