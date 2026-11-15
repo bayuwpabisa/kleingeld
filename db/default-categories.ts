@@ -1,4 +1,4 @@
-import type { TransactionType } from "./schema";
+import type { NewCategory, TransactionType } from "./schema";
 
 export type CategorySeed = {
   name: string;
@@ -19,3 +19,8 @@ export const DEFAULT_CATEGORIES: readonly CategorySeed[] = [
   { name: "Freelance", type: "income", icon: "laptop" },
   { name: "Lainnya", type: "income", icon: "coins" },
 ];
+
+/** The category rows a new user starts with (sign-up and the demo seed). */
+export function defaultCategoriesFor(userId: string): NewCategory[] {
+  return DEFAULT_CATEGORIES.map((c) => ({ ...c, userId, isDefault: true }));
+}

@@ -1,6 +1,6 @@
 # features/
 
-Satu folder untuk satu fitur: `transactions`, `budgets`, `bills`, `dashboard`.
+Satu folder untuk satu fitur: `auth`, `transactions`, `budgets`, `bills`, `dashboard`.
 
 ## Isi satu fitur
 

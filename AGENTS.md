@@ -48,8 +48,9 @@ Adjust this to match the real layout as it grows.
 
 - `app/` — routes, layouts, route handlers (`app/api/...`). `app/page.tsx` is the static landing page; signed-in pages live in the route group `app/(app)/` (English paths: `/dashboard`, `/transactions`, `/budgets`, `/bills`, `/settings`), which wraps them in the app shell
 - `components/` — reusable UI components: `ui/` (base components), `app-shell/` (sidebar, bottom nav, mobile header, page header), `theme/` (`ThemeProvider`, `useTheme`, `ThemePicker`), `brand/`, `landing/`
-- `features/<name>/` — feature code (transactions, budgets, bills, dashboard): components, hooks, queries. Layout, import rules and safe-indexing patterns (`noUncheckedIndexedAccess` is on) are in `features/README.md`
-- `lib/` — helpers, auth config, query client
+- `features/<name>/` — feature code (auth, transactions, budgets, bills, dashboard): components, hooks, queries. Layout, import rules and safe-indexing patterns (`noUncheckedIndexedAccess` is on) are in `features/README.md`
+- `lib/` — helpers, auth config (`auth.ts` server, `auth-client.ts` client, `session.ts` = `getSession`/`requireUser`, the only server-side session reads), query client
+- `proxy.ts` — Next 16 middleware: optimistic session-cookie check for the app pages, redirects to `/login?next=`
 - `db/` — Drizzle schema, migrations, queries
 - `schemas/` — Zod schemas shared by forms and route handlers
 

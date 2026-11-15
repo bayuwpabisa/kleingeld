@@ -30,7 +30,7 @@ export const transactionType = pgEnum("transaction_type", [
 ]);
 
 // Core user fields of Better Auth, so its Drizzle adapter (usePlural) can use
-// this table as is. Sessions, accounts and verifications come with auth.
+// this table as is.
 export const users = pgTable("users", {
   id: text().primaryKey(),
   name: text().notNull(),
@@ -39,6 +39,59 @@ export const users = pgTable("users", {
   image: text(),
   ...timestamps,
 });
+
+// Better Auth's core tables (sessions, accounts, verifications). The columns
+// follow its schema in better-auth 1.7; ids are strings that it generates.
+export const sessions = pgTable(
+  "sessions",
+  {
+    id: text().primaryKey(),
+    userId: text()
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    token: text().notNull().unique(),
+    expiresAt: timestamp({ withTimezone: true }).notNull(),
+    ipAddress: text(),
+    userAgent: text(),
+    ...timestamps,
+  },
+  (t) => [index("sessions_user_id_idx").on(t.userId)],
+);
+
+// One row per sign-in method of a user (Google, GitHub).
+export const accounts = pgTable(
+  "accounts",
+  {
+    id: text().primaryKey(),
+    userId: text()
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    accountId: text().notNull(),
+    providerId: text().notNull(),
+    accessToken: text(),
+    refreshToken: text(),
+    idToken: text(),
+    accessTokenExpiresAt: timestamp({ withTimezone: true }),
+    refreshTokenExpiresAt: timestamp({ withTimezone: true }),
+    scope: text(),
+    password: text(),
+    ...timestamps,
+  },
+  (t) => [index("accounts_user_id_idx").on(t.userId)],
+);
+
+// Short-lived values, such as the OAuth state during a sign-in.
+export const verifications = pgTable(
+  "verifications",
+  {
+    id: text().primaryKey(),
+    identifier: text().notNull(),
+    value: text().notNull(),
+    expiresAt: timestamp({ withTimezone: true }).notNull(),
+    ...timestamps,
+  },
+  (t) => [index("verifications_identifier_idx").on(t.identifier)],
+);
 
 // Every user gets their own copy of the default categories (isDefault), so
 // editing and deleting work the same for default and custom ones.
@@ -92,8 +145,18 @@ export const transactions = pgTable(
 );
 
 export const usersRelations = relations(users, ({ many }) => ({
+  sessions: many(sessions),
+  accounts: many(accounts),
   categories: many(categories),
   transactions: many(transactions),
+}));
+
+export const sessionsRelations = relations(sessions, ({ one }) => ({
+  user: one(users, { fields: [sessions.userId], references: [users.id] }),
+}));
+
+export const accountsRelations = relations(accounts, ({ one }) => ({
+  user: one(users, { fields: [accounts.userId], references: [users.id] }),
 }));
 
 export const categoriesRelations = relations(categories, ({ one, many }) => ({
