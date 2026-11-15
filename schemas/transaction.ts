@@ -20,12 +20,23 @@ const fields = {
   categoryId: z.uuid({ error: "Pilih kategori" }),
   // Whole rupiah. The sign is in `type`, so the amount is always positive.
   amount: z
-    .number({ error: "Nominal harus berupa angka" })
+    .number({
+      // An empty amount field in the form gives undefined.
+      error: (issue) =>
+        issue.input === undefined
+          ? "Isi nominal"
+          : "Nominal harus berupa angka",
+    })
     .int({ error: "Nominal harus bilangan bulat" })
     .positive({ error: "Nominal harus lebih dari 0" })
     .max(MAX_AMOUNT, { error: "Nominal maksimal Rp1.000.000.000.000" }),
   // A calendar date without a time zone, "YYYY-MM-DD".
-  date: z.iso.date({ error: "Tanggal tidak valid" }),
+  date: z.iso.date({
+    error: (issue) =>
+      issue.input === "" || issue.input === undefined
+        ? "Pilih tanggal"
+        : "Tanggal tidak valid",
+  }),
   // A blank note is stored as null. A missing note stays missing, so an
   // update without `note` leaves the old note alone.
   note: z

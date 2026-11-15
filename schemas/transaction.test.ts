@@ -47,6 +47,20 @@ describe("transactionInputSchema", () => {
     },
   );
 
+  it("asks for the amount, the category and the date when they are missing", () => {
+    const result = transactionInputSchema.safeParse({
+      ...valid,
+      amount: undefined,
+      categoryId: "",
+      date: "",
+    });
+    expect(fieldErrors(result)).toEqual({
+      amount: ["Isi nominal"],
+      categoryId: ["Pilih kategori"],
+      date: ["Pilih tanggal"],
+    });
+  });
+
   it("accepts the largest amount", () => {
     expect(
       transactionInputSchema.safeParse({ ...valid, amount: MAX_AMOUNT })
