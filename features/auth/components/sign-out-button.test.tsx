@@ -40,6 +40,16 @@ describe("SignOutButton", () => {
     expect(refresh).toHaveBeenCalled();
   });
 
+  it("forgets the signed-in user's data, so the next user never sees it", async () => {
+    signOut.mockResolvedValue({ data: {}, error: null } as unknown as Result);
+    const { queryClient } = renderWithProviders(<SignOutButton />);
+    queryClient.setQueryData(["transactions", "list"], { total: 3 });
+
+    await userEvent.click(screen.getByRole("button", { name: "Keluar" }));
+
+    expect(queryClient.getQueryData(["transactions", "list"])).toBeUndefined();
+  });
+
   it("stays put and says so when signing out fails", async () => {
     signOut.mockResolvedValue({
       data: null,

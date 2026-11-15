@@ -62,7 +62,7 @@ Setiap langkah: test dulu sampai gagal, lalu implementasi. Sebelum commit: baca 
 - [x] 1. Install dependency, cek lockfile hanya ke registry.npmjs.org. Commit `build: add tanstack query and redux toolkit`
 - [x] 2. Money + date (+ refactor `todayInJakarta`). Commit `feat(ui): add money and date formatting`
 - [x] 3. Store + toast slice + Toast via Redux + `app/providers.tsx` + helper test, lalu perbarui test lama. Commit `refactor(ui): keep toast state in redux toolkit`
-- [ ] 4. `apiFetch` + `makeQueryClient` + wiring di providers. Commit `feat(api): add api client and query client`
+- [x] 4. `apiFetch` + `makeQueryClient` + wiring di providers. Commit `feat(api): add api client and query client`
 - [ ] 5. Skeleton/ErrorState/EmptyState/CategoryIcon + query transaksi + komponen daftar + halaman. Commit `feat(transactions): list transactions with loading and error states`
 - [ ] 6. README + AGENTS.md. Commit `docs: document data fetching and ui state`
 - [ ] 7. Verifikasi, push, PR `feat: add transactions list` (judul diketik ulang), `ci` + Vercel hijau, squash merge (kamu), lalu titik cek: lanjut ke 13 Nov atau berhenti.
@@ -85,6 +85,8 @@ Setiap langkah: test dulu sampai gagal, lalu implementasi. Sebelum commit: baca 
 - Langkah 3: penyimpangan dari plan. Callback "Urungkan" disimpan di `extraArgument` thunk **per store**, bukan Map global modul, supaya dua store (mis. dua request di server, atau dua test) tidak berbagi callback. Ada test khususnya.
 - Langkah 3: penyimpangan dari plan. Helper test dipindah dari `lib/testing/` ke `test/render-with-providers.tsx`, karena helper itu mengimpor `app/providers.tsx` dan `lib/` tidak boleh bergantung pada `app/`. Saat dipindah, `git mv -k` diam-diam melewati file yang belum dilacak git tetapi tetap mengembalikan sukses, sehingga `mv` cadangannya tidak jalan dan file belum pindah. Hal ini ketahuan saat dicek ulang, lalu file dipindah dengan `mv` biasa dan semua test dijalankan ulang (229 lolos).
 - Langkah 3: `ToastProvider` diganti `Providers` (`app/providers.tsx`) + `Toaster`. Setiap toast dirender dengan `key={id}`, jadi state pause dan timer otomatis mulai dari awal tanpa setState di dalam effect. Semua test perilaku toast yang lama tetap lolos tanpa diubah, kecuali test "error di luar provider" yang sekarang mengecek pesan Provider react-redux.
+- Langkah 4: ESLint (`@next/next/no-location-assign-relative-destination`) menolak `window.location.assign` di redirect 401. Full reload memang disengaja di sini (membuang cache dan store milik sesi yang habis, dan handler ini berjalan di luar React tanpa router), jadi aturannya dimatikan untuk satu baris itu dengan alasan tertulis.
+- Langkah 4: **bug baru yang muncul karena cache client.** `SignOutButton` hanya `router.replace("/")`, sehingga cache TanStack berisi data user sebelumnya tetap tersimpan. Kalau user lain login di tab yang sama lewat tombol demo (navigasi soft), daftar transaksi bisa sempat menampilkan data user sebelumnya. Diperbaiki dengan `queryClient.clear()` saat Keluar dan saat login demo berhasil. Test ditulis dulu dan gagal, lalu lolos. Login Google/GitHub tidak terdampak karena melewati redirect penuh.
 
 ## Catatan untuk nanti
 - 13 Nov: kolom Aksi + klik baris membuka form ubah; mutation memakai `apiFetch` + `ApiError.fieldErrors` → `setError` React Hook Form; toast "Transaksi disimpan"/"Transaksi dihapus" · Urungkan lewat `useToast`; invalidasi `transactionKeys.all`. Butuh `GET /api/categories`.

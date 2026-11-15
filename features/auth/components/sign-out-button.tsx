@@ -1,5 +1,6 @@
 "use client";
 
+import { useQueryClient } from "@tanstack/react-query";
 import { LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -16,6 +17,7 @@ type SignOutButtonProps = {
 export function SignOutButton({ appearance = "button" }: SignOutButtonProps) {
   const router = useRouter();
   const toast = useToast();
+  const queryClient = useQueryClient();
   const [busy, setBusy] = useState(false);
 
   async function signOut() {
@@ -26,6 +28,8 @@ export function SignOutButton({ appearance = "button" }: SignOutButtonProps) {
       toast.show({ message: "Gagal keluar. Coba lagi." });
       return;
     }
+    // The cached API data belongs to this user; the next one must not see it.
+    queryClient.clear();
     router.replace("/");
     // Drops the signed-in pages from the client router cache.
     router.refresh();

@@ -1,5 +1,6 @@
 "use client";
 
+import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useState, type ReactNode } from "react";
 import { Button, type ButtonVariant } from "@/components/ui/button";
@@ -26,6 +27,7 @@ export function DemoSignInButton({
 }: DemoSignInButtonProps) {
   const router = useRouter();
   const toast = useToast();
+  const queryClient = useQueryClient();
   const [busy, setBusy] = useState(false);
 
   async function signIn() {
@@ -36,6 +38,9 @@ export function DemoSignInButton({
       toast.show({ message: "Gagal masuk ke akun demo. Coba lagi." });
       return;
     }
+    // A session that ended without "Keluar" may have left another user's
+    // data in the cache; the demo starts clean.
+    queryClient.clear();
     // Stays busy until the next page replaces this one.
     router.replace(next);
   }

@@ -101,6 +101,19 @@ describe("SignInOptions", () => {
     expect(replace).toHaveBeenCalledWith("/dashboard");
   });
 
+  it("drops data cached for an earlier user before opening the demo", async () => {
+    demo.mockResolvedValue(ok);
+    const { queryClient } = renderOptions();
+    queryClient.setQueryData(["transactions", "list"], { total: 3 });
+
+    await userEvent.click(
+      screen.getByRole("button", { name: "Masuk dengan akun demo" }),
+    );
+
+    expect(replace).toHaveBeenCalledWith("/dashboard");
+    expect(queryClient.getQueryData(["transactions", "list"])).toBeUndefined();
+  });
+
   it("lets the user try the demo again when it fails", async () => {
     demo.mockResolvedValue(failed);
     renderOptions();
