@@ -6,16 +6,13 @@ import Link from "next/link";
 import { buttonClasses } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ErrorState } from "@/components/ui/error-state";
-import { DEFAULT_PAGE_SIZE, type TransactionPage } from "@/schemas/transaction";
+import type { TransactionPage } from "@/schemas/transaction";
 
 import { useTransactions } from "../api/use-transactions";
+import { DEFAULT_LIST_QUERY } from "../list-query-url";
 import { TransactionGroups } from "./transaction-groups";
 import { TransactionListSkeleton } from "./transaction-list-skeleton";
 import { TransactionTable } from "./transaction-table";
-
-// Search, filters, sorting and pages move into the URL on 14 Nov; until
-// then the list shows the newest page.
-const FIRST_PAGE = { page: 1, pageSize: DEFAULT_PAGE_SIZE };
 
 /**
  * The user's transactions from the API, with every state of DESIGN.md:
@@ -25,7 +22,7 @@ const FIRST_PAGE = { page: 1, pageSize: DEFAULT_PAGE_SIZE };
  */
 export function TransactionList() {
   const { data, isError, isFetching, fetchStatus, refetch } =
-    useTransactions(FIRST_PAGE);
+    useTransactions(DEFAULT_LIST_QUERY);
 
   return (
     <div data-testid="transaction-list" aria-busy={isFetching}>

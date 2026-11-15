@@ -128,7 +128,7 @@ Setiap langkah: test dulu sampai gagal, lalu implementasi. Sebelum commit: revie
 
 ## Langkah dan commit
 - [x] 0. `git switch develop && git pull`, cek `git diff develop feature/transaction-form` kosong, lalu `git branch -D feature/transaction-form`. Branch `feature/transactions-filters`. Simpan plan ke `docs/plans/2026-11-14-transactions-filters.md`, centang box 9 plan 13 Nov. Commit `docs: add transactions filters plan`
-- [ ] 1. Schema filter/sort + URL helpers. Commit `feat(transactions): add filters and sort to the list query`
+- [x] 1. Schema filter/sort + URL helpers. Commit `feat(transactions): add filters and sort to the list query`
 - [ ] 2. Repo filter/cari/sort + summary + routes. Commit `feat(api): filter, sort and summarize transactions`
 - [ ] 3. Keys/hooks (paged, infinite, summary) + cache sadar filter + `updateLists` dua bentuk. Commit `feat(transactions): keep filtered lists correct after optimistic changes`
 - [ ] 4. `useListQuery` (URL) + `useMediaQuery` + debounce. Commit `feat(transactions): keep search, filters, sort and page in the url`

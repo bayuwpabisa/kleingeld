@@ -12,6 +12,10 @@ export const MAX_AMOUNT = 1_000_000_000_000;
 export const MAX_NOTE_LENGTH = 200;
 export const DEFAULT_PAGE_SIZE = 20;
 export const MAX_PAGE_SIZE = 100;
+export const MAX_SEARCH_LENGTH = 100;
+
+export const SORT_FIELDS = ["date", "amount"] as const;
+export const SORT_ORDERS = ["asc", "desc"] as const;
 
 const fields = {
   type: z.enum(TRANSACTION_TYPES, {
@@ -67,7 +71,25 @@ export const transactionUpdateSchema = z
     error: "Tidak ada perubahan",
   });
 
-export const transactionListQuerySchema = z.object({
+// The list's query string. The page's URL uses the same names
+// (features/transactions/list-query-url.ts), so a filtered list can be shared.
+export const listQueryFields = {
+  // Matches the note or the category name, ignoring case.
+  q: z
+    .string({ error: "Kata kunci tidak valid" })
+    .trim()
+    .max(MAX_SEARCH_LENGTH, {
+      error: `Kata kunci maksimal ${MAX_SEARCH_LENGTH} karakter`,
+    })
+    .transform((q) => q || undefined)
+    .optional(),
+  type: z.enum(TRANSACTION_TYPES, { error: "Tipe tidak valid" }).optional(),
+  category: z.uuid({ error: "Kategori tidak valid" }).optional(),
+  // Both ends are included.
+  from: z.iso.date({ error: "Tanggal awal tidak valid" }).optional(),
+  to: z.iso.date({ error: "Tanggal akhir tidak valid" }).optional(),
+  sort: z.enum(SORT_FIELDS, { error: "Urutan tidak valid" }).default("date"),
+  order: z.enum(SORT_ORDERS, { error: "Urutan tidak valid" }).default("desc"),
   page: z.coerce
     .number({ error: "Halaman tidak valid" })
     .int({ error: "Halaman tidak valid" })
@@ -79,11 +101,44 @@ export const transactionListQuerySchema = z.object({
     .min(1, { error: "Ukuran halaman tidak valid" })
     .max(MAX_PAGE_SIZE, { error: "Ukuran halaman tidak valid" })
     .default(DEFAULT_PAGE_SIZE),
-});
+};
+
+const rangeInOrder = {
+  check: (range: { from?: string; to?: string }) =>
+    !range.from || !range.to || range.from <= range.to,
+  options: { error: "Tanggal awal harus sebelum tanggal akhir", path: ["to"] },
+};
+
+/** Which transactions: used by the list and by the summary. */
+export const transactionFiltersSchema = z
+  .object({
+    q: listQueryFields.q,
+    type: listQueryFields.type,
+    category: listQueryFields.category,
+    from: listQueryFields.from,
+    to: listQueryFields.to,
+  })
+  .refine(rangeInOrder.check, rangeInOrder.options);
+
+/** GET /api/transactions: the filters, the order and the page. */
+export const transactionListQuerySchema = z
+  .object(listQueryFields)
+  .refine(rangeInOrder.check, rangeInOrder.options);
 
 export type TransactionInput = z.infer<typeof transactionInputSchema>;
 export type TransactionUpdate = z.infer<typeof transactionUpdateSchema>;
+export type TransactionFilters = z.infer<typeof transactionFiltersSchema>;
 export type TransactionListQuery = z.infer<typeof transactionListQuerySchema>;
+export type TransactionSort = TransactionListQuery["sort"];
+export type SortOrder = TransactionListQuery["order"];
+
+/** Totals of the filtered transactions, from GET /api/transactions/summary. */
+export type TransactionSummary = {
+  income: { total: number; count: number };
+  expense: { total: number; count: number };
+  /** Income minus expense; negative when more went out. */
+  balance: number;
+};
 
 /** A transaction as the API returns it (dates as ISO strings in JSON). */
 export type TransactionDto = {

@@ -23,6 +23,9 @@ import {
 // These run real SQL (PGlite) on purpose: a missing `userId` condition in a
 // query would pass a mocked test, but fails here.
 
+/** The default order of the list. */
+const NEWEST = { sort: "date", order: "desc" } as const;
+
 let db: TestDb;
 
 beforeAll(async () => {
@@ -131,6 +134,7 @@ describe("listTransactions", () => {
     await create(bob);
 
     const page = await listTransactions(db, alice.id, {
+      ...NEWEST,
       page: 1,
       pageSize: 20,
     });
@@ -149,6 +153,7 @@ describe("listTransactions", () => {
     }
 
     const second = await listTransactions(db, alice.id, {
+      ...NEWEST,
       page: 2,
       pageSize: 2,
     });
@@ -158,7 +163,11 @@ describe("listTransactions", () => {
       "2026-11-02",
     ]);
 
-    const past = await listTransactions(db, alice.id, { page: 9, pageSize: 2 });
+    const past = await listTransactions(db, alice.id, {
+      ...NEWEST,
+      page: 9,
+      pageSize: 2,
+    });
     expect(past.data).toEqual([]);
     expect(past.total).toBe(5);
   });
@@ -166,7 +175,11 @@ describe("listTransactions", () => {
   it("returns an empty page for a user without transactions", async () => {
     await create(bob);
     expect(
-      await listTransactions(db, alice.id, { page: 1, pageSize: 20 }),
+      await listTransactions(db, alice.id, {
+        ...NEWEST,
+        page: 1,
+        pageSize: 20,
+      }),
     ).toEqual({ data: [], page: 1, pageSize: 20, total: 0 });
   });
 });

@@ -11,6 +11,7 @@ import type {
 } from "@/schemas/transaction";
 import { renderHookWithProviders } from "@/test/render-with-providers";
 
+import { DEFAULT_LIST_QUERY } from "../list-query-url";
 import { transactionKeys } from "./keys";
 import { useCreateTransaction } from "./use-create-transaction";
 import { useDeleteTransaction } from "./use-delete-transaction";
@@ -39,7 +40,7 @@ const existing: TransactionDto = {
   updatedAt: "2026-11-01T05:00:00.000Z",
 };
 
-const listKey = transactionKeys.list({ page: 1, pageSize: 20 });
+const listKey = transactionKeys.list(DEFAULT_LIST_QUERY);
 const firstPage: TransactionPage = {
   data: [existing],
   page: 1,

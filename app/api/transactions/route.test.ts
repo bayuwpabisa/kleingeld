@@ -81,6 +81,8 @@ describe("GET /api/transactions", () => {
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual(page);
     expect(list).toHaveBeenCalledWith({ name: "app-db" }, "alice", {
+      sort: "date",
+      order: "desc",
       page: 1,
       pageSize: 20,
     });
@@ -92,6 +94,8 @@ describe("GET /api/transactions", () => {
       new Request("http://localhost/api/transactions?page=3&pageSize=50"),
     );
     expect(list).toHaveBeenCalledWith(expect.anything(), "alice", {
+      sort: "date",
+      order: "desc",
       page: 3,
       pageSize: 50,
     });
