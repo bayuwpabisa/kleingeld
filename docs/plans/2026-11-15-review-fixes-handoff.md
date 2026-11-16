@@ -99,11 +99,12 @@ Sebelum menawarkan A, cek dulu bahwa A tidak melanggar DESIGN.md (Baris transaks
   - Centang H1 dan tulis catatannya di plan 14 Nov › "Catatan perbaikan ronde ini" di commit yang sama.
   - Commit `fix(transactions): list phones by amount without day groups`.
 
-- [ ] **H1b. Chip tipe turun baris di HP sempit** (K4)
+- [x] **H1b. Chip tipe turun baris di HP sempit** (K4) (catatan dan bukti: plan 14 Nov › "Catatan perbaikan ronde ini" › H1b)
   - Penyebab (dibaca dari kode dan diukur): `ChipRadioGroup` (`components/ui/chip.tsx`) memakai `flex` tanpa `flex-wrap`, dan setiap chip `shrink-0`. Di 320px: 75 + 105 + 112 + 2×8 = 308px, sedangkan ruangnya 280px. Chip "Pengeluaran" berakhir di 328px.
   - Tata letak tidak bisa diuji di jsdom, jadi buktinya pengukuran browser (`overflow.js`) di 320/360/390/1024/1440, terang dan gelap, sebelum dan sesudah perubahan. Test chip yang ada tetap hijau.
   - DESIGN.md › Chip/filter: grup tipe boleh turun baris.
   - Commit `fix(ui): let the type chips wrap on narrow phones`.
+  - Hasil: di 320 "Pengeluaran" turun ke baris 2 (right 326 → 130), tanpa scroll ke samping, terang dan gelap. Di 360/390/1024/1440 tidak berubah. Keyboard tetap. DESIGN.md › Chip/filter + Toolbar (tipe rata kiri di HP, dikoreksi atas pilihanmu) dan komentar toolbar diperbarui. Cek 0/0/0/0, dan jest 241 hijau.
 
 - [ ] **H2a. Ukur ambang ukuran nominal** (keputusanmu: ukuran huruf mengikuti panjang angka, 2 kolom mulai 360px, 1 kolom di bawahnya; K2: ukuran bertahap hanya saat 2 kolom). Bagian ini tanpa kode produksi dan tanpa commit.
   - Bukti masalah (R4): di 320px dengan data asli Rp19.898.000, konten 140px di kartu 132px dan halaman bisa di-scroll horizontal. Di 390px, Rp1 triliun memakai 212px di kartu 167px.

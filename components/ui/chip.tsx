@@ -79,6 +79,8 @@ type ChipRadioGroupProps<T extends string> = {
 
 /**
  * One choice shown as a row of chips (Semua / Pemasukan / Pengeluaran).
+ * Where the row does not fit (a 320px phone), chips wrap to the next line;
+ * they never shrink, so no label is cut off.
  * Native radios: Tab into the group, arrow keys between options. The chosen
  * chip is marked by its fill and weight, and by `checked` for screen readers.
  */
@@ -95,7 +97,7 @@ export function ChipRadioGroup<T extends string>({
     <fieldset
       role="radiogroup"
       aria-labelledby={legendId}
-      className={cn("flex min-w-0 gap-2", className)}
+      className={cn("flex min-w-0 flex-wrap gap-2", className)}
     >
       <legend id={legendId} className="sr-only">
         {legend}

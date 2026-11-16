@@ -297,6 +297,28 @@ Kamu meminta semua kesalahan task ini diperbaiki dan dicegah supaya tidak terula
     - Baris tahun lain ("12 Des 2025") **belum dicek di browser**, karena data demo semuanya 2026. Kondisi itu dibuktikan oleh test `shortDate`.
   - Temuan saat cek: di 320px halaman bisa di-scroll ke samping. Dugaan pertama saya (kartu ringkasan) **salah**. Pengukuran menunjukkan chip tipe "Pengeluaran" berakhir di 328px (K4 → H1b).
   - Cek: tsc 0, eslint 0, prettier 0 (sempat 1, karena import `date.test.ts` yang saya pecah ternyata muat satu baris; dirapikan dengan `prettier --write` untuk file itu), jest `features/transactions` + `lib` 237 hijau.
+- **H1b** (K4): chip tipe turun baris di HP sempit.
+  - Penyebab (kode + ukur): `ChipRadioGroup` memakai `flex` tanpa `flex-wrap`, dan label `shrink-0`. Grup selebar 306px dengan "Semua" terpilih, atau 307/308px dengan Pemasukan/Pengeluaran terpilih (chip terpilih `font-medium`, jadi lebih lebar). Ruang di 320px hanya 280px. Angka 328 di H1 berasal dari `type=expense`, dan 326 dari "Semua". Keduanya benar.
+  - Perbaikan: `flex-wrap` di fieldset (`gap-2` sekaligus jarak antarbaris 8px). Label tetap `shrink-0`, supaya tidak ada label yang terpotong.
+  - Pengukuran (agent-browser, `overflow.js`: elemen dengan `right > clientWidth`, plus posisi chip), `/transactions` default. Terang dan gelap angkanya sama:
+
+    | Lebar | Sebelum: "Pengeluaran" (left/top/right) | Sebelum: scroll ke samping | Sesudah: "Pengeluaran" | Sesudah: scroll ke samping |
+    |---|---|---|---|---|
+    | 320 | 216 / 380 / **326** | ya (scrollWidth 326) | 20 / **420** / 130 (baris 2) | tidak (320) |
+    | 360 | 216 / 300 / 326 | tidak | sama | tidak |
+    | 390 | 216 / 300 / 326 | tidak | sama | tidak |
+    | 1024 | 882 / 220 / 992 | tidak | sama | tidak |
+    | 1440 | 1298 / 120 / 1408 | tidak | sama | tidak |
+
+  - Sesudah perbaikan, dengan tipe terpilih: `type=income` dan `type=expense` di 320 turun baris tanpa meluap. Di 360 grup paling lebar berakhir di 328, sedangkan tepi konten 340, jadi tetap muat sebaris.
+  - Periode dengan rentang "28 Okt 2026 – 3 Nov 2026" di 320: select 222px dari ruang 280px, jadi muat. Sebelum perbaikan, pelakunya tetap hanya "Pengeluaran".
+  - Di 320 kartu ringkasan tidak keluar dari viewport (offenders 0). Nominalnya menempel atau melewati tepi kartu di dalam (terlihat di screenshot), dan itu urusan H2.
+  - Keyboard di 320: Tab Periode → Kategori → Urutkan → Semua, lalu panah kanan Pemasukan → Pengeluaran (baris 2). ✓
+  - **Temuan:** DESIGN.md › Toolbar (ditulis di `cfbc662`) menulis "tipe rata kanan" di bawah 1440px termasuk HP. Hasil ukur di 360/390: rata kiri (right 326, tepi 340/370); rata kanan hanya mulai 1024 (`lg:ml-auto`). Waktu itu yang saya cek hanya 1024/1280/1440. Pilihanmu: DESIGN.md dikoreksi, dan kode tetap. Komentar toolbar dengan klaim yang sama juga dikoreksi.
+  - Error: `get_errors` (MCP Next devtools) tidak tersedia di sesi ini. Sebagai gantinya `agent-browser errors` kosong, dan `console` hanya berisi log HMR/Fast Refresh.
+  - Tidak ada test baru: jsdom tidak menghitung tata letak, dan test nama kelas tidak membuktikan apa-apa. Bukti "merah → hijau" adalah tabel di atas.
+  - Cek: typegen 0, tsc 0, eslint 0, prettier 0, jest `components/ui` + `features/transactions` 241 hijau (27 suite).
+  - 1280 sesudah perbaikan: tipe sebaris di kanan ("Pengeluaran" right 1248), tanpa scroll ke samping, terang dan gelap.
 
 ## Catatan untuk nanti
 - 15 Nov: test form + tabel (RTL), rilis v0.2. Perlu env Production di Vercel, migrasi di Neon `production`, dan tanggal di roadmap README.

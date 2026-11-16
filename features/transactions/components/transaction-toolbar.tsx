@@ -94,8 +94,9 @@ export function TransactionToolbar({
   return (
     <div className="flex flex-col gap-3">
       {/* From 1440px everything fits in one row (wireframe 04). Narrower,
-          the search has its own row and the chips (type on the right) the
-          next, so the Tab order always follows the visual order. If a long
+          the search has its own row and the chips the next (type on the
+          right from lg, on the left like the other chips on phones), so the
+          Tab order always follows the visual order. If a long
           range label makes the chips wrap, the search stays level with the
           first row. */}
       <div className="flex flex-col gap-3 min-[1440px]:flex-row min-[1440px]:items-start">
