@@ -54,6 +54,10 @@ Sebelum menawarkan A, cek dulu bahwa A tidak melanggar DESIGN.md (Baris transaks
 - Eksekusi dibagi per bagian, dan setiap bagian berhenti untuk konfirmasimu: H0 → H1 → H2a (ukur) → H2b (kode) → H3 → H4 → H5a (cek akhir) → H5b (push).
 - **K3 (saat cek browser H1):** di 320px keterangan "Tagihan · 1 Nov 2…" terpotong, sehingga tanggal hilang. Kamu memilih **tanggal di depan, tahun hanya kalau bukan tahun ini**: "1 Nov · Tagihan".
 - **K4 (temuan baru di 320px):** chip tipe butuh 308px, padahal ruangnya 280px, sehingga halaman bisa di-scroll ke samping. Kamu memilih **chip boleh turun baris** (`flex-wrap`). Dikerjakan sebagai H1b, commit terpisah sebelum H2.
+- **K5 (sesi 16 Nov, sebelum H2a):** satu ukuran untuk semua kartu, dihitung dari `max(Pemasukan, Pengeluaran)`. Saldo tidak pernah lebih panjang dari angka itu, tetapi tanda "−" membuatnya paling lebar, sehingga ambang desktop diukur dengan Saldo negatif.
+- **K6 (titik berhenti H2a, karena 12+ digit tidak muat di 360px bahkan dengan `text-sm`):** di HP nominal minimal `text-base`. 2 kolom: ≤7 `xl`, 8 `lg`, 9 `base`. Mulai 10 digit, kartu bertumpuk 1 kolom dengan `text-xl`.
+- **K7:** desktop memakai batas yang hati-hati (dua kasus dengan sisa tepat 2,0px diturunkan satu tingkat): `2xl` ≤8, `xl` 9–10, `lg` 11–12, `base` 13–14, `sm` ≥15.
+- **K8:** selisih tinggi skeleton di HP (114 vs 110, diukur) ikut diperbaiki di H2b, dan tinggi baris nominal dibuat tetap.
 
 **Koreksi plan ini sebelum eksekusi** (hasil cek ulang di awal sesi):
 1. H0 menulis "6 di depan origin". Yang benar 7, karena commit file ini ikut dihitung.
@@ -69,6 +73,11 @@ Sebelum menawarkan A, cek dulu bahwa A tidak melanggar DESIGN.md (Baris transaks
 11. H5 menjalankan `tsc` tanpa `next typegen` dulu, berbeda dengan CI. Sekarang `next typegen` dijalankan dulu.
 12. Push dipisah dari cek akhir (H5b).
 13. Aturan 12 versi baru (kalimat DESIGN.md) baru ada di file ini. Memory `self-review-and-fix-log` sudah diperbarui di H0, dan plan 14 Nov diperbarui di H4.
+
+**Koreksi di sesi 16 Nov (H2):**
+14. Plan sesi menulis "9 commit di depan origin". Yang benar 10 (`803859a` terlewat).
+15. "`lg:` menang atas `min-[360px]:`" tidak bisa dicek di H2a, karena kelasnya belum ada di source. Cek ini dipindah ke browser H2b (computed `font-size` di 1024).
+16. Helper bernama `summaryLayout` di `summary-layout.ts`, bukan `summaryAmountClass`, karena sejak K6 helper juga menentukan grid. Ditambah test komponen untuk K5.
 
 ## Langkah
 - [x] **H0. Mulai sesi**
@@ -106,7 +115,7 @@ Sebelum menawarkan A, cek dulu bahwa A tidak melanggar DESIGN.md (Baris transaks
   - Commit `fix(ui): let the type chips wrap on narrow phones`.
   - Hasil: di 320 "Pengeluaran" turun ke baris 2 (right 326 → 130), tanpa scroll ke samping, terang dan gelap. Di 360/390/1024/1440 tidak berubah. Keyboard tetap. DESIGN.md › Chip/filter + Toolbar (tipe rata kiri di HP, dikoreksi atas pilihanmu) dan komentar toolbar diperbarui. Cek 0/0/0/0, dan jest 241 hijau.
 
-- [ ] **H2a. Ukur ambang ukuran nominal** (keputusanmu: ukuran huruf mengikuti panjang angka, 2 kolom mulai 360px, 1 kolom di bawahnya; K2: ukuran bertahap hanya saat 2 kolom). Bagian ini tanpa kode produksi dan tanpa commit.
+- [x] **H2a. Ukur ambang ukuran nominal** (hasil, tabel, dan catatan: plan 14 Nov › "Catatan perbaikan ronde ini" › H2) (keputusanmu: ukuran huruf mengikuti panjang angka, 2 kolom mulai 360px, 1 kolom di bawahnya; K2: ukuran bertahap hanya saat 2 kolom). Bagian ini tanpa kode produksi dan tanpa commit.
   - Bukti masalah (R4): di 320px dengan data asli Rp19.898.000, konten 140px di kartu 132px dan halaman bisa di-scroll horizontal. Di 390px, Rp1 triliun memakai 212px di kartu 167px.
   - **Ambang diukur dulu, tidak ditebak.**
     - Di browser, jawaban summary di-mock (`agent-browser network route "**/api/transactions/summary*" --body '…'`) dengan nominal 8 sampai 15 digit. Total bisa melebihi `MAX_AMOUNT`, karena total adalah jumlah banyak transaksi.
@@ -116,7 +125,7 @@ Sebelum menawarkan A, cek dulu bahwa A tidak melanggar DESIGN.md (Baris transaks
     - Hasilnya ditulis sebagai tabel di catatan.
   - **Berhenti dan bertanya** kalau digit terpanjang tidak muat di 360px bahkan dengan `text-sm`. Pilihannya disajikan bersama angkanya.
 
-- [ ] **H2b. Kartu ringkasan: implementasi**
+- [x] **H2b. Kartu ringkasan: implementasi** (catatan: plan 14 Nov › H2; K5–K8 dan koreksi 14–16 di atas)
   - Test dulu: `features/transactions/summary-amount.test.ts` untuk `summaryAmountClass(amount)` (string kelas lengkap per tingkat jumlah digit `Math.abs(amount)`: batas N−1/N digit, saldo negatif, 0, dan di atas digit terbesar) memakai ambang dari tabel. Test harus merah sebelum fungsi ditulis.
   - Implementasi:
     - `features/transactions/summary-amount.ts`: tabel tingkat berupa string literal (supaya terbaca Tailwind), hasilnya `text-xl min-[360px]:<tingkat> lg:<tingkat lg>`. Kelas ukurannya cukup satu string, karena `cn` tidak memakai tailwind-merge.

@@ -319,6 +319,58 @@ Kamu meminta semua kesalahan task ini diperbaiki dan dicegah supaya tidak terula
   - Tidak ada test baru: jsdom tidak menghitung tata letak, dan test nama kelas tidak membuktikan apa-apa. Bukti "merah → hijau" adalah tabel di atas.
   - Cek: typegen 0, tsc 0, eslint 0, prettier 0, jest `components/ui` + `features/transactions` 241 hijau (27 suite).
   - 1280 sesudah perbaikan: tipe sebaris di kanan ("Pengeluaran" right 1248), tanpa scroll ke samping, terang dan gelap.
+- **H2** (K5–K8 di file handoff): nominal kartu ringkasan muat di HP kecil.
+  - **H2a, pengukuran sebelum ada kode** (agent-browser):
+    - Summary di-mock dengan `network route` (N digit: Pemasukan 10^(N−1), Pengeluaran 10^N − 1, Saldo negatif N digit).
+    - Fungsi ukur ada di init script scratchpad: kartu diberi `min-width: 0`, di 320 grid dibuat 1 kolom, lalu `font-size` Money diganti 24/20/18/16/14px.
+    - Angka di tabel = isi kartu dikurangi lebar nominal (px). Dianggap muat kalau ≥ 2.
+
+    | Digit | 360, 2 kolom (isi 120): xl / lg / base / sm | 1024, Saldo "−Rp…" (isi 179): 2xl / xl / lg / base / sm | 320, 1 kolom (isi 246): xl |
+    |---|---|---|---|
+    | 7 | **8,2** / 19,3 / 30,5 / 41,7 | **31,9** / 56,4 / … | 134,2 |
+    | 8 | −4,3 / **8,1** / 20,5 / 33,0 | **17,0** / 44,0 / … | 121,7 |
+    | 9 | −16,8 / −3,1 / **10,6** / 24,3 | 2,0 / **31,5** / … | 109,2 |
+    | 10 | −33,8 / −18,4 / −3,0 / 12,4 | −18,4 / **14,5** / 30,9 / … | 92,2 |
+    | 11 | −46,3 / −29,6 / −13,0 / 3,6 | −33,4 / 2,0 / **19,7** / … | 79,8 |
+    | 12 | … / −23,0 / −5,1 (1 kolom) | … / −10,5 / **8,5** / … | 67,3 |
+    | 13 | … / −17,0 | … / −6,8 / **13,8** / 34,5 | 50,3 |
+    | 14 | … / −25,7 | … / −18,0 / **3,9** / 25,8 | 37,8 |
+    | 15 | … / −34,5 | … / −6,1 / **17,0** | 25,3 |
+
+    - Tebal = tingkat yang dipakai (K6, K7). Di 360, 12 digit ke atas tidak muat bahkan dengan `text-sm`, jadi saya berhenti dan bertanya (K6).
+    - Tinggi kartu (request summary ditahan lewat init script): HP 360 skeleton **114** vs termuat **110**, jadi bergeser 4px. Desktop 130 = 130.
+    - Data demo asli (8 digit): di 360 `text-xl` kurang 4,3px. Di 320 kartu 140/132.
+  - **Test dulu:**
+    - `summary-layout.test.ts` (15 test: batas N−1/N setiap tingkat, 0, negatif, 16 digit) merah karena modulnya belum ada.
+    - `transaction-summary.test.tsx` (2 test) merah terhadap komponen lama (kelas `text-xl lg:text-2xl`). Komponen lama dipasang lewat `git show HEAD:…`, dan versi perbaikan dikembalikan dari salinan (`cmp` 0).
+    - Kesalahan test saya sendiri: test kedua semula memakai Pemasukan 8.500.000 dan mengharapkan tingkat 8 digit, padahal angka itu 7 digit. Diganti 12.000.000.
+  - **Perbaikan:**
+    - `summaryLayout(largest)` → `{ grid, amount }`. Tabel tingkat berupa string kelas literal.
+    - `TransactionSummary` memanggilnya dengan `max(Pemasukan, Pengeluaran)`.
+    - Kartu diberi `min-w-0`, dan baris nominal `flex h-7 items-center lg:h-8`.
+    - Skeleton nominal `mt-1 h-7 lg:h-8`.
+  - **Mutation check** (setiap mutasi dikembalikan dari salinan, lalu `cmp` 0):
+
+    | Mutasi | Hasil |
+    |---|---|
+    | helper selalu tingkat terbesar | 14 gagal: 12 baris tabel + 2 test komponen. Yang lolos: baris ≤7 digit dan test negatif, keduanya sudah diperkirakan |
+    | kartu memakai angkanya sendiri, bukan max | 2 test komponen gagal |
+    | grid selalu 2 kolom | "sizes every card from the larger total" gagal |
+
+  - **Temuan saat cek browser:**
+    - Versi pertama memakai `leading-7 lg:leading-8`, dan kartu termuat malah menjadi 112/113/133px.
+    - Penyebabnya diukur: span "Rp" (10,8px) mewarisi line-height 28px, sehingga baris nominal 30px. Dengan line-height 1 pada span itu, tingginya 28.
+    - Diganti dengan tinggi baris tetap (`h-7`/`h-8` + `items-center`), dan line-height dibiarkan bawaan ukurannya. `Money` tidak diubah.
+  - **Browser sesudah perbaikan** (CSS asli, tanpa simulasi):
+    - Data asli: 360/390 18px, 320 20px (1 kolom), 1024/1440 24px. Jadi `lg:` menang atas `min-[360px]:` (computed style).
+    - Mock 7–15 digit: ukuran sesuai tabel di 360/390/320/1024, dan 10+ digit di 360/390 menjadi 1 kolom (isi kartu 286/316, sisa ≥ 65).
+    - Semua kartu `scrollWidth = clientWidth`, dan halaman tidak bisa di-scroll ke samping.
+    - Tinggi termuat = skeleton: **110** di 320/360/390 dan **130** di 1024/1440, di semua tingkat.
+    - Screenshot area ringkasan terang dan gelap (320/360/390/1024 data asli; 10 digit di 360; 15 digit di 1024 dan 320): nominal di dalam kartu, ukuran sama di kartu yang berdampingan, keterangan sejajar.
+    - Console: setelah muat ulang bersih di 1024 lalu 360, tidak ada error atau warning. Sebelumnya, selama sesi yang penuh pertukaran file untuk mutation check, muncul sekali "Encountered a script tag while rendering React component" bersama "Fast Refresh performing full reload". Penyebabnya **belum dipastikan**; dugaan saya HMR.
+  - **Diketahui dan diterima:** skeleton memakai layout pendek (2 kolom), jadi nominal ≥10 digit di HP berubah dari 2 kolom menjadi 1 kolom setelah data datang (DESIGN.md › Kartu ringkasan transaksi).
+  - DESIGN.md › Tipografi (`text-2xl`), Kartu ringkasan, Kartu ringkasan transaksi (tingkat + grid + tinggi tetap), dan States › Konten ekstrem diselaraskan. Klaim lama "nominal miliaran tetap muat" diganti dengan batas yang terbukti.
+  - Cek: typegen 0, tsc 0, eslint 0, prettier 0, jest `features/transactions` + `components/ui` + `lib` 323 hijau (39 suite).
 
 ## Catatan untuk nanti
 - 15 Nov: test form + tabel (RTL), rilis v0.2. Perlu env Production di Vercel, migrasi di Neon `production`, dan tanggal di roadmap README.

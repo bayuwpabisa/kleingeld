@@ -12,6 +12,7 @@ import type { TransactionFilters } from "@/schemas/transaction";
 
 import { useTransactionSummary } from "../api/use-transaction-summary";
 import { periodLabel } from "../periods";
+import { summaryLayout } from "../summary-layout";
 
 /**
  * Pemasukan, Pengeluaran and Saldo of the filtered transactions (wireframe
@@ -49,12 +50,19 @@ export function TransactionSummary({
     );
   }
 
+  // One size for every card, from the longest total (the skeleton uses the
+  // short layout). See summaryLayout for the measured tiers.
+  const layout = summaryLayout(
+    data ? Math.max(data.income.total, data.expense.total) : 0,
+  );
+
   return (
     <section
       aria-labelledby="ringkasan-transaksi"
       aria-busy={isFetching}
       className={cn(
-        "grid grid-cols-2 gap-3 transition-opacity lg:grid-cols-3 lg:gap-4",
+        layout.grid,
+        "transition-opacity",
         isPlaceholderData && "opacity-60",
       )}
     >
@@ -64,16 +72,19 @@ export function TransactionSummary({
       <SummaryCard
         label="Pemasukan"
         amount={data?.income.total}
+        amountClass={layout.amount}
         note={data && `${data.income.count} transaksi`}
       />
       <SummaryCard
         label="Pengeluaran"
         amount={data?.expense.total}
+        amountClass={layout.amount}
         note={data && `${data.expense.count} transaksi`}
       />
       <SummaryCard
         label="Saldo"
         amount={data?.balance}
+        amountClass={layout.amount}
         note={data && periodLabel(filters)}
         className="hidden lg:block"
       />
@@ -84,25 +95,35 @@ export function TransactionSummary({
 function SummaryCard({
   label,
   amount,
+  amountClass,
   note,
   className,
 }: {
   label: string;
   amount: number | undefined;
+  amountClass: string;
   note: ReactNode;
   className?: string;
 }) {
+  // min-w-0: a long amount must not widen its grid column past the page.
+  // The amount's row is 28/32px high at every size, and the skeleton has the
+  // same height, so nothing moves when the data arrives. A fixed height, not
+  // a fixed line height: the small "Rp" would inherit a px line height and
+  // make the row 2px taller.
   return (
-    <Card className={className}>
+    <Card className={cn("min-w-0", className)}>
       <p className="text-sm text-fg-muted">{label}</p>
       {amount === undefined ? (
         <>
-          <Skeleton className="mt-2 h-7 w-3/4" />
+          <Skeleton className="mt-1 h-7 w-3/4 lg:h-8" />
           <Skeleton className="mt-2 h-4 w-1/3" />
         </>
       ) : (
         <>
-          <Money amount={amount} className="mt-1 block text-xl lg:text-2xl" />
+          <Money
+            amount={amount}
+            className={cn("mt-1 flex h-7 items-center lg:h-8", amountClass)}
+          />
           <p className="mt-1 text-sm text-fg-muted">{note}</p>
         </>
       )}
