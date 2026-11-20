@@ -34,13 +34,14 @@ Setiap langkah: berhenti setelah selesai dan tunggu "lanjut". Sebelum commit: fu
 ### A. `feature/week-2-review` → PR ke `develop`
 - [x] A0. Simpan plan ini + "Catatan perbaikan" (tiga koreksi draf catatan H5a/H5b, satu koreksi draf plan ini). Commit `docs: add week 2 review and v0.2 release plan`
   - 21 Nov: plan dicek ulang terhadap kode sebelum commit. Diubah: daftar test di Context ditambah `transaction-summary.test.tsx`; dugaan mutasi kedua A2 dibalik (kemungkinan lolos, alasannya ditulis, belum dijalankan); A4 dipecah ke dua file; A1 memakai `user.paste` untuk 201 karakter. Cek: jest 58 suite / 481 test, typecheck, lint, format:check, semua exit 0.
-- [ ] A1. Form: error lain + fokus. Test di `transaction-form.test.tsx`:
+- [x] A1. Form: error lain + fokus. Test di `transaction-form.test.tsx`:
   - nominal "0" → "Nominal harus lebih dari 0"; 13 digit `1000000000001` → "Nominal maksimal Rp1.000.000.000.000";
   - catatan 201 karakter (nominal + kategori valid) → "Catatan maksimal 200 karakter", fokus ke Catatan (isi lewat `user.click` + `user.paste`, karena 201 ketukan `user.type` lambat; textarea tidak punya `maxLength`);
   - tanggal dikosongkan (nominal valid, kategori kosong) → fokus ke Kategori, "Pilih tanggal" tampil; hanya tanggal yang salah → fokus ke Tanggal;
   - setelah submit gagal, mengetik nominal menghapus "Isi nominal" tanpa submit ulang.
   - Mutation: `FIELD_ORDER` dibalik; `reValidateMode: "onSubmit"`; `.max(MAX_NOTE_LENGTH)` dihapus sementara di schema (test schema boleh ikut gagal, yang dicatat adalah test form).
   - Commit `test(transactions): cover the form's other errors and focus`
+  - 21 Nov: 5 test baru (`it.each` nominal 0 dan 13 digit, catatan 201, fokus urut atas-bawah, error hilang saat diperbaiki); form 8 → 13. Tanggal dan "hanya tanggal salah" digabung dalam satu test (submit pertama fokus Kategori, setelah kategori dipilih fokus Tanggal). Mutation, tiap mutasi dijalankan lalu dikembalikan dengan `git checkout` file sumber: `FIELD_ORDER` dibalik → gagal "moves focus…" dan test lama "says what is missing…"; `"date"` dikeluarkan dari `FIELD_ORDER` (tambahan, karena pembalikan tidak memengaruhi kasus "hanya tanggal salah") → gagal "moves focus…"; `reValidateMode: "onSubmit"` → gagal "clears an error…"; `.max(MAX_NOTE_LENGTH)` dihapus → gagal "rejects a note…"; tambahan `.positive` dihapus → gagal "rejects an amount of 0"; `.max(MAX_AMOUNT)` dihapus → gagal "rejects an amount of 1000000000001". Setelah semua mutasi, `git status` hanya berisi file test. Cek: jest 58 suite / 486 test, typecheck, lint, format:check, semua exit 0.
 - [ ] A2. Form: nilai yang dikirim.
   - ganti ke Pemasukan + Gaji → `onSubmit` menerima `type: "income"`, `categoryId: GAJI` (`toStrictEqual` pada `mock.calls`);
   - edit, catatan dikosongkan → `note: null`;

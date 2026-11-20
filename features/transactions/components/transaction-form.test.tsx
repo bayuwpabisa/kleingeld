@@ -39,6 +39,9 @@ function setup(props: Partial<Parameters<typeof TransactionForm>[0]> = {}) {
 
 const amount = () => screen.getByRole("textbox", { name: "Nominal" });
 const category = () => screen.getByRole("combobox", { name: "Kategori" });
+const date = () => screen.getByLabelText("Tanggal");
+const note = () => screen.getByRole("textbox", { name: "Catatan (opsional)" });
+const save = () => screen.getByRole("button", { name: "Simpan" });
 
 function optionNames() {
   return Array.from(category().querySelectorAll("option"))
@@ -68,6 +71,67 @@ describe("TransactionForm", () => {
     ).toBeInTheDocument();
     expect(amount()).toHaveFocus();
     expect(onSubmit).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ["0", "Nominal harus lebih dari 0"],
+    ["1000000000001", "Nominal maksimal Rp1.000.000.000.000"],
+  ])("rejects an amount of %s", async (typed, message) => {
+    const { onSubmit } = setup();
+
+    await userEvent.type(amount(), typed);
+    await userEvent.selectOptions(category(), "Makan");
+    await userEvent.click(save());
+
+    expect(await screen.findByText(message)).toBeInTheDocument();
+    expect(amount()).toHaveFocus();
+    expect(onSubmit).not.toHaveBeenCalled();
+  });
+
+  it("rejects a note over 200 characters and moves focus to it", async () => {
+    const { onSubmit } = setup();
+
+    await userEvent.type(amount(), "35000");
+    await userEvent.selectOptions(category(), "Makan");
+    await userEvent.click(note());
+    await userEvent.paste("a".repeat(201));
+    await userEvent.click(save());
+
+    expect(
+      await screen.findByText("Catatan maksimal 200 karakter"),
+    ).toBeInTheDocument();
+    expect(note()).toHaveFocus();
+    expect(onSubmit).not.toHaveBeenCalled();
+  });
+
+  it("moves focus to the first wrong field, top to bottom", async () => {
+    setup();
+
+    await userEvent.type(amount(), "35000");
+    await userEvent.clear(date());
+    await userEvent.click(save());
+
+    expect(await screen.findByText("Pilih tanggal")).toBeInTheDocument();
+    expect(category()).toHaveFocus();
+
+    await userEvent.selectOptions(category(), "Makan");
+    await userEvent.click(save());
+
+    expect(date()).toHaveFocus();
+  });
+
+  it("clears an error as soon as its field is fixed", async () => {
+    setup();
+
+    await userEvent.click(save());
+    expect(await screen.findByText("Isi nominal")).toBeInTheDocument();
+
+    await userEvent.type(amount(), "35000");
+
+    expect(screen.queryByText("Isi nominal")).not.toBeInTheDocument();
+    expect(
+      screen.getByText("Pilih kategori", { selector: "p" }),
+    ).toBeInTheDocument();
   });
 
   it("sends the parsed values", async () => {
