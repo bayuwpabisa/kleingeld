@@ -6,6 +6,8 @@ Pada 15 Nov kamu meminta semua kesalahan task 14 Nov (cari, filter, sort, dan pa
 Plan lengkap ronde perbaikan, tabel 15 kesalahan, dan catatan per langkah ada di [2026-11-14-transactions-filters.md](2026-11-14-transactions-filters.md) › "Perbaikan setelah review".
 
 ## Status saat file ini ditulis
+**Pembaruan 20 Nov:** H0–H3 selesai (`6d75a5d`, `18c9607`, `179d27b`, `73e67a4`), dan H4 masuk di commit `docs: correct the filters notes`. Branch masih belum di-push (13 commit di depan origin setelah commit H4). Sisa: H5a dan H5b. Status di bawah ini adalah keadaan 15 Nov.
+
 - Branch `feature/transactions-filters`, **7 commit di depan origin (6 perbaikan + commit file ini, `bdef128`), belum di-push**. PR belum dibuka (PR terakhir #13). Working tree bersih.
 
   | Commit | Isi |
@@ -149,7 +151,7 @@ Sebelum menawarkan A, cek dulu bahwa A tidak melanggar DESIGN.md (Baris transaks
     - gelap 1440 dan 390.
   - Catat jumlah violations per kondisi. Untuk "incomplete": catat rule id, elemen, dan alasannya (biasanya `color-contrast` yang tidak bisa dihitung di atas latar transparan), lalu putuskan apakah ada yang perlu diperbaiki. Kalau perlu: berhenti dan lapor dulu, lalu test atau screenshot, perbaikan, dan commit terpisah. Kalau tidak perlu: catatan dan centang masuk satu commit docs.
 
-- [ ] **H4. Koreksi catatan dan memory** (R5)
+- [x] **H4. Koreksi catatan dan memory** (R5). Tujuh poin H4 di plan 14 Nov: lima baris diberi "**Koreksi (R5)**" untuk enam klaim (axe dan `get_errors` ada di baris yang sama), dan aturan 12 mendapat kalimat DESIGN.md. Teks lama tetap ada. R4 dan R5 dicentang, dan memory diperbarui.
   - `docs/plans/2026-11-14-transactions-filters.md`:
     - baris "Ada test untuk keduanya" (Langkah 6, kotak cari) → sebut test buktinya: `transaction-toolbar.test.tsx` › "keeps newer typing when its own search reaches the URL late" dan "shows a search changed elsewhere (Back, Hapus filter)";
     - "Back … tanpa request RSC" → tambahkan bukti dari cek network R4;
