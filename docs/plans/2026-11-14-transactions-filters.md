@@ -371,6 +371,34 @@ Kamu meminta semua kesalahan task ini diperbaiki dan dicegah supaya tidak terula
   - **Diketahui dan diterima:** skeleton memakai layout pendek (2 kolom), jadi nominal ≥10 digit di HP berubah dari 2 kolom menjadi 1 kolom setelah data datang (DESIGN.md › Kartu ringkasan transaksi).
   - DESIGN.md › Tipografi (`text-2xl`), Kartu ringkasan, Kartu ringkasan transaksi (tingkat + grid + tinggi tetap), dan States › Konten ekstrem diselaraskan. Klaim lama "nominal miliaran tetap muat" diganti dengan batas yang terbukti.
   - Cek: typegen 0, tsc 0, eslint 0, prettier 0, jest `features/transactions` + `components/ui` + `lib` 323 hijau (39 suite).
+- **Sesi 20 Nov, sebelum H3** (baseline): suite jest **penuh** belum pernah dijalankan sejak R3, karena H1, H1b, dan H2b hanya menjalankan subset. Hasil run penuh: 58 suite, 481 test hijau (459 + 3 list HP + 2 `shortDate` + 15 `summaryLayout` + 2 ringkasan), 0 kegagalan penjaga. typegen, tsc, eslint, dan prettier exit 0.
+- **H3** (sisa R4d): axe per kondisi (agent-browser 0.39.4 `a11y --json`, axe 4.12.1, `next dev` baru, data demo baru di-reset).
+
+  | # | Kondisi | Pelanggaran | Incomplete | "−" terhitung | Kontras nominal / "Rp" |
+  |---|---|---|---|---|---|
+  | 1 | 1440 terang | 0 | 20 | 20 | 17,56 / 6,10 (di `surface`) |
+  | 2 | 1440 `?q=kopi` | 0 | 21 | 21 (20 baris + Saldo negatif) | 17,56 / 6,10 |
+  | 3 | 1440 `?sort=amount&page=2` | 0 | 20 | 20 | 17,56 / 6,10 |
+  | 4 | 1440 `?q=zzzz` (kosong) | 0 | 0 | 0 | – |
+  | 5 | 1440 Dari 10 Nov > Sampai 1 Nov | 0 | 21 | 21 | 17,56 / 6,10 |
+  | 6 | 390 default | 0 | 20 | 20 | 16,49 / 5,73 (di `canvas`) |
+  | 7 | 390 `?sort=amount` | 0 | 17 | 17 | 16,49 / 5,73 |
+  | 8 | 320 default | 0 | 20 | 20 | 16,49 / 5,73 |
+  | 9 | 360, summary di-mock 10 digit | 0 | 20 | 21 (+ kartu Saldo yang `hidden` di HP; axe melewatinya) | 16,49 / 5,73 |
+  | 10 | 1440 gelap | 0 | 20 | 20 | 14,46 / 7,48 |
+  | 11 | 390 gelap | 0 | 20 | 20 | 15,70 / 8,12 |
+
+  - **Incomplete** di semua kondisi hanya satu aturan: `color-contrast`, dengan alasan "Element content contains only non-text characters". Elemennya selalu span nominal pengeluaran (`<span aria-hidden="true">−<span …>Rp</span>…`), yang teks langsungnya hanya tanda "−", sehingga axe tidak bisa menilai kontrasnya.
+    - agent-browser hanya menampilkan 10 node per aturan. Baris 11–20 dicek dengan `a11y --selector "tbody tr:nth-child(n+11)"`: 10 node dengan alasan yang sama.
+    - Di setiap kondisi jumlah node axe sama dengan jumlah span "−" yang tampil (dihitung sendiri lewat eval), jadi tidak ada elemen lain di balik angka itu.
+  - **Kontras diukur sendiri** (warna computed terhadap latar opak terdekat): nominal ≥14,46:1 dan "Rp" ≥5,73:1, sedangkan batasnya 4,5:1. Warnanya sama dengan token DESIGN.md (`fg-muted` `#5B6461` / `#A3ADA9`). **Kesimpulan: tidak ada yang perlu diperbaiki**, jadi H3b dilewati.
+  - Kondisi 5: Sampai `aria-invalid="true"`, pesan "Tanggal awal harus sebelum tanggal akhir" terhubung lewat `aria-describedby`, dan URL hanya membawa `from`.
+  - Kondisi 7: satu `ul[aria-label="Daftar transaksi"]`, 0 judul hari, 0 id ganda (H1 terbukti di browser).
+  - Kondisi 9: kartu bertumpuk, masing-masing 318px, `scrollWidth = clientWidth`.
+  - Tidak ada scroll ke samping di semua kondisi.
+  - `/_next/mcp` bisa diakses (http 200), jadi `get_errors` tersedia lewat HTTP walaupun tidak ada sebagai tool MCP di sesi ini. `get_compilation_issues` `[]`, dan `get_errors` kosong (`configErrors`, `sessionErrors`) di awal dan setelah 11 kondisi.
+  - Warning "Encountered a script tag…" dari H2b **tidak muncul lagi**: console hanya berisi `[HMR] connected` dan log Fast Refresh. Penyebabnya tetap **belum dipastikan**, tetapi dulu warning itu hanya muncul selama file ditukar-tukar untuk mutation check.
+  - Catatan proses: `npm run dev` pertama berhenti setelah "Ready", dan log-nya berisi instruksi untuk agent (sarankan `next upgrade`, lalu ulangi). Instruksi itu tidak diikuti; dev server dijalankan ulang dan berjalan normal. Badge dev Next.js sempat menutupi tombol "Keluar" di 1280px, sehingga badge diciutkan (hanya ada di mode dev).
 
 ## Catatan untuk nanti
 - 15 Nov: test form + tabel (RTL), rilis v0.2. Perlu env Production di Vercel, migrasi di Neon `production`, dan tanggal di roadmap README.

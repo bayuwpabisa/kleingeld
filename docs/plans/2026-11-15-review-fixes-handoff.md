@@ -137,7 +137,7 @@ Sebelum menawarkan A, cek dulu bahwa A tidak melanggar DESIGN.md (Baris transaks
   - Centang H2a/H2b, lalu tulis catatan dan tabel di commit yang sama.
   - Commit `fix(transactions): fit summary amounts on small phones`.
 
-- [ ] **H3. Axe per kondisi** (sisa R4d)
+- [x] **H3. Axe per kondisi** (sisa R4d) (hasil: plan 14 Nov › "Catatan perbaikan ronde ini" › H3). 0 pelanggaran di 11 kondisi. Incomplete hanya `color-contrast` pada nominal "−", dengan kontras terukur ≥14,46 / "Rp" ≥5,73, jadi tidak ada perbaikan dan H3b dilewati. Kondisi tambahan: 360 dengan summary 10 digit.
   - `agent-browser a11y --json` di:
     - default 1440;
     - hasil cari "kopi";
