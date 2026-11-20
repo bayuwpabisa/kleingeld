@@ -7,6 +7,7 @@ import { apiFetch } from "@/lib/api/client";
 import type { CategoryDto } from "@/schemas/category";
 import type { TransactionDto, TransactionInput } from "@/schemas/transaction";
 import { renderWithProviders } from "@/test/render-with-providers";
+import { setUrl } from "@/test/url-navigation";
 
 import { TransactionDialogs } from "./transaction-dialogs";
 import { TransactionList } from "./transaction-list";
@@ -15,6 +16,7 @@ jest.mock("@/lib/api/client", () => ({
   ...jest.requireActual("@/lib/api/client"),
   apiFetch: jest.fn(),
 }));
+jest.mock("next/navigation", () => jest.requireActual("@/test/url-navigation"));
 
 const fetchApi = jest.mocked(apiFetch);
 
@@ -52,6 +54,7 @@ function toDto(id: string, input: TransactionInput): TransactionDto {
 
 // A tiny in-memory API, so refetches after a mutation return the new truth.
 beforeEach(() => {
+  setUrl("/transactions");
   nextId = 1;
   server = [
     toDto("00000000-0000-4000-8000-000000000001", {
@@ -67,7 +70,20 @@ beforeEach(() => {
     const body = init?.body ? JSON.parse(String(init.body)) : undefined;
     const id = path.split("/")[3]?.split("?")[0];
     if (path === "/api/categories") return categories;
-    if (path.startsWith("/api/transactions?")) {
+    if (path.startsWith("/api/transactions/summary")) {
+      const sum = (type: string) => {
+        const rows = server.filter((t) => t.type === type);
+        return {
+          total: rows.reduce((total, t) => total + t.amount, 0),
+          count: rows.length,
+        };
+      };
+      const income = sum("income");
+      const expense = sum("expense");
+      return { income, expense, balance: income.total - expense.total };
+    }
+    // The list: "/api/transactions", with or without a query string.
+    if (method === "GET" && /^\/api\/transactions(\?|$)/.test(path)) {
       return { data: server, page: 1, pageSize: 20, total: server.length };
     }
     if (method === "POST") {

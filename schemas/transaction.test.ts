@@ -6,6 +6,8 @@ import {
   MAX_AMOUNT,
   MAX_NOTE_LENGTH,
   MAX_PAGE_SIZE,
+  MAX_SEARCH_LENGTH,
+  transactionFiltersSchema,
   transactionInputSchema,
   transactionListQuerySchema,
   transactionUpdateSchema,
@@ -168,8 +170,10 @@ describe("transactionUpdateSchema", () => {
 });
 
 describe("transactionListQuerySchema", () => {
-  it("defaults to the first page of 20", () => {
+  it("defaults to the newest first page of 20", () => {
     expect(transactionListQuerySchema.parse({})).toEqual({
+      sort: "date",
+      order: "desc",
       page: 1,
       pageSize: 20,
     });
@@ -178,7 +182,44 @@ describe("transactionListQuerySchema", () => {
   it("reads numbers from the query string", () => {
     expect(
       transactionListQuerySchema.parse({ page: "3", pageSize: "50" }),
-    ).toEqual({ page: 3, pageSize: 50 });
+    ).toMatchObject({ page: 3, pageSize: 50 });
+  });
+
+  it("reads filters and sort", () => {
+    expect(
+      transactionListQuerySchema.parse({
+        q: "  kopi ",
+        type: "expense",
+        category: valid.categoryId,
+        from: "2026-11-01",
+        to: "2026-11-30",
+        sort: "amount",
+        order: "asc",
+      }),
+    ).toEqual({
+      q: "kopi",
+      type: "expense",
+      category: valid.categoryId,
+      from: "2026-11-01",
+      to: "2026-11-30",
+      sort: "amount",
+      order: "asc",
+      page: 1,
+      pageSize: 20,
+    });
+  });
+
+  it("treats a blank search as no search", () => {
+    expect(transactionListQuerySchema.parse({ q: "   " }).q).toBeUndefined();
+  });
+
+  it("accepts a range of one day", () => {
+    expect(
+      transactionListQuerySchema.safeParse({
+        from: "2026-11-01",
+        to: "2026-11-01",
+      }).success,
+    ).toBe(true);
   });
 
   it.each([
@@ -187,7 +228,45 @@ describe("transactionListQuerySchema", () => {
     { page: "abc" },
     { pageSize: "0" },
     { pageSize: String(MAX_PAGE_SIZE + 1) },
+    { q: "a".repeat(MAX_SEARCH_LENGTH + 1) },
+    { type: "transfer" },
+    { category: "not-a-uuid" },
+    { from: "2026-13-01" },
+    { to: "kemarin" },
+    { sort: "note" },
+    { order: "up" },
   ])("rejects %p", (query) => {
     expect(transactionListQuerySchema.safeParse(query).success).toBe(false);
+  });
+
+  it("rejects a range that ends before it starts", () => {
+    const result = transactionListQuerySchema.safeParse({
+      from: "2026-11-30",
+      to: "2026-11-01",
+    });
+    expect(fieldErrors(result).to).toEqual([
+      "Tanggal awal harus sebelum tanggal akhir",
+    ]);
+  });
+});
+
+describe("transactionFiltersSchema", () => {
+  it("has only the filters, without sort or page", () => {
+    expect(
+      transactionFiltersSchema.parse({
+        type: "income",
+        sort: "amount",
+        page: "2",
+      }),
+    ).toEqual({ type: "income" });
+  });
+
+  it("rejects a range that ends before it starts", () => {
+    expect(
+      transactionFiltersSchema.safeParse({
+        from: "2026-11-30",
+        to: "2026-11-01",
+      }).success,
+    ).toBe(false);
   });
 });

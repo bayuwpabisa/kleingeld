@@ -14,7 +14,10 @@ import {
 // The user always comes from the session, never from the request, and every
 // query is scoped to that user (features/transactions/server).
 
-/** GET /api/transactions?page=1&pageSize=20: the user's transactions. */
+/**
+ * GET /api/transactions?q=&type=&category=&from=&to=&sort=&order=&page=&pageSize=:
+ * one page of the user's transactions that match (schemas/transaction.ts).
+ */
 export async function GET(request: Request) {
   const user = await getCurrentUser();
   if (!user) return unauthorized();

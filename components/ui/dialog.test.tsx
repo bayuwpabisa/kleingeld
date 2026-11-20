@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { render, screen } from "@testing-library/react";
+import { act, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { axe } from "jest-axe";
 import { Button } from "@/components/ui/button";
@@ -74,7 +74,8 @@ describe("Dialog", () => {
     const { onOpenChange, trigger, dialog } = await openDialog();
 
     // Esc is handled by the browser, which then closes the dialog itself.
-    (dialog as HTMLDialogElement).close();
+    // Its close event updates React state, so it runs inside act().
+    act(() => (dialog as HTMLDialogElement).close());
 
     expect(onOpenChange).toHaveBeenCalledWith(false);
     expect(trigger).toHaveFocus();

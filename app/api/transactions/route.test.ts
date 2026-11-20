@@ -81,6 +81,8 @@ describe("GET /api/transactions", () => {
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual(page);
     expect(list).toHaveBeenCalledWith({ name: "app-db" }, "alice", {
+      sort: "date",
+      order: "desc",
       page: 1,
       pageSize: 20,
     });
@@ -92,6 +94,8 @@ describe("GET /api/transactions", () => {
       new Request("http://localhost/api/transactions?page=3&pageSize=50"),
     );
     expect(list).toHaveBeenCalledWith(expect.anything(), "alice", {
+      sort: "date",
+      order: "desc",
       page: 3,
       pageSize: 50,
     });
@@ -103,6 +107,42 @@ describe("GET /api/transactions", () => {
     );
     expect(response.status).toBe(400);
     expect((await response.json()).error.fieldErrors.pageSize).toHaveLength(1);
+    expect(list).not.toHaveBeenCalled();
+  });
+
+  it("passes search, filters and sort to the data access", async () => {
+    list.mockResolvedValue({ data: [], page: 1, pageSize: 20, total: 0 });
+    await GET(
+      new Request(
+        `http://localhost/api/transactions?q=kopi&type=expense&category=${CATEGORY_ID}&from=2026-11-01&to=2026-11-30&sort=amount&order=asc`,
+      ),
+    );
+    expect(list).toHaveBeenCalledWith(expect.anything(), "alice", {
+      q: "kopi",
+      type: "expense",
+      category: CATEGORY_ID,
+      from: "2026-11-01",
+      to: "2026-11-30",
+      sort: "amount",
+      order: "asc",
+      page: 1,
+      pageSize: 20,
+    });
+  });
+
+  it.each([
+    [
+      "a range that ends before it starts",
+      "from=2026-11-30&to=2026-11-01",
+      "to",
+    ],
+    ["an unknown sort", "sort=note", "sort"],
+  ])("answers 400 for %s", async (_name, search, field) => {
+    const response = await GET(
+      new Request(`http://localhost/api/transactions?${search}`),
+    );
+    expect(response.status).toBe(400);
+    expect((await response.json()).error.fieldErrors[field]).toHaveLength(1);
     expect(list).not.toHaveBeenCalled();
   });
 });

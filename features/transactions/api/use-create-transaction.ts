@@ -44,7 +44,9 @@ export function useCreateTransaction({
         createdAt: now,
         updatedAt: now,
       };
-      updateLists(queryClient, (page) => insertTransaction(page, optimistic));
+      updateLists(queryClient, (page, query) =>
+        insertTransaction(page, optimistic, query),
+      );
       return { snapshot };
     },
     onError(error, input, context) {

@@ -1,4 +1,4 @@
-import { dateGroupLabel, formatDate, todayInJakarta } from "./date";
+import { dateGroupLabel, formatDate, shortDate, todayInJakarta } from "./date";
 
 describe("todayInJakarta", () => {
   it("follows Indonesian time, not UTC", () => {
@@ -15,6 +15,20 @@ describe("formatDate", () => {
     ["2026-01-01", "1 Jan 2026"],
   ])("formats %p as %p", (date, text) => {
     expect(formatDate(date)).toBe(text);
+  });
+});
+
+describe("shortDate", () => {
+  const today = "2026-11-15";
+
+  it("leaves out the year of this year", () => {
+    expect(shortDate("2026-11-01", today)).toBe("1 Nov");
+    expect(shortDate("2026-01-01", today)).toBe("1 Jan");
+  });
+
+  it("adds the year for other years", () => {
+    expect(shortDate("2025-12-12", today)).toBe("12 Des 2025");
+    expect(shortDate("2026-12-31", "2027-01-01")).toBe("31 Des 2026");
   });
 });
 
