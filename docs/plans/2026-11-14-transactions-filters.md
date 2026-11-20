@@ -135,7 +135,7 @@ Setiap langkah: test dulu sampai gagal, lalu implementasi. Sebelum commit: revie
 - [x] 5. `ChipSelect` + `Pagination`. Commit `feat(ui): add chip select and pagination`
 - [x] 6. Toolbar + kartu ringkasan + header sort + list desktop/HP + states. Commit `feat(transactions): add search, filters, sort and pagination`
 - [x] 7. DESIGN.md + README + AGENTS. Commit `docs: document transaction filters`
-- [ ] 8. Verifikasi, push, PR `feat: add transaction search, filters and pagination`, `ci` + Vercel hijau, squash merge (kamu), titik cek ke 15 Nov.
+- [x] 8. Verifikasi, push, PR `feat: add transaction search, filters and pagination`, `ci` + Vercel hijau, squash merge (kamu), titik cek ke 15 Nov. (PR #14, develop `ccdffef`, 20 Nov; bukti di `2026-11-15-review-fixes-handoff.md` › H5a/H5b)
 
 ## Verifikasi
 1. Lint, typecheck, test, format:check, dan build dengan env dummy CI semuanya hijau. `/transactions` tetap prerender sebagian.
@@ -234,7 +234,7 @@ Kamu meminta semua kesalahan task ini diperbaiki dan dicegah supaya tidak terula
 - [x] R3. Penjaga `console.error` di `jest.setup.ts` + bukti penjaganya bekerja + AGENTS.md. Commit `test: fail tests that log console errors`
 - [x] R4. Cek ulang di browser: 1024/1280/1440, tanpa `field-sizing`, penilaian ulang `field-sizing`, optimistic tambah/ubah sebelum server menjawab, nominal besar di HP, log network tanpa `_rsc`, axe per kondisi + isi "incomplete" (selesai lewat R4a/R4b, lalu H1, H1b, H2, dan H3 di file handoff)
 - [x] R5. Koreksi catatan dan memory. Commit `docs: correct the filters notes`
-- [ ] R6. Verifikasi akhir, self-review `git diff e38e6c8..HEAD`, push, lalu PR (kamu)
+- [x] R6. Verifikasi akhir, self-review `git diff e38e6c8..HEAD`, push, lalu PR (kamu) (dikerjakan sebagai H5a/H5b di file handoff)
 
 ### Catatan perbaikan ronde ini
 - R1: `transaction-toolbar.test.tsx` berisi 18 test. Dijalankan terhadap kode lama: 15 hijau, dan hanya 3 test kategori (R1b) yang merah, sesuai harapan. Hasil mutation check (setiap mutasi dibalik sesudahnya, lalu `git diff --exit-code` toolbar dicek kosong):
