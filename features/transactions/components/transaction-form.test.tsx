@@ -154,6 +154,69 @@ describe("TransactionForm", () => {
     });
   });
 
+  it("sends an income with its category", async () => {
+    const { onSubmit } = setup();
+
+    await userEvent.click(screen.getByRole("radio", { name: "Pemasukan" }));
+    await userEvent.type(amount(), "8500000");
+    await userEvent.selectOptions(category(), "Gaji");
+    await userEvent.click(save());
+
+    expect(onSubmit.mock.calls).toStrictEqual([
+      [
+        {
+          type: "income",
+          categoryId: GAJI,
+          amount: 8_500_000,
+          date: todayInJakarta(),
+          note: null,
+        },
+      ],
+    ]);
+  });
+
+  it("sends null for a note emptied while editing", async () => {
+    const { onSubmit } = setup({ transaction: existing });
+
+    await userEvent.clear(note());
+    await userEvent.click(
+      screen.getByRole("button", { name: "Simpan perubahan" }),
+    );
+
+    expect(onSubmit.mock.calls).toStrictEqual([
+      [
+        {
+          type: "expense",
+          categoryId: MAKAN,
+          amount: 35_000,
+          date: "2026-11-01",
+          note: null,
+        },
+      ],
+    ]);
+  });
+
+  it("shows no note for a transaction without one, and keeps it null", async () => {
+    const { onSubmit } = setup({ transaction: { ...existing, note: null } });
+
+    expect(note()).toHaveValue("");
+    await userEvent.click(
+      screen.getByRole("button", { name: "Simpan perubahan" }),
+    );
+
+    expect(onSubmit.mock.calls).toStrictEqual([
+      [
+        {
+          type: "expense",
+          categoryId: MAKAN,
+          amount: 35_000,
+          date: "2026-11-01",
+          note: null,
+        },
+      ],
+    ]);
+  });
+
   it("offers only categories of the chosen type and clears one that no longer fits", async () => {
     setup();
     expect(optionNames()).toEqual(["Makan", "Transport"]);
