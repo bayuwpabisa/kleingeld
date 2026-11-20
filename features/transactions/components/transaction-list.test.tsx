@@ -87,11 +87,17 @@ const summary: TransactionSummary = {
 type ListAnswer =
   TransactionPage | ((path: string) => Promise<TransactionPage>);
 
-/** A tiny API: categories, the summary, and the list (a page or a function). */
-function respond(list: ListAnswer = page) {
+/**
+ * A tiny API: categories, the summary (or its failure), and the list (a page
+ * or a function).
+ */
+function respond(
+  list: ListAnswer = page,
+  answerSummary: () => Promise<TransactionSummary> = async () => summary,
+) {
   fetchApi.mockImplementation(async (path: string) => {
     if (path === "/api/categories") return categories;
-    if (path.startsWith("/api/transactions/summary")) return summary;
+    if (path.startsWith("/api/transactions/summary")) return answerSummary();
     if (path.startsWith("/api/transactions")) {
       return typeof list === "function" ? list(path) : list;
     }
@@ -463,6 +469,18 @@ describe("TransactionList on desktop", () => {
 
     expect(await table()).toBeInTheDocument();
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+  });
+
+  it("keeps the list when only the summary fails", async () => {
+    respond(page, async () => {
+      throw new ApiError({ status: 500, code: "unknown", message: "x" });
+    });
+    setup();
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "Ringkasan gagal dimuat.",
+    );
+    expect(within(await table()).getByText("Makan siang")).toBeInTheDocument();
   });
 
   it("invites a new user to add the first transaction", async () => {
