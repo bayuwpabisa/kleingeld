@@ -32,13 +32,13 @@ Temuan review pekanan (utang kecil, semua dokumen):
 8. **Docs**: link ke `docs/mvp-scope.md`, `DESIGN.md`, `CONTRIBUTING.md`, `docs/plans/`, `docs/wireframe/`.
 
 ## Progres (centang saat selesai)
-- [ ] 0. Di `feature/weekly-review`: simpan plan ini ke `docs/plans/2026-11-08-weekly-review.md`. Commit `docs: add weekly review and v0.1 release plan`
-- [ ] 1. Review pekanan: CONTRIBUTING (langkah `Test` di daftar CI dan perintah lokal; contoh tag `v0.1.0` annotated di bagian Rilis), centang box basi di plan 2 Nov dan 3 Nov. Commit `docs: sync contributing with ci and tick finished plan steps`
-- [ ] 2. Tulis ulang README sesuai isi di atas. Commit `docs: rewrite readme with project status`
-- [ ] 3. Verifikasi lokal (di bawah), push, PR `docs: weekly review and readme for v0.1` ke `develop`. Tunggu `ci` hijau, lalu squash merge (kamu)
-- [ ] 4. PR rilis `develop` → `main`, judul `chore(release): v0.1.0`, isi = catatan rilis. Tunggu `ci` hijau, pilih **Create a merge commit** (kamu)
-- [ ] 5. `git fetch`, `git switch main && git pull`, `git tag -a v0.1.0 -m "v0.1.0: foundation"`, `git push origin v0.1.0` (aku minta konfirmasi sebelum push). Kamu buat GitHub Release dari tag dengan catatan rilis yang aku siapkan
-- [ ] 6. Cek production, perbarui memori; hapus branch lokal `feature/weekly-review` (cek `git diff develop feature/weekly-review` kosong, lalu `-D`)
+- [x] 0. Di `feature/weekly-review`: simpan plan ini ke `docs/plans/2026-11-08-weekly-review.md`. Commit `docs: add weekly review and v0.1 release plan`
+- [x] 1. Review pekanan: CONTRIBUTING (langkah `Test` di daftar CI dan perintah lokal; contoh tag `v0.1.0` annotated di bagian Rilis), centang box basi di plan 2 Nov dan 3 Nov. Commit `docs: sync contributing with ci and tick finished plan steps`
+- [x] 2. Tulis ulang README sesuai isi di atas. Commit `docs: rewrite readme with project status`
+- [x] 3. Verifikasi lokal (di bawah), push, PR `docs: weekly review and readme for v0.1` ke `develop`. Tunggu `ci` hijau, lalu squash merge (kamu)
+- [x] 4. PR rilis `develop` → `main`, judul `chore(release): v0.1.0`, isi = catatan rilis. Tunggu `ci` hijau, pilih **Create a merge commit** (kamu). Catatan: PR #7 ter-merge sebagai squash (`f5b149c`), lalu `main` disinkronkan ke `develop` lewat PR #8 (merge commit `8a9702d`)
+- [x] 5. `git fetch`, `git switch main && git pull`, `git tag -a v0.1.0 -m "v0.1.0: foundation"`, `git push origin v0.1.0` (aku minta konfirmasi sebelum push). Kamu buat GitHub Release dari tag dengan catatan rilis yang aku siapkan
+- [x] 6. Cek production, perbarui memori; hapus branch lokal `feature/weekly-review` (cek `git diff develop feature/weekly-review` kosong, lalu `-D`)
 
 ## Verifikasi
 - Lokal sebelum push: `npm run lint && npm run typecheck && npm test && npm run format:check && npm run build` lolos.

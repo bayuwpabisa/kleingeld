@@ -1,6 +1,18 @@
-import { render, screen } from "@testing-library/react";
+import { screen } from "@testing-library/react";
 import { axe } from "jest-axe";
+import type { ReactElement } from "react";
 import LandingPage from "@/app/page";
+import { renderWithProviders } from "@/test/render-with-providers";
+
+jest.mock("next/navigation", () => ({
+  useRouter: () => ({ replace: jest.fn() }),
+}));
+jest.mock("@/lib/auth-client", () => ({
+  authClient: { signIn: { demo: jest.fn() } },
+}));
+
+// The demo button shows its errors in the app-wide toast.
+const render = (ui: ReactElement) => renderWithProviders(ui);
 
 describe("Landing page", () => {
   it("has one h1 with the promise", () => {
@@ -10,16 +22,19 @@ describe("Landing page", () => {
     expect(headings[0]).toHaveTextContent("Atur uang bulanan tanpa ribet");
   });
 
-  it("uses the same two calls to action everywhere", () => {
+  it("sends sign-ups to the login page and opens the demo in one click", () => {
     render(<LandingPage />);
-    const start = screen.getAllByRole("link", { name: "Mulai gratis" });
-    const demo = screen.getAllByRole("link", { name: "Coba akun demo" });
-    expect(start.length).toBeGreaterThan(0);
-    expect(demo.length).toBeGreaterThan(0);
-    // Until sign-in exists (10 Nov) both open the app preview.
-    for (const link of [...start, ...demo]) {
-      expect(link).toHaveAttribute("href", "/dashboard");
+    const start = [
+      ...screen.getAllByRole("link", { name: "Mulai gratis" }),
+      screen.getByRole("link", { name: "Masuk" }),
+    ];
+    expect(start.length).toBeGreaterThan(1);
+    for (const link of start) {
+      expect(link).toHaveAttribute("href", "/login");
     }
+    expect(
+      screen.getAllByRole("button", { name: "Coba akun demo" }).length,
+    ).toBeGreaterThan(0);
   });
 
   it("has a section for every in-page link", () => {

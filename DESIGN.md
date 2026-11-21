@@ -72,7 +72,7 @@ Satu keluarga: **Geist Sans** (variable font, dimuat lewat `next/font`, satu fil
 | `text-base` | 16 / 24 | Body, input, tombol |
 | `text-lg` | 18 / 28 | Judul kartu, judul dialog mobile |
 | `text-xl` | 20 / 28 | Judul section, judul dialog |
-| `text-2xl` | 24 / 32 | Nominal di kartu ringkasan, judul halaman mobile |
+| `text-2xl` | 24 / 32 | Nominal di kartu ringkasan (mengecil untuk nominal panjang, lihat Kartu ringkasan transaksi), judul halaman mobile |
 | `text-3xl` | 30 / 36 | Judul halaman desktop, nominal saldo mobile |
 | `text-4xl` | 36 / 40 | Hero landing (mobile), nominal di form |
 | `text-5xl` | 48 / 52 | Hero landing (desktop) |
@@ -144,9 +144,10 @@ Semua komponen punya state: default, hover, `focus-visible` (outline 2px `primar
 - **Input, select, textarea**: `bg-surface border border-border-strong`, input dan select berukuran `md`, textarea minimal 88px, label di atas (`text-sm font-medium`), error di bawah (`text-sm text-danger` + ikon), border jadi `danger`.
 - **Input nominal**: `text-4xl` dengan komponen Money, tanpa kotak, hanya border bawah `border-strong`, `inputmode="numeric"`.
 - **Segmented control** (Pengeluaran/Pemasukan, Terang/Gelap/Sistem, jenis tagihan): track `surface-muted`, ukuran `md`. Item tidak aktif: teks `fg-muted` weight 400. Item aktif: pill `bg-surface` dengan border `border-strong` (3.45:1 terhadap pill, 3.04:1 terhadap track) dan teks `fg` weight 500, tanpa shadow. Pakai `role="radiogroup"`.
-- **Chip/filter**: `rounded-full border border-border`, ukuran sesuai tabel Ukuran kontrol, terpilih `bg-primary-soft border-primary text-primary`. Dropdown chip diberi ikon chevron.
-- **Kartu ringkasan**: label `text-sm text-fg-muted`, nominal `text-2xl` Money, keterangan `text-sm text-fg-muted`. Kartu saldo mobile memakai `bg-surface-muted`.
-- **Baris transaksi**: ikon kategori dalam lingkaran 40px `bg-surface-muted`, judul `text-base`, kategori `text-sm text-fg-muted`, nominal rata kanan. Seluruh baris bisa diklik/ditekan (membuka form ubah).
+- **Chip/filter** ([components/ui/chip.tsx](components/ui/chip.tsx)): `rounded-full border border-border`, ukuran sesuai tabel Ukuran kontrol, terpilih `bg-primary-soft border-primary text-primary` tanpa menebal (select native selebar opsinya, teks tebal akan terpotong). Dropdown chip (`ChipSelect`) adalah `<select>` native dengan ikon chevron, selebar opsi terpanjangnya. Lebarnya sengaja tetap (tanpa `field-sizing: content`), supaya memilih opsi tidak menggeser chip setelahnya. Pilihan tunggal sebaris (Semua / Pemasukan / Pengeluaran) memakai `ChipRadioGroup`, radio native dengan panah kiri/kanan. Kalau ruangnya kurang (HP sempit, ±320px), chip-nya turun baris; chip tidak menyempit, jadi labelnya tidak terpotong. Nama aksesibel chip ada di `aria-label` ("Periode", "Kategori", "Urutkan"), karena opsi yang terpilih sudah menyebut isinya.
+- **Toolbar transaksi**: cari (label tersembunyi "Cari transaksi", ikon kaca pembesar, tombol hapus), lalu chip Periode (Semua waktu, 12 bulan terakhir, Rentang tanggal… yang membuka input Dari/Sampai), Kategori, Urutkan, dan tipe. Mulai 1440px semuanya satu baris (wireframe 04); kalau label rentang yang panjang membuat chip ter-wrap, kotak cari tetap sejajar baris atas. Di bawah 1440px (termasuk HP), kotak cari selebar penuh di baris sendiri, lalu chip di bawahnya. Tipe rata kanan mulai 1024px; di HP tipe rata kiri seperti chip lain di atasnya. Urutan DOM sama di semua lebar, jadi urutan Tab selalu mengikuti urutan visual. Semua pilihan tersimpan di URL.
+- **Kartu ringkasan**: label `text-sm text-fg-muted`, nominal `text-2xl` Money (di kartu yang berdampingan dengan ruang sempit, ukurannya mengikuti panjang angka, lihat Kartu ringkasan transaksi), keterangan `text-sm text-fg-muted`. Kartu saldo mobile memakai `bg-surface-muted`.
+- **Baris transaksi**: ikon kategori dalam lingkaran 40px `bg-surface-muted`, judul `text-base`, kategori `text-sm text-fg-muted` (di list tanpa judul hari, tanggal di depan: "1 Nov · Makan", tahun hanya kalau bukan tahun ini, supaya yang terpotong di layar sempit adalah kategori, bukan tanggal), nominal rata kanan. Seluruh baris bisa diklik/ditekan (membuka form ubah).
 - **Baris tagihan**: blok tanggal 48px `bg-surface-muted` (tanggal `text-lg` 600, bulan `text-xs`), nama, keterangan, nominal, tombol **"Bayar"** (`primary`, ukuran `sm` 32px).
 - **Meter budget**: track 8px `bg-surface-muted` `rounded-full`.
 
@@ -163,7 +164,13 @@ Semua komponen punya state: default, hover, `focus-visible` (outline 2px `primar
   - Bottom nav mobile: 4 item + FAB tengah `bg-primary` 56px. Lucide hanya punya ikon garis, jadi item aktif ditandai dengan ikon dan label `text-primary`, stroke ikon 2.25 (normal 1.75), label `font-medium`, dan bar 3px `bg-primary rounded-full` di atas ikon. Penandanya tidak hanya warna.
 - **Banner demo**: `bg-primary-soft`, ikon info, teks `text-sm`, aksi "Daftar" (quiet `primary`).
 - **Dialog / bottom sheet**: judul `text-xl` 600, tombol tutup berlabel "Tutup", fokus terkunci di dalam, Esc menutup, fokus kembali ke pemicu. Tombol: batal (secondary) di kiri primary (desktop). Di mobile, primary penuh di atas dan batal di bawahnya.
-- **Tabel transaksi (desktop)**: header `text-sm text-fg-muted`, kolom sortable memakai `<button>` dengan ikon arah dan `aria-sort`. Baris 56px, nominal rata kanan. Pagination di bawah.
+- **Tabel transaksi (desktop)**: header `text-sm text-fg-muted`, kolom sortable (Tanggal, Nominal) memakai `<button>` dengan ikon arah, dan `aria-sort` hanya ada di kolom yang sedang mengurutkan. Klik kolom aktif membalik urutan, dan kolom lain mulai dari terbaru/terbesar. Baris 56px, nominal rata kanan; kolom Nominal `w-52` (208px), cukup untuk nominal terbesar Rp1.000.000.000.000 tanpa terpotong. Di bawah `xl` (1024–1279px) kolom Kategori disembunyikan dan nama kategori tampil `text-sm text-fg-muted` di bawah catatan (hanya bila ada catatan), supaya kolom Catatan tetap lebar (±206px di 1024px, bukan 46px). Mulai 1280px Kategori punya kolom sendiri. Di bawah tabel: "Menampilkan 21–40 dari 42 transaksi" dan pagination ([components/ui/pagination.tsx](components/ui/pagination.tsx)): ‹ 1 … 4 5 6 … 9 ›, selalu 7 item, halaman aktif `bg-primary` + `aria-current="page"`.
+- **Daftar transaksi (HP)**: saat diurutkan menurut tanggal, grup per hari (judul "Hari ini · Min, 15 Nov"). Saat diurutkan menurut nominal, satu tanggal bisa muncul di beberapa tempat, sehingga judul hari akan berulang. Karena itu list menjadi satu daftar tanpa judul (`aria-label="Daftar transaksi"`, sama dengan tabel desktop), dan tanggal pindah ke depan keterangan baris (lihat Baris transaksi). Di bawahnya: "Menampilkan 40 dari 42 transaksi", lalu tombol **Muat lebih banyak** (secondary, lebar penuh) sampai semua termuat.
+- **Kartu ringkasan transaksi**: Pemasukan (N transaksi), Pengeluaran (N transaksi), dan Saldo (keterangan periode: "Semua waktu", "November 2026", "1–15 Nov 2026") untuk filter yang aktif. HP hanya menampilkan dua kartu pertama. Ukuran nominal mengikuti jumlah digit nominal terpanjang (Pemasukan atau Pengeluaran; Saldo tidak pernah lebih panjang), dan **semua kartu memakai ukuran yang sama**, supaya angka yang berdampingan sejajar. Tingkatnya diukur di browser ([summary-layout.ts](features/transactions/summary-layout.ts)):
+  - Di bawah 360px kartu bertumpuk 1 kolom, nominal `text-xl` (muat sampai 15 digit di 320px).
+  - 360–1023px, 2 kolom: ≤7 digit `text-xl`, 8 digit `text-lg`, 9 digit `text-base`. Mulai 10 digit (Rp1 miliar) kartu bertumpuk 1 kolom dengan `text-xl`. Nominal tidak pernah lebih kecil dari `text-base`, supaya tetap lebih besar dari labelnya.
+  - Desktop (3 kolom, diukur di 1024px dengan Saldo negatif): ≤8 digit `text-2xl`, 9–10 `text-xl`, 11–12 `text-lg`, 13–14 `text-base`, ≥15 `text-sm`.
+  - Baris nominal tingginya tetap (28px HP, 32px desktop) di semua ukuran, dan skeleton setinggi kartu yang termuat, jadi layout tidak bergeser saat data datang. Pengecualian: nominal ≥10 digit di HP mengubah 2 kolom menjadi 1 kolom setelah data datang.
 - **Toast**: kiri bawah (desktop) atau atas bottom nav (mobile), `bg-fg text-canvas`, 4 detik, `role="status"`. Untuk hapus disediakan aksi **"Urungkan"** dengan gaya `text-canvas font-medium underline` dan target sentuh minimal 24px. Jangan pakai `text-primary` di toast (hanya 2.85:1 di light, 1.81:1 di dark).
 
 ## States
@@ -179,8 +186,8 @@ Setiap layar yang memuat data harus punya state ini. Pakai komponen di atas, jan
 | Validasi | Saat keluar field atau submit, pesan di bawah field | "Nominal harus lebih dari 0." |
 | Busy | Tombol disabled + spinner, tidak bisa dikirim dua kali | |
 | Sukses | Toast singkat, nama aksi sama dengan tombolnya | "Transaksi disimpan", "Tagihan ditandai dibayar. Transaksi dibuat." |
-| Hapus | Dialog konfirmasi + toast dengan Urungkan | "Transaksi dihapus" · **Urungkan** |
-| Konten ekstrem | Judul panjang di-truncate (teks lengkap di `title`/detail), nominal miliaran tetap muat (kolom nominal `whitespace-nowrap`) | |
+| Hapus | Dialog konfirmasi + toast dengan Urungkan. Dialog berisi pratinjau baris dan apa yang berubah; jangan menulis "tidak bisa dikembalikan", karena Urungkan ada | "Hapus transaksi ini?" · "Saldo dan budget Makan bulan ini akan dihitung ulang." → "Transaksi dihapus" · **Urungkan** |
+| Konten ekstrem | Judul panjang di-truncate (teks lengkap di `title`/detail). Nominal tidak dipotong (kolom nominal `whitespace-nowrap`). Di kartu ringkasan, ukuran huruf dan jumlah kolom mengikuti panjang angka (terbukti muat sampai 15 digit, Rp999 triliun, di 320/360/390/1024px) | |
 
 ## Aksesibilitas
 

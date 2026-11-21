@@ -4,14 +4,14 @@ import { Logo } from "@/components/brand/logo";
 import { DashboardPreview } from "@/components/landing/dashboard-preview";
 import { buttonClasses } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { DemoSignInButton } from "@/features/auth/components/demo-sign-in-button";
 import { SkipLink } from "@/components/ui/skip-link";
 
 // No request data here, so the page is prerendered at build time (SSG).
 
-// Sign-in arrives on 10 Nov. Until then both calls to action open the app
-// preview; then "Mulai gratis" goes to /login and the demo to the demo sign-in.
-const START_HREF = "/dashboard";
-const DEMO_HREF = "/dashboard";
+// "Mulai gratis" and "Masuk" open the login page. The demo button signs in
+// straight away, so a recruiter is one click from the dashboard.
+const START_HREF = "/login";
 
 const container = "mx-auto w-full max-w-320 px-5 lg:px-8";
 
@@ -54,12 +54,7 @@ function CallsToAction() {
       <Link href={START_HREF} className={buttonClasses()}>
         Mulai gratis
       </Link>
-      <Link
-        href={DEMO_HREF}
-        className={buttonClasses({ variant: "secondary" })}
-      >
-        Coba akun demo
-      </Link>
+      <DemoSignInButton variant="secondary">Coba akun demo</DemoSignInButton>
     </div>
   );
 }
