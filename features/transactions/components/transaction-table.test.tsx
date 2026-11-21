@@ -1,4 +1,4 @@
-import { screen } from "@testing-library/react";
+import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { axe } from "jest-axe";
 
@@ -50,6 +50,13 @@ function setup(props: Partial<Props> = {}) {
 }
 
 const header = (name: string) => screen.getByRole("columnheader", { name });
+
+/** The Catatan cell of the row whose title is `title`. */
+function noteCell(title: string) {
+  const cell = screen.getByTitle(title).closest("td");
+  if (!cell) throw new Error(`No cell for ${title}`);
+  return cell;
+}
 
 describe("TransactionTable", () => {
   it("marks only the sorted column with its order", () => {
@@ -127,6 +134,22 @@ describe("TransactionTable", () => {
     expect(
       screen.getByRole("button", { name: "Ubah Transport" }),
     ).toBeInTheDocument();
+  });
+
+  it("shows the category under the note until its own column fits", () => {
+    setup();
+
+    // jsdom has no CSS, so the classes are checked: below xl (1280px) the
+    // Kategori column is hidden and the category sits under the note
+    // (DESIGN.md › Tabel transaksi).
+    expect(header("Kategori")).toHaveClass("hidden", "xl:table-cell");
+    expect(within(noteCell("Makan siang")).getByText("Makan")).toHaveClass(
+      "xl:hidden",
+    );
+    // Without a note the title already is the category name.
+    expect(
+      within(noteCell("Transport")).getAllByText("Transport"),
+    ).toHaveLength(1);
   });
 
   it("has no axe violations", async () => {
