@@ -25,8 +25,18 @@ const failed = {
   error: { status: 500, statusText: "Error" },
 } as unknown as Result;
 
-function renderOptions(props: Parameters<typeof SignInOptions>[0] = {}) {
-  return renderWithProviders(<SignInOptions {...props} />);
+const both = ["google", "github"] as const;
+
+function renderOptions(
+  props: Partial<Parameters<typeof SignInOptions>[0]> = {},
+) {
+  return renderWithProviders(<SignInOptions providers={both} {...props} />);
+}
+
+function providerButtonLabels() {
+  return screen
+    .queryAllByRole("button", { name: /^Lanjut dengan/ })
+    .map((button) => button.textContent);
 }
 
 beforeEach(() => {
@@ -138,6 +148,44 @@ describe("SignInOptions", () => {
 
   it("has no axe violations", async () => {
     const { container } = renderOptions({ error: "access_denied" });
+    expect(await axe(container)).toHaveNoViolations();
+  });
+});
+
+// The server only accepts providers with keys (lib/auth-providers.ts); a
+// button for any other one would end in a 404.
+describe("SignInOptions providers", () => {
+  it("offers only the demo account when no provider has keys", () => {
+    renderOptions({ providers: [] });
+
+    expect(providerButtonLabels()).toStrictEqual([]);
+    expect(screen.queryByText("atau")).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Masuk dengan akun demo" }),
+    ).toBeEnabled();
+  });
+
+  it("offers only the provider that has keys", () => {
+    renderOptions({ providers: ["github"] });
+
+    expect(providerButtonLabels()).toStrictEqual(["Lanjut dengan GitHub"]);
+    expect(screen.getByText("atau")).toBeInTheDocument();
+  });
+
+  it("keeps Google above GitHub", () => {
+    renderOptions({ providers: ["github", "google"] });
+
+    expect(providerButtonLabels()).toStrictEqual([
+      "Lanjut dengan Google",
+      "Lanjut dengan GitHub",
+    ]);
+  });
+
+  it.each([
+    ["no provider", []],
+    ["both providers", both],
+  ] as const)("has no axe violations with %s", async (_, providers) => {
+    const { container } = renderOptions({ providers });
     expect(await axe(container)).toHaveNoViolations();
   });
 });

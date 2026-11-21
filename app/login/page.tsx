@@ -8,6 +8,8 @@ import { SkipLink } from "@/components/ui/skip-link";
 import { RedirectIfSignedIn } from "@/features/auth/components/redirect-if-signed-in";
 import { SignInOptions } from "@/features/auth/components/sign-in-options";
 import { SignInOptionsFromUrl } from "@/features/auth/components/sign-in-options-from-url";
+import { signInIntro } from "@/features/auth/sign-in-intro";
+import { socialProviderIds } from "@/lib/auth-providers";
 
 export const metadata: Metadata = { title: "Masuk" };
 
@@ -17,6 +19,10 @@ export const metadata: Metadata = { title: "Masuk" };
  * the URL's ?next= and ?error= are read inside Suspense boundaries.
  */
 export default function LoginPage() {
+  // Read while the page is prerendered, so it follows the build's env (on
+  // Vercel a changed env needs a redeploy anyway). Only ids reach the client.
+  const providers = socialProviderIds(process.env);
+
   return (
     <>
       <SkipLink />
@@ -46,14 +52,12 @@ export default function LoginPage() {
                 <h1 className="text-3xl font-semibold tracking-[-0.02em] text-balance">
                   Masuk ke Kleingeld
                 </h1>
-                <p className="text-fg-muted">
-                  Pakai akun Google atau GitHub. Tidak perlu membuat password.
-                </p>
+                <p className="text-fg-muted">{signInIntro(providers)}</p>
               </div>
             </div>
             {/* The fallback works on its own, with the default ?next=. */}
-            <Suspense fallback={<SignInOptions />}>
-              <SignInOptionsFromUrl />
+            <Suspense fallback={<SignInOptions providers={providers} />}>
+              <SignInOptionsFromUrl providers={providers} />
             </Suspense>
             <Link
               href="/"

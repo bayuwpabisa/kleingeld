@@ -5,29 +5,14 @@ import { db } from "@/db";
 import { defaultCategoriesFor } from "@/db/default-categories";
 import * as schema from "@/db/schema";
 import { demoSignIn } from "./auth-demo-plugin";
+import { socialProvidersConfig } from "./auth-providers";
 
 // Secrets come from the environment only (README › Auth). BETTER_AUTH_SECRET
 // and BETTER_AUTH_URL are read by Better Auth itself.
 const env = process.env;
 
-// A provider is only offered when its keys are set: Vercel previews have no
-// OAuth app (their URLs change), so there only the demo sign-in works.
-const socialProviders = {
-  ...(env.GOOGLE_CLIENT_ID &&
-    env.GOOGLE_CLIENT_SECRET && {
-      google: {
-        clientId: env.GOOGLE_CLIENT_ID,
-        clientSecret: env.GOOGLE_CLIENT_SECRET,
-      },
-    }),
-  ...(env.GITHUB_CLIENT_ID &&
-    env.GITHUB_CLIENT_SECRET && {
-      github: {
-        clientId: env.GITHUB_CLIENT_ID,
-        clientSecret: env.GITHUB_CLIENT_SECRET,
-      },
-    }),
-};
+// Only providers with both keys; the login page shows the same list.
+const socialProviders = socialProvidersConfig(env);
 
 // Vercel previews are served from a deployment URL and a branch URL.
 const vercelOrigins = [env.VERCEL_URL, env.VERCEL_BRANCH_URL]
