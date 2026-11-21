@@ -74,6 +74,21 @@ describe("SignOutButton", () => {
     expect(replace).toHaveBeenCalledWith("/");
   });
 
+  // DESIGN.md › States: busy = disabled + spinner, also for the sidebar item.
+  it("shows a spinner instead of its icon while signing out from the sidebar", async () => {
+    signOut.mockReturnValue(new Promise(() => {}));
+    renderWithProviders(<SignOutButton appearance="nav" />);
+    const button = screen.getByRole("button", { name: "Keluar" });
+    expect(button.querySelector(".animate-spin")).toBeNull();
+
+    await userEvent.click(button);
+
+    expect(button).toBeDisabled();
+    expect(button).toHaveAttribute("aria-busy", "true");
+    expect(button.querySelector(".animate-spin")).not.toBeNull();
+    expect(button.querySelector(".lucide-log-out")).toBeNull();
+  });
+
   // With cacheComponents, Next hides a page it leaves (<Activity>) and keeps
   // its state: the button stayed busy when the user signed in again.
   it.each(["button", "nav"] as const)(
