@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { Suspense, type ReactNode } from "react";
 import { Logo } from "@/components/brand/logo";
 import { cn } from "@/lib/cn";
+import { NavLinkIcon } from "./nav-link-icon";
 import { isActivePath, navItems } from "./nav-items";
 
 /**
@@ -64,9 +65,9 @@ function SidebarLinks({ pathname }: { pathname: string | null }) {
                   className="absolute inset-y-2 left-0 w-0.75 rounded-full bg-primary"
                 />
               )}
-              <Icon
-                aria-hidden
-                className="size-5 shrink-0"
+              <NavLinkIcon
+                icon={Icon}
+                className="size-5"
                 strokeWidth={active ? 2.25 : 1.75}
               />
               {label}

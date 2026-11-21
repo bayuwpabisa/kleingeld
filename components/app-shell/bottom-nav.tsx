@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { Plus } from "lucide-react";
 import { Suspense } from "react";
 import { cn } from "@/lib/cn";
+import { NavLinkIcon } from "./nav-link-icon";
 import { isActivePath, navItems, type NavItem } from "./nav-items";
 
 function BottomNavLink({
@@ -31,7 +32,11 @@ function BottomNavLink({
           className="absolute top-0 h-0.75 w-8 rounded-full bg-primary"
         />
       )}
-      <Icon aria-hidden className="size-6" strokeWidth={active ? 2.25 : 1.75} />
+      <NavLinkIcon
+        icon={Icon}
+        className="size-6"
+        strokeWidth={active ? 2.25 : 1.75}
+      />
       {label}
     </Link>
   );
@@ -78,7 +83,7 @@ function BottomNavItems({ pathname }: { pathname: string | null }) {
           aria-label="Tambah transaksi"
           className="-mt-6 flex size-14 items-center justify-center rounded-full bg-primary text-on-primary shadow-overlay transition-colors hover:bg-primary-hover"
         >
-          <Plus aria-hidden className="size-6" strokeWidth={2.25} />
+          <NavLinkIcon icon={Plus} className="size-6" strokeWidth={2.25} />
         </Link>
       </li>
       {navItems.slice(2, 4).map(renderItem)}
