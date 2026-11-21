@@ -2,6 +2,7 @@ import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { axe } from "jest-axe";
 import { useParams, useRouter } from "next/navigation";
+import { Activity } from "react";
 
 import { ApiError, apiFetch } from "@/lib/api/client";
 import type { CategoryDto } from "@/schemas/category";
@@ -58,6 +59,14 @@ afterEach(() => {
   fetchApi.mockReset();
 });
 
+function newScreen(mode: "visible" | "hidden") {
+  return (
+    <Activity mode={mode}>
+      <NewTransactionScreen />
+    </Activity>
+  );
+}
+
 describe("NewTransactionScreen", () => {
   it("saves and goes back to the list", async () => {
     renderWithProviders(<NewTransactionScreen />);
@@ -78,6 +87,49 @@ describe("NewTransactionScreen", () => {
         "/api/transactions",
         expect.objectContaining({ method: "POST" }),
       ),
+    );
+  });
+
+  // With cacheComponents, Next hides a page it leaves (<Activity>) and keeps
+  // its state: the form showed the saved values again, ready to save twice.
+  it("starts empty when opened again after saving", async () => {
+    const { rerender } = renderWithProviders(newScreen("visible"));
+
+    await userEvent.type(
+      await screen.findByRole("textbox", { name: "Nominal" }),
+      "12000",
+    );
+    await userEvent.selectOptions(
+      screen.getByRole("combobox", { name: "Kategori" }),
+      "Makan",
+    );
+    await userEvent.click(screen.getByRole("button", { name: "Simpan" }));
+    // Still filled while the list is on its way.
+    expect(screen.getByRole("textbox", { name: "Nominal" })).toHaveValue(
+      "12.000",
+    );
+
+    rerender(newScreen("hidden"));
+    rerender(newScreen("visible"));
+
+    expect(await screen.findByRole("textbox", { name: "Nominal" })).toHaveValue(
+      "",
+    );
+    expect(screen.getByRole("combobox", { name: "Kategori" })).toHaveValue("");
+  });
+
+  it("keeps an unsaved draft when the page comes back", async () => {
+    const { rerender } = renderWithProviders(newScreen("visible"));
+
+    await userEvent.type(
+      await screen.findByRole("textbox", { name: "Nominal" }),
+      "12000",
+    );
+    rerender(newScreen("hidden"));
+    rerender(newScreen("visible"));
+
+    expect(screen.getByRole("textbox", { name: "Nominal" })).toHaveValue(
+      "12.000",
     );
   });
 
@@ -129,6 +181,34 @@ describe("EditTransactionScreen", () => {
         },
       ),
     );
+  });
+
+  // The delete question is a one-off: it must not greet the user again when
+  // they come back to this transaction (Next keeps hidden pages' state).
+  it("closes the delete sheet when the page is left", async () => {
+    const page = (mode: "visible" | "hidden") => (
+      <Activity mode={mode}>
+        <EditTransactionScreen />
+      </Activity>
+    );
+    const { rerender } = renderWithProviders(page("visible"));
+
+    await userEvent.click(
+      await screen.findByRole("button", { name: "Hapus transaksi" }),
+    );
+    expect(
+      await screen.findByRole("dialog", { name: "Hapus transaksi ini?" }),
+    ).toBeInTheDocument();
+
+    rerender(page("hidden"));
+    rerender(page("visible"));
+
+    expect(
+      await screen.findByRole("button", { name: "Hapus transaksi" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("dialog", { name: "Hapus transaksi ini?" }),
+    ).not.toBeInTheDocument();
   });
 
   it("says when the transaction does not exist", async () => {
