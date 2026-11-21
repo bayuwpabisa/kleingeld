@@ -23,10 +23,11 @@ type Sorting = { sort: TransactionSort; order: SortOrder };
 
 /**
  * The list on wide screens (DESIGN.md, Tabel transaksi): date, note,
- * category, amount and the row actions, 56px rows. Tanggal and Nominal sort
- * the list (`aria-sort` on the sorted column). Ubah and Hapus open the
- * dialogs of app/(app)/layout.tsx. A row still being saved has no id on the
- * server yet, so its actions wait.
+ * category, amount and the row actions, 56px rows. Below xl (1280px) the
+ * category moves under the note, so the note keeps room at 1024px. Tanggal
+ * and Nominal sort the list (`aria-sort` on the sorted column). Ubah and
+ * Hapus open the dialogs of app/(app)/layout.tsx. A row still being saved
+ * has no id on the server yet, so its actions wait.
  */
 export function TransactionTable({
   transactions,
@@ -54,15 +55,19 @@ export function TransactionTable({
           <th scope="col" className="px-5 py-3 font-normal">
             Catatan
           </th>
-          <th scope="col" className="w-44 px-5 py-3 font-normal">
+          <th
+            scope="col"
+            className="hidden w-44 px-5 py-3 font-normal xl:table-cell"
+          >
             Kategori
           </th>
+          {/* w-52: wide enough for the largest amount, Rp1.000.000.000.000. */}
           <SortableHeader
             column="amount"
             label="Nominal"
             sorting={sorting}
             onSort={onSort}
-            className="w-48"
+            className="w-52"
             alignEnd
           />
           <th scope="col" className="w-40 px-5 py-3 text-right font-normal">
@@ -83,8 +88,13 @@ export function TransactionTable({
                 <span className="block truncate" title={title}>
                   {title}
                 </span>
+                {transaction.note !== null && (
+                  <span className="block truncate text-sm text-fg-muted xl:hidden">
+                    {transaction.category.name}
+                  </span>
+                )}
               </td>
-              <td className="px-5">
+              <td className="hidden px-5 xl:table-cell">
                 <span className="inline-block max-w-full truncate rounded-full border border-border px-3 py-1 text-sm">
                   {transaction.category.name}
                 </span>
