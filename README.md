@@ -28,7 +28,7 @@ What v0.2 contains:
 - [x] Search, period, category and type filters, order and page kept in the URL, so a filtered list can be bookmarked and shared
 - [x] Add, edit and delete without waiting for the server (optimistic updates with rollback), and undo for a delete
 - [x] One form (React Hook Form + Zod) in a dialog on desktop and on its own page on phones, with errors under each field and focus on the first one
-- [x] 497 tests with Jest, React Testing Library and jest-axe; database tests run on PGlite (real Postgres in memory)
+- [x] 498 tests with Jest, React Testing Library and jest-axe; database tests run on PGlite (real Postgres in memory)
 
 What v0.1 contains:
 
