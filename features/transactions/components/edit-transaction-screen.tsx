@@ -9,6 +9,7 @@ import { buttonClasses } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ErrorState } from "@/components/ui/error-state";
 import { ApiError } from "@/lib/api/client";
+import { useResetOnHide } from "@/lib/use-reset-on-hide";
 
 import { useDeleteTransaction } from "../api/use-delete-transaction";
 import { useTransaction } from "../api/use-transaction";
@@ -32,6 +33,9 @@ export function EditTransactionScreen() {
   const update = useUpdateTransaction();
   const remove = useDeleteTransaction();
   const [confirmDelete, setConfirmDelete] = useState(false);
+  // Next keeps a hidden page's state; the delete question must not be open
+  // again when the user comes back to this transaction.
+  useResetOnHide(() => setConfirmDelete(false));
 
   if (transaction.data) {
     return (

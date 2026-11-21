@@ -1,6 +1,7 @@
 import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useRouter } from "next/navigation";
+import { Activity } from "react";
 import { authClient } from "@/lib/auth-client";
 import { renderWithProviders } from "@/test/render-with-providers";
 import { SignOutButton } from "./sign-out-button";
@@ -72,4 +73,45 @@ describe("SignOutButton", () => {
 
     expect(replace).toHaveBeenCalledWith("/");
   });
+
+  // DESIGN.md › States: busy = disabled + spinner, also for the sidebar item.
+  it("shows a spinner instead of its icon while signing out from the sidebar", async () => {
+    signOut.mockReturnValue(new Promise(() => {}));
+    renderWithProviders(<SignOutButton appearance="nav" />);
+    const button = screen.getByRole("button", { name: "Keluar" });
+    expect(button.querySelector(".animate-spin")).toBeNull();
+
+    await userEvent.click(button);
+
+    expect(button).toBeDisabled();
+    expect(button).toHaveAttribute("aria-busy", "true");
+    expect(button.querySelector(".animate-spin")).not.toBeNull();
+    expect(button.querySelector(".lucide-log-out")).toBeNull();
+  });
+
+  // With cacheComponents, Next hides a page it leaves (<Activity>) and keeps
+  // its state: the button stayed busy when the user signed in again.
+  it.each(["button", "nav"] as const)(
+    "is ready again when its page comes back after signing out (%s)",
+    async (appearance) => {
+      signOut.mockResolvedValue({ data: {}, error: null } as unknown as Result);
+      const page = (mode: "visible" | "hidden") => (
+        <Activity mode={mode}>
+          <SignOutButton appearance={appearance} />
+        </Activity>
+      );
+      const { rerender } = renderWithProviders(page("visible"));
+
+      await userEvent.click(screen.getByRole("button", { name: "Keluar" }));
+      // Busy until the next page replaces this one.
+      expect(screen.getByRole("button", { name: "Keluar" })).toBeDisabled();
+
+      rerender(page("hidden"));
+      rerender(page("visible"));
+
+      const button = screen.getByRole("button", { name: "Keluar" });
+      expect(button).toBeEnabled();
+      expect(button).not.toHaveAttribute("aria-busy");
+    },
+  );
 });

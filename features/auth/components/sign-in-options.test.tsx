@@ -2,6 +2,7 @@ import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { axe } from "jest-axe";
 import { useRouter } from "next/navigation";
+import { Activity } from "react";
 import { authClient } from "@/lib/auth-client";
 import { renderWithProviders } from "@/test/render-with-providers";
 import { SignInOptions } from "./sign-in-options";
@@ -149,6 +150,37 @@ describe("SignInOptions", () => {
   it("has no axe violations", async () => {
     const { container } = renderOptions({ error: "access_denied" });
     expect(await axe(container)).toHaveNoViolations();
+  });
+});
+
+// With cacheComponents, Next hides a page it leaves (<Activity>) and keeps
+// its state, so a provider button could come back still waiting.
+describe("SignInOptions when its page comes back", () => {
+  it("lets the user pick a provider again", async () => {
+    social.mockResolvedValue(ok);
+    const page = (mode: "visible" | "hidden") => (
+      <Activity mode={mode}>
+        <SignInOptions providers={both} />
+      </Activity>
+    );
+    const { rerender } = renderWithProviders(page("visible"));
+
+    await userEvent.click(
+      screen.getByRole("button", { name: "Lanjut dengan Google" }),
+    );
+    // Waiting for the browser to leave for Google.
+    expect(
+      screen.getByRole("button", { name: "Lanjut dengan GitHub" }),
+    ).toBeDisabled();
+
+    rerender(page("hidden"));
+    rerender(page("visible"));
+
+    for (const name of ["Lanjut dengan Google", "Lanjut dengan GitHub"]) {
+      const button = screen.getByRole("button", { name });
+      expect(button).toBeEnabled();
+      expect(button).not.toHaveAttribute("aria-busy");
+    }
   });
 });
 

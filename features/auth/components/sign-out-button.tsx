@@ -1,12 +1,13 @@
 "use client";
 
 import { useQueryClient } from "@tanstack/react-query";
-import { LogOut } from "lucide-react";
+import { LoaderCircle, LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
 import { authClient } from "@/lib/auth-client";
+import { useResetOnHide } from "@/lib/use-reset-on-hide";
 
 type SignOutButtonProps = {
   /** "nav" looks like a sidebar item; "button" is a full secondary button. */
@@ -19,6 +20,8 @@ export function SignOutButton({ appearance = "button" }: SignOutButtonProps) {
   const toast = useToast();
   const queryClient = useQueryClient();
   const [busy, setBusy] = useState(false);
+  // Busy lasts until the landing page; the app shell may be shown again later.
+  useResetOnHide(() => setBusy(false));
 
   async function signOut() {
     setBusy(true);
@@ -44,7 +47,16 @@ export function SignOutButton({ appearance = "button" }: SignOutButtonProps) {
         aria-busy={busy || undefined}
         className="flex h-10 items-center gap-3 rounded-lg px-3 text-sm text-fg-muted transition-colors hover:bg-surface-muted hover:text-fg disabled:cursor-not-allowed disabled:opacity-50"
       >
-        <LogOut aria-hidden className="size-5 shrink-0" strokeWidth={1.75} />
+        {/* Busy = disabled + spinner (DESIGN.md › States), in the icon's place. */}
+        {busy ? (
+          <LoaderCircle
+            aria-hidden
+            className="size-5 shrink-0 animate-spin"
+            strokeWidth={1.75}
+          />
+        ) : (
+          <LogOut aria-hidden className="size-5 shrink-0" strokeWidth={1.75} />
+        )}
         Keluar
       </button>
     );
