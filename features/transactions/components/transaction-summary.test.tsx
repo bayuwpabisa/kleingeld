@@ -1,6 +1,7 @@
 import { screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 
-import { apiFetch } from "@/lib/api/client";
+import { ApiError, apiFetch } from "@/lib/api/client";
 import type { TransactionSummary as Summary } from "@/schemas/transaction";
 import { renderWithProviders } from "@/test/render-with-providers";
 
@@ -71,5 +72,34 @@ describe("TransactionSummary", () => {
     expect(screen.getByRole("region", { name: "Ringkasan" })).toHaveClass(
       "min-[360px]:grid-cols-2",
     );
+  });
+
+  it("says when it fails to load, and loads again on Coba lagi", async () => {
+    const user = userEvent.setup();
+    let fail = true;
+    fetchApi.mockImplementation(async (path: string) => {
+      if (!path.startsWith("/api/transactions/summary")) {
+        throw new Error(`Unexpected request ${path}`);
+      }
+      if (fail) {
+        fail = false;
+        throw new ApiError({ status: 500, code: "unknown", message: "x" });
+      }
+      return {
+        income: { total: 8_500_000, count: 1 },
+        expense: { total: 85_000, count: 2 },
+        balance: 8_415_000,
+      };
+    });
+    renderWithProviders(<TransactionSummary filters={{}} />);
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "Ringkasan gagal dimuat.",
+    );
+
+    await user.click(screen.getByRole("button", { name: "Coba lagi" }));
+
+    expect(await amount("8.500.000 rupiah")).toBeInTheDocument();
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
   });
 });

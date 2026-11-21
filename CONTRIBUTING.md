@@ -33,7 +33,7 @@ type(scope): deskripsi singkat
 ```
 
 - **type:** `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`, `revert`
-- **scope** (opsional): `transactions`, `budgets`, `bills`, `dashboard`, `auth`, `ui`, `db`
+- **scope** (opsional): `transactions`, `budgets`, `bills`, `dashboard`, `auth`, `ui`, `db`, `deps` (upgrade dependency, misalnya `fix(deps): upgrade next to 16.4.6`)
 - **deskripsi:** huruf kecil, kalimat perintah, tanpa titik di akhir
 
 Contoh:
@@ -59,14 +59,16 @@ Satu commit untuk satu tugas.
 
 ## Rilis
 
-1. Buka PR `develop` → `main`, lalu pilih **Create a merge commit** (jangan squash, supaya `main` dan `develop` tidak bercabang).
-2. Beri tag annotated di merge commit `main`, dengan versi yang sama seperti `package.json`:
+1. Di `develop`, naikkan versi lewat PR biasa: `npm version <versi> --no-git-tag-version` (mengubah `package.json` dan `package-lock.json`, tanpa commit dan tag).
+2. Buka PR `develop` → `main`, lalu pilih **Create a merge commit** (jangan squash, supaya `main` dan `develop` tidak bercabang).
+   > **Perhatikan tombol merge.** Tombol hijau GitHub bisa sudah berisi **Squash and merge**, cara yang dipakai untuk PR feature. Buka panah di sebelahnya dan pastikan **Create a merge commit** yang terpilih sebelum klik. Di v0.1, PR #7 ter-squash, sehingga perlu PR #8 untuk menarik commit squash itu dari `main` ke `develop`.
+3. Beri tag annotated di merge commit `main`, dengan versi yang sama seperti `package.json`. Contoh dari v0.1, ganti versi dan judulnya:
    ```
    git switch main && git pull
    git tag -a v0.1.0 -m "v0.1.0: foundation"
    git push origin v0.1.0
    ```
-3. Buat GitHub Release dari tag tersebut.
+4. Buat GitHub Release dari tag tersebut.
 
 `develop` tidak perlu menarik merge commit dari `main`; rilis berikutnya tetap merge bersih.
 

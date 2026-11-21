@@ -167,7 +167,7 @@ Sebelum menawarkan A, cek dulu bahwa A tidak melanggar DESIGN.md (Baris transaks
     - tambahkan status ronde perbaikan (commit, push, PR).
   - Commit `docs: correct the filters notes`.
 
-- [ ] **H5a. Verifikasi akhir** (R6), tanpa push
+- [x] **H5a. Verifikasi akhir** (R6), tanpa push (hasil 20 Nov: di bawah, › "Hasil H5a")
   - `node` langsung, exit code dicatat:
     - `next typegen` (seperti `npm run typecheck` dan CI), lalu tsc;
     - eslint `--max-warnings=0`;
@@ -176,11 +176,21 @@ Sebelum menawarkan A, cek dulu bahwa A tidak melanggar DESIGN.md (Baris transaks
     - build dengan env dummy CI (`DATABASE_URL=postgres://ci:ci@localhost:5432/ci`, `BETTER_AUTH_SECRET=ci-placeholder-secret-not-used-anywhere-0000`, `BETTER_AUTH_URL=http://localhost:3000`), dan `/transactions` tetap ◐.
   - Self-review `git diff e38e6c8..HEAD` terhadap plan ini dan AGENTS.md.
   - Dev server dimatikan lewat PID port.
+  - **Hasil H5a** (20 Nov, `node` langsung, tip `eb427ab`):
+    - `next typegen`, tsc, eslint `--max-warnings=0`, dan prettier `--check`: semuanya exit 0.
+    - jest penuh 2×: 481 test hijau di kedua run, 0 kegagalan penjaga `console.error`.
+    - Dev server dimatikan sebelum build, karena `next dev` dan `next build` memakai folder `.next` yang sama.
+    - Build dengan env dummy CI: run 1 exit 1 dengan `SecurityFatalError`, muncul setelah semua fase build selesai. Pesannya berisi teks yang ditujukan ke agent (sarankan upgrade Next.js), dan tidak diikuti. Run 2 exit 0, dan `/transactions` tetap ◐. CI tidak terpengaruh (`ci` hijau di PR #14).
+    - Self-review `git diff e38e6c8..HEAD`: tidak ada masalah kode baru. Satu-satunya temuan: untuk 10 digit `summaryLayout` menghasilkan `text-xl lg:text-xl` (kelas ganda, tidak berbahaya, dibiarkan; dicek ulang di kode 21 Nov).
 
-- [ ] **H5b. Push** (setelah kamu konfirmasi)
+- [x] **H5b. Push** (setelah kamu konfirmasi) (hasil: di bawah, › "Hasil H5b")
   - Push dengan perintah terpisah setelah semua cek dibaca, lalu `git status -sb` harus sama dengan origin.
   - Kamu membuka PR `feat: add transaction search, filters and pagination` ke `develop` dan squash-merge. Setelah merge: centang box 8 plan 14 Nov di branch task 15 Nov.
   - Ringkasan chat akhir mengoreksi klaim lama secara terbuka: "muat sampai ratusan juta" salah; optimistic dan tanpa-RSC sekarang terbukti; "browser-checked" terlalu luas.
+  - **Hasil H5b** (20 Nov):
+    - Push `e38e6c8..eb427ab` ke `feature/transactions-filters`.
+    - Kamu membuka PR #14 dengan judul dan deskripsi yang saya susun, lalu squash-merge ke `develop` (`ccdffef`, 20 Nov 22:19 WIB). Check `ci` dan Vercel Preview sukses, dan branch remote terhapus otomatis.
+    - 21 Nov, di branch task 15 Nov: `git diff develop feature/transactions-filters` 0 baris (dicek sebelum hapus), lalu branch lokal dihapus dengan `git branch -D` sebagai perintah terpisah. Box 8 dan R6 plan 14 Nov dicentang di commit yang sama dengan catatan ini.
 
 ## File
 - H1: `features/transactions/components/transaction-groups.tsx`, `transaction-list.tsx` (`PhoneList`), `transaction-list.test.tsx`, `features/transactions/group-by-date.ts` (komentar), `DESIGN.md`.

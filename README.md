@@ -6,16 +6,29 @@ A personal finance app for tracking transactions, monthly budgets per category, 
 
 **Live:** [kleingeld.vercel.app](https://kleingeld.vercel.app)
 
-> **Status: v0.1 (foundation).** The live site has the landing page and the app shell (navigation, page placeholders, light/dark theme). Sign-in, the database and the real features arrive in v0.2 and v0.3.
+> **Status: v0.2 (transactions).** On the live site, sign in with the demo account ("Coba akun demo") and add, edit, delete, search and filter transactions. The demo data resets on every demo sign-in. Dashboard, budgets and bills arrive in v0.3; Google and GitHub sign-in are built but switched on for the live site in v1.0.
 
 ## Roadmap
 
-| Release | Target | Scope | Status |
+Dates of released versions are when they shipped; the others are targets, updated with every release.
+
+| Release | Date | Scope | Status |
 |---|---|---|---|
 | v0.1 | 8 Nov 2026 | Tooling, CI, accessible UI kit, responsive app shell, dark mode, static landing page | ✅ Released |
-| v0.2 | 15 Nov 2026 | Postgres schema and demo data, sign-in (Google, GitHub, demo account), transactions API, list, form and table with URL filters | In progress |
-| v0.3 | 22 Nov 2026 | Dashboard with charts, budgets per category, recurring bills and installments, performance and accessibility audit | Planned |
-| v1.0 | 29 Nov 2026 | Unit and end-to-end tests for the main flows, Docker, production deploy, full documentation | Planned |
+| v0.2 | 21 Nov 2026 | Postgres schema and demo data, sign-in (demo account; Google and GitHub ready), transactions API, list, form and table with URL filters | ✅ Released |
+| v0.3 | 28 Nov 2026 | Dashboard with charts, budgets per category, recurring bills and installments, performance and accessibility audit | Planned |
+| v1.0 | 5 Dec 2026 | Unit and end-to-end tests for the main flows, Docker, Google and GitHub sign-in on the live site, full documentation | Planned |
+
+What v0.2 contains:
+
+- [x] Postgres on Neon with Drizzle ORM: schema, migrations, and a demo account with about three months of transactions
+- [x] Sign-in with Better Auth: a one-click demo account, plus Google and GitHub when their keys are set; signed-out visitors are sent to `/login`
+- [x] REST API for transactions and categories, validated with the same Zod schemas as the forms; every query is scoped to the signed-in user
+- [x] Transactions page: a sortable, paged table on desktop and a list grouped by day with "Muat lebih banyak" on phones, with totals for the current filters
+- [x] Search, period, category and type filters, order and page kept in the URL, so a filtered list can be bookmarked and shared
+- [x] Add, edit and delete without waiting for the server (optimistic updates with rollback), and undo for a delete
+- [x] One form (React Hook Form + Zod) in a dialog on desktop and on its own page on phones, with errors under each field and focus on the first one
+- [x] 497 tests with Jest, React Testing Library and jest-axe; database tests run on PGlite (real Postgres in memory)
 
 What v0.1 contains:
 
