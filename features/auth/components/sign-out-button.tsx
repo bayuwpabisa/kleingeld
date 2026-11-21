@@ -7,6 +7,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
 import { authClient } from "@/lib/auth-client";
+import { useResetOnHide } from "@/lib/use-reset-on-hide";
 
 type SignOutButtonProps = {
   /** "nav" looks like a sidebar item; "button" is a full secondary button. */
@@ -19,6 +20,8 @@ export function SignOutButton({ appearance = "button" }: SignOutButtonProps) {
   const toast = useToast();
   const queryClient = useQueryClient();
   const [busy, setBusy] = useState(false);
+  // Busy lasts until the landing page; the app shell may be shown again later.
+  useResetOnHide(() => setBusy(false));
 
   async function signOut() {
     setBusy(true);

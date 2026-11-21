@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
 import { authClient } from "@/lib/auth-client";
 import { SOCIAL_PROVIDERS, type SocialProviderId } from "@/lib/auth-providers";
+import { useResetOnHide } from "@/lib/use-reset-on-hide";
 import { DemoSignInButton } from "./demo-sign-in-button";
 
 type SignInOptionsProps = {
@@ -27,6 +28,8 @@ export function SignInOptions({
 }: SignInOptionsProps) {
   const toast = useToast();
   const [pending, setPending] = useState<SocialProviderId | null>(null);
+  // Pending lasts until the browser leaves; this page may be shown again.
+  useResetOnHide(() => setPending(null));
   const offered = SOCIAL_PROVIDERS.filter(({ id }) => providers.includes(id));
 
   async function signInWith(provider: SocialProviderId, label: string) {

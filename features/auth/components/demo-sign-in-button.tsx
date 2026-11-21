@@ -6,6 +6,7 @@ import { useState, type ReactNode } from "react";
 import { Button, type ButtonVariant } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
 import { authClient } from "@/lib/auth-client";
+import { useResetOnHide } from "@/lib/use-reset-on-hide";
 
 type DemoSignInButtonProps = {
   /** Where to go once signed in. */
@@ -29,6 +30,8 @@ export function DemoSignInButton({
   const toast = useToast();
   const queryClient = useQueryClient();
   const [busy, setBusy] = useState(false);
+  // Busy lasts until the next page; this page may be shown again later.
+  useResetOnHide(() => setBusy(false));
 
   async function signIn() {
     setBusy(true);
