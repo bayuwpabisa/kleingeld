@@ -96,6 +96,8 @@ The demo sign-in ("Masuk dengan akun demo") needs only the database and the secr
 - **GitHub:** Settings › Developer settings › OAuth Apps › New. Homepage `http://localhost:3000`, callback `http://localhost:3000/api/auth/callback/github`.
 - **Google:** in Google Cloud Console, set up the OAuth consent screen (External, scopes `openid`, `email`, `profile`; add yourself as a test user), then create an OAuth client ID of type Web application with origin `http://localhost:3000` and redirect URI `http://localhost:3000/api/auth/callback/google`.
 
+Both the server and the login page read this list from [lib/auth-providers.ts](lib/auth-providers.ts), so `/login` shows a button only for a provider the server accepts. The login page is static and reads the keys during `next build`: after adding or removing keys, build again (on Vercel, redeploy).
+
 `proxy.ts` sends signed-out visitors from the app pages to `/login`. It only checks that a session cookie exists; the server checks the session itself in `lib/session.ts`.
 
 ## API
