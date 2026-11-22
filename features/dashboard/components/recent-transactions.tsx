@@ -143,16 +143,23 @@ function RecentTransactionsFrame({
   );
 }
 
-/** Five rows shaped like TransactionRow (64px each). */
+/**
+ * Five rows shaped like TransactionRow: 68px each, the title's 24px line and
+ * the detail's 20px line plus the row's padding (measured in the browser).
+ */
 function RowsSkeleton() {
   return (
     <div aria-hidden className="divide-y divide-border">
       {Array.from({ length: RECENT_QUERY.pageSize }, (_, index) => (
         <div key={index} className="flex items-center gap-3 py-3">
           <Skeleton className="size-10 shrink-0 rounded-full" />
-          <div className="flex min-w-0 flex-1 flex-col gap-2">
-            <Skeleton className="h-4 w-2/3" />
-            <Skeleton className="h-3.5 w-1/3" />
+          <div className="min-w-0 flex-1">
+            <div className="flex h-6 items-center">
+              <Skeleton className="h-4 w-2/3" />
+            </div>
+            <div className="flex h-5 items-center">
+              <Skeleton className="h-3.5 w-1/3" />
+            </div>
           </div>
           <Skeleton className="h-4 w-20" />
         </div>
