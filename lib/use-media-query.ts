@@ -2,6 +2,9 @@
 
 import { useCallback, useSyncExternalStore } from "react";
 
+/** The desktop layout (Tailwind `lg`), for useMediaQuery and matchMedia. */
+export const DESKTOP_MEDIA = "(min-width: 1024px)";
+
 /**
  * Whether a CSS media query matches, kept in sync when it changes. Null on
  * the server and during hydration, where the window is unknown: render a

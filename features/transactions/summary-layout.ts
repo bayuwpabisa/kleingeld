@@ -40,14 +40,28 @@ export type SummaryLayout = {
  * digits than that, so every card can share one size.
  */
 export function summaryLayout(largest: number): SummaryLayout {
-  const digits = String(Math.trunc(Math.abs(largest))).length;
-  const phone = PHONE_TIERS.find((tier) => digits <= tier.maxDigits);
-  const desktop =
-    DESKTOP_TIERS.find((tier) => digits <= tier.maxDigits)?.size ??
-    DESKTOP_SMALLEST;
-
+  const phone = PHONE_TIERS.find((tier) => digitsOf(largest) <= tier.maxDigits);
   return {
     grid: phone ? TWO_COLUMNS : ONE_COLUMN,
-    amount: ["text-xl", phone?.size, desktop].filter(Boolean).join(" "),
+    amount: ["text-xl", phone?.size, desktopAmountSize(largest)]
+      .filter(Boolean)
+      .join(" "),
   };
+}
+
+/**
+ * Only the desktop size of summaryLayout's amount, for an amount that has its
+ * own size on phones (the dashboard's balance) but sits in line with the
+ * other cards on desktop.
+ */
+export function desktopAmountSize(largest: number): string {
+  const digits = digitsOf(largest);
+  return (
+    DESKTOP_TIERS.find((tier) => digits <= tier.maxDigits)?.size ??
+    DESKTOP_SMALLEST
+  );
+}
+
+function digitsOf(amount: number) {
+  return String(Math.trunc(Math.abs(amount))).length;
 }
