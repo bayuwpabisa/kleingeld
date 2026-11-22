@@ -16,7 +16,7 @@ Dates of released versions are when they shipped; the others are targets, update
 |---|---|---|---|
 | v0.1 | 8 Nov 2026 | Tooling, CI, accessible UI kit, responsive app shell, dark mode, static landing page | ✅ Released |
 | v0.2 | 21 Nov 2026 | Postgres schema and demo data, sign-in (demo account; Google and GitHub ready), transactions API, list, form and table with URL filters | ✅ Released |
-| v0.3 | 28 Nov 2026 | Dashboard with charts, budgets per category, recurring bills and installments, performance and accessibility audit | Planned |
+| v0.3 | 28 Nov 2026 | Dashboard with charts, budgets per category, recurring bills and installments, performance and accessibility audit | In progress |
 | v1.0 | 5 Dec 2026 | Unit and end-to-end tests for the main flows, Docker, Google and GitHub sign-in on the live site, full documentation | Planned |
 
 What v0.2 contains:
