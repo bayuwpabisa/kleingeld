@@ -110,7 +110,7 @@ function MonthSummaryCards({
         note={
           summary &&
           (summary.income.count === 0
-            ? "Belum ada pemasukan bulan ini"
+            ? "Belum ada pemasukan"
             : `${summary.income.count} transaksi`)
         }
       />

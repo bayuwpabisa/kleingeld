@@ -81,9 +81,9 @@ describe("MonthSummary with the server's data", () => {
   it("says no income has come in yet, and shows the balance below zero", () => {
     renderHydrated(BEFORE_PAYDAY);
 
-    expect(
-      screen.getByText("Belum ada pemasukan bulan ini"),
-    ).toBeInTheDocument();
+    // Short enough for one line at most widths (measured, docs/plans/
+    // 2026-11-16-dashboard.md › D4); the card already says "bulan ini".
+    expect(screen.getByText("Belum ada pemasukan")).toBeInTheDocument();
     expect(screen.queryByText("0 transaksi")).not.toBeInTheDocument();
     expect(screen.getByText("0 rupiah")).toBeInTheDocument();
     expect(screen.getByText("minus 1.250.000 rupiah")).toBeInTheDocument();
