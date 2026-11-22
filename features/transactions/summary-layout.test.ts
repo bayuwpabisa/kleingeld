@@ -1,4 +1,4 @@
-import { summaryLayout } from "./summary-layout";
+import { desktopAmountSize, summaryLayout } from "./summary-layout";
 
 // The tiers come from measurements in the browser (docs/plans/
 // 2026-11-14-transactions-filters.md › H2): the narrowest two-column phone
@@ -32,5 +32,21 @@ describe("summaryLayout", () => {
       summaryLayout(100_000_000),
     );
     expect(summaryLayout(-99_999_999)).toStrictEqual(summaryLayout(99_999_999));
+  });
+});
+
+describe("desktopAmountSize", () => {
+  it.each([
+    [9_999_999, "lg:text-2xl"],
+    [99_999_999, "lg:text-2xl"],
+    [100_000_000, "lg:text-xl"],
+    [9_999_999_999, "lg:text-xl"],
+    [10_000_000_000, "lg:text-lg"],
+    [1_000_000_000_000, "lg:text-base"],
+    [100_000_000_000_000, "lg:text-sm"],
+    [-100_000_000, "lg:text-xl"],
+  ])("is the desktop part of the summary's size for %d", (amount, size) => {
+    expect(desktopAmountSize(amount)).toBe(size);
+    expect(summaryLayout(amount).amount.split(" ")).toContain(size);
   });
 });
