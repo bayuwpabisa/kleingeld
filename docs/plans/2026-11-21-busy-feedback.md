@@ -70,6 +70,7 @@ Branch `fix/busy-feedback` dari `develop` `0cf90f1`, scope commit `auth` dan `ui
   - Cek (`check.sh`): semua exit 0; 63 suite / 527 test (521 + 6), 0 baris `console.error`.
 - [x] C5. Cek akhir: typegen + tsc, eslint, prettier, full jest 2×, build, self-review `git diff develop...HEAD`. Push setelah konfirmasi; user membuka PR dan squash-merge.
   - 21 Nov: `check.sh` 2× (setelah commit C4): semua exit 0 di kedua putaran; 63 suite / 527 test, 0 baris `console.error`. Build dengan env dummy CI dan `GOOGLE_*`/`GITHUB_*` kosong: exit 0; tipe route sama seperti sebelumnya (`/` ○, halaman app dan `/login` ◐, API ƒ). Self-review `git diff develop...HEAD` (6 commit, 19 file): sesuai plan + C3b yang disetujui user; kode baru tanpa `any`, cast, TODO, `console.log`, atau `eslint-disable` (`grep` kosong). Test baru memakai `as unknown as …` untuk mock `useRouter` dan hasil auth client, sama dengan pola yang sudah ada di `sign-out-button.test.tsx` dan `sign-in-options.test.tsx`. Temuan: konvensi baru belum tercatat untuk pekerjaan berikutnya, jadi `AGENTS.md` › Structure ditambah `auth-providers.ts`, `use-reset-on-hide.ts` + aturan "hidden pages keep their state", dan `nav-link-icon.tsx`. Push dilakukan sesudah commit catatan ini; hasilnya dan merge PR dicatat di branch berikutnya.
+  - Dipush `f932293`, PR #22 squash-merged ke `develop` → `c611c7b` (21 Nov). Dicatat di branch `feature/dashboard-summary`.
 
 ## Verifikasi
 - Setiap test baru merah di bawah mutasinya, lalu hijau; full jest tanpa kegagalan penjaga `console.error`.
