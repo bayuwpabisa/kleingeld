@@ -11,7 +11,7 @@ import { ErrorState } from "@/components/ui/error-state";
 import { Pagination } from "@/components/ui/pagination";
 import { useCategories } from "@/features/categories/api/use-categories";
 import { cn } from "@/lib/cn";
-import { useMediaQuery } from "@/lib/use-media-query";
+import { DESKTOP_MEDIA, useMediaQuery } from "@/lib/use-media-query";
 import type { TransactionListQuery } from "@/schemas/transaction";
 
 import { useInfiniteTransactions } from "../api/use-infinite-transactions";
@@ -24,9 +24,6 @@ import { TransactionListSkeleton } from "./transaction-list-skeleton";
 import { TransactionSummary } from "./transaction-summary";
 import { TransactionTable } from "./transaction-table";
 import { TransactionToolbar } from "./transaction-toolbar";
-
-/** Tailwind `lg`: the table with pages from here, the day list below. */
-const DESKTOP = "(min-width: 1024px)";
 
 type ListControls = ReturnType<typeof useListQuery>;
 
@@ -43,7 +40,8 @@ type ListControls = ReturnType<typeof useListQuery>;
 export function TransactionList() {
   const listQuery = useListQuery();
   const categories = useCategories();
-  const isDesktop = useMediaQuery(DESKTOP);
+  // The table with pages from lg, the day list below.
+  const isDesktop = useMediaQuery(DESKTOP_MEDIA);
   const { query } = listQuery;
 
   // "Hapus filter" starts the toolbar afresh (a new key), which also closes

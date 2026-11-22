@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { MouseEvent } from "react";
 
 import { CategoryIcon } from "@/components/ui/category-icon";
 import { Money } from "@/components/ui/money";
@@ -68,12 +69,19 @@ export function TransactionGroups({
   );
 }
 
-function TransactionRow({
+/**
+ * One transaction in a list (DESIGN.md, Baris transaksi). `onClick` runs
+ * before the link is followed; calling `preventDefault` there keeps the page
+ * (next/link checks it), e.g. to open the edit dialog on desktop instead.
+ */
+export function TransactionRow({
   transaction,
   detail,
+  onClick,
 }: {
   transaction: TransactionDto;
   detail: string;
+  onClick?: (event: MouseEvent<HTMLAnchorElement>) => void;
 }) {
   const title = transactionTitle(transaction);
   const content = (
@@ -99,6 +107,7 @@ function TransactionRow({
       ) : (
         <Link
           href={`/transactions/${transaction.id}/edit`}
+          onClick={onClick}
           className={`${ROW} -mx-2 rounded-lg px-2 hover:bg-surface-muted`}
         >
           {content}
