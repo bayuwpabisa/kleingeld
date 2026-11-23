@@ -8,7 +8,9 @@ import type {
 import { renderHookWithProviders } from "@/test/render-with-providers";
 
 import { DEFAULT_LIST_QUERY } from "../list-query-url";
+import { useCategoryTotals } from "./use-category-totals";
 import { useInfiniteTransactions } from "./use-infinite-transactions";
+import { useMonthlyTrend } from "./use-monthly-trend";
 import { useTransactionSummary } from "./use-transaction-summary";
 import { useTransactions } from "./use-transactions";
 
@@ -102,6 +104,51 @@ describe("useTransactionSummary", () => {
     await waitFor(() =>
       expect(fetchApi).toHaveBeenCalledWith(
         "/api/transactions/summary?from=2026-11-01&to=2026-11-30",
+        { signal: expect.any(AbortSignal) },
+      ),
+    );
+  });
+});
+
+describe("useMonthlyTrend", () => {
+  it("asks for the totals per month of the range", async () => {
+    fetchApi.mockResolvedValue([]);
+    renderHookWithProviders(() =>
+      useMonthlyTrend({ from: "2026-06", to: "2026-11" }),
+    );
+    await waitFor(() =>
+      expect(fetchApi).toHaveBeenCalledWith(
+        "/api/transactions/trend?from=2026-06&to=2026-11",
+        { signal: expect.any(AbortSignal) },
+      ),
+    );
+  });
+});
+
+describe("useCategoryTotals", () => {
+  it("asks for the totals per category of the type and range", async () => {
+    fetchApi.mockResolvedValue([]);
+    renderHookWithProviders(() =>
+      useCategoryTotals({
+        type: "expense",
+        from: "2026-11-01",
+        to: "2026-11-30",
+      }),
+    );
+    await waitFor(() =>
+      expect(fetchApi).toHaveBeenCalledWith(
+        "/api/transactions/by-category?type=expense&from=2026-11-01&to=2026-11-30",
+        { signal: expect.any(AbortSignal) },
+      ),
+    );
+  });
+
+  it("leaves out a range it does not have", async () => {
+    fetchApi.mockResolvedValue([]);
+    renderHookWithProviders(() => useCategoryTotals({ type: "income" }));
+    await waitFor(() =>
+      expect(fetchApi).toHaveBeenCalledWith(
+        "/api/transactions/by-category?type=income",
         { signal: expect.any(AbortSignal) },
       ),
     );

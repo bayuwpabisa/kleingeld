@@ -9,10 +9,17 @@ import type { AppDb } from "@/db/types";
 import { transactionKeys } from "@/features/transactions/api/keys";
 import {
   listTransactions,
+  monthlyTotals,
   summarizeTransactions,
+  totalsByCategory,
 } from "@/features/transactions/server/transactions-repo";
 
-import { currentMonthFilters, RECENT_QUERY } from "../dashboard-queries";
+import {
+  currentMonthFilters,
+  monthCategoriesQuery,
+  RECENT_QUERY,
+  trendRange,
+} from "../dashboard-queries";
 
 // Server only. Reads the dashboard's data straight from the database and
 // returns it as query cache state for <HydrationBoundary>, under the keys the
@@ -60,6 +67,36 @@ export async function prefetchRecentTransactions(
   await queryClient.prefetchQuery({
     queryKey: transactionKeys.list(RECENT_QUERY),
     queryFn: () => listTransactions(db, userId, RECENT_QUERY),
+  });
+  return dehydrate(queryClient);
+}
+
+/** Income and expense of the month of `today` and the five before it. */
+export async function prefetchMonthlyTrend(
+  db: AppDb,
+  userId: string,
+  today: string,
+): Promise<DehydratedState> {
+  const queryClient = requestQueryClient();
+  const range = trendRange(today);
+  await queryClient.prefetchQuery({
+    queryKey: transactionKeys.trend(range),
+    queryFn: () => monthlyTotals(db, userId, range),
+  });
+  return dehydrate(queryClient);
+}
+
+/** The expense of the month of `today` per category ("Per kategori"). */
+export async function prefetchMonthCategories(
+  db: AppDb,
+  userId: string,
+  today: string,
+): Promise<DehydratedState> {
+  const queryClient = requestQueryClient();
+  const query = monthCategoriesQuery(today);
+  await queryClient.prefetchQuery({
+    queryKey: transactionKeys.byCategory(query),
+    queryFn: () => totalsByCategory(db, userId, query),
   });
   return dehydrate(queryClient);
 }

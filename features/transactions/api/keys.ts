@@ -2,6 +2,8 @@ import type { QueryKey } from "@tanstack/react-query";
 
 import {
   transactionListQuerySchema,
+  type CategoryTotalsQuery,
+  type MonthlyTrendQuery,
   type TransactionFilters,
   type TransactionListQuery,
 } from "@/schemas/transaction";
@@ -13,6 +15,8 @@ export type InfiniteListQuery = Omit<TransactionListQuery, "page">;
  * Query keys for transactions, from broad to narrow, so one call can
  * invalidate them all (`transactionKeys.all`) or just the lists. Both list
  * shapes (one page on desktop, loaded pages on phones) sit under `lists()`.
+ * Totals (summary, trend, per category) are outside `lists()`: optimistic
+ * updates leave them alone, and they are refetched after every change.
  */
 export const transactionKeys = {
   all: ["transactions"] as const,
@@ -24,6 +28,10 @@ export const transactionKeys = {
   summaries: () => [...transactionKeys.all, "summary"] as const,
   summary: (filters: TransactionFilters) =>
     [...transactionKeys.summaries(), filters] as const,
+  trend: (query: MonthlyTrendQuery) =>
+    [...transactionKeys.all, "trend", query] as const,
+  byCategory: (query: CategoryTotalsQuery) =>
+    [...transactionKeys.all, "by-category", query] as const,
   detail: (id: string) => [...transactionKeys.all, "detail", id] as const,
 };
 
