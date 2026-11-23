@@ -5,6 +5,8 @@ import { AddTransactionButton } from "@/components/app-shell/add-transaction-but
 import { PageHeader } from "@/components/app-shell/page-header";
 import { MonthSummarySkeleton } from "@/features/dashboard/components/month-summary";
 import { MonthSummarySection } from "@/features/dashboard/components/month-summary-section";
+import { MonthlyTrendSkeleton } from "@/features/dashboard/components/monthly-trend";
+import { MonthlyTrendSection } from "@/features/dashboard/components/monthly-trend-section";
 import { RecentTransactionsSkeleton } from "@/features/dashboard/components/recent-transactions";
 import { RecentTransactionsSection } from "@/features/dashboard/components/recent-transactions-section";
 
@@ -25,6 +27,12 @@ export default function DashboardPage() {
       <Suspense fallback={<MonthSummarySkeleton />}>
         <MonthSummarySection />
       </Suspense>
+      {/* Charts: "Tren bulanan", then "Per kategori" (added next). */}
+      <div className="grid grid-cols-1 gap-6 lg:gap-4">
+        <Suspense fallback={<MonthlyTrendSkeleton />}>
+          <MonthlyTrendSection />
+        </Suspense>
+      </div>
       {/* Budget and bills join this row later (wireframe 03). Three columns
           only from 1440px: below that a card is too narrow for its heading
           and "Lihat semua" on one line (measured at 1280px). Both column
