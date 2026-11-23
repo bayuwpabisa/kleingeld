@@ -125,12 +125,66 @@ export const transactionListQuerySchema = z
   .object(listQueryFields)
   .refine(rangeInOrder.check, rangeInOrder.options);
 
+/** The longest trend GET /api/transactions/trend gives: two years. */
+export const MAX_TREND_MONTHS = 24;
+
+/** "YYYY-MM" with a real month. */
+const monthField = (error: string) =>
+  z.string({ error }).regex(/^\d{4}-(0[1-9]|1[0-2])$/, { error });
+
+function monthCount(from: string, to: string) {
+  const [fromYear = 0, fromMonth = 1] = from.split("-").map(Number);
+  const [toYear = 0, toMonth = 1] = to.split("-").map(Number);
+  return (toYear - fromYear) * 12 + (toMonth - fromMonth) + 1;
+}
+
+/** GET /api/transactions/trend: the first and the last month, both included. */
+export const monthlyTrendQuerySchema = z
+  .object({
+    from: monthField("Bulan awal tidak valid"),
+    to: monthField("Bulan akhir tidak valid"),
+  })
+  .refine((range) => range.from <= range.to, {
+    error: "Bulan awal harus sebelum bulan akhir",
+    path: ["to"],
+  })
+  .refine((range) => monthCount(range.from, range.to) <= MAX_TREND_MONTHS, {
+    error: `Rentang maksimal ${MAX_TREND_MONTHS} bulan`,
+    path: ["to"],
+  });
+
+/** GET /api/transactions/by-category: one type, in an optional date range. */
+export const categoryTotalsQuerySchema = z
+  .object({
+    type: z.enum(TRANSACTION_TYPES, { error: "Tipe tidak valid" }),
+    from: listQueryFields.from,
+    to: listQueryFields.to,
+  })
+  .refine(rangeInOrder.check, rangeInOrder.options);
+
 export type TransactionInput = z.infer<typeof transactionInputSchema>;
 export type TransactionUpdate = z.infer<typeof transactionUpdateSchema>;
 export type TransactionFilters = z.infer<typeof transactionFiltersSchema>;
 export type TransactionListQuery = z.infer<typeof transactionListQuerySchema>;
 export type TransactionSort = TransactionListQuery["sort"];
 export type SortOrder = TransactionListQuery["order"];
+export type MonthlyTrendQuery = z.infer<typeof monthlyTrendQuerySchema>;
+export type CategoryTotalsQuery = z.infer<typeof categoryTotalsQuerySchema>;
+
+/** One month of GET /api/transactions/trend; a month without rows is 0. */
+export type MonthlyTotal = {
+  /** "YYYY-MM" */
+  month: string;
+  income: number;
+  expense: number;
+};
+
+/** One category of GET /api/transactions/by-category. */
+export type CategoryTotal = {
+  category: { id: string; name: string; icon: string };
+  total: number;
+  count: number;
+};
 
 /** Totals of the filtered transactions, from GET /api/transactions/summary. */
 export type TransactionSummary = {

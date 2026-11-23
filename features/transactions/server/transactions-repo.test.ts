@@ -20,7 +20,9 @@ import {
   deleteTransaction,
   getTransaction,
   listTransactions,
+  monthlyTotals,
   summarizeTransactions,
+  totalsByCategory,
   updateTransaction,
 } from "./transactions-repo";
 
@@ -482,5 +484,150 @@ describe("summarizeTransactions", () => {
       expense: { total: 0, count: 0 },
       balance: 0,
     });
+  });
+});
+
+describe("monthlyTotals", () => {
+  const salary = (user: typeof alice) => ({
+    type: "income" as const,
+    categoryId: user.byName("Gaji").id,
+  });
+
+  it("adds up income and expense per month, with every month of the range", async () => {
+    // Just outside the range on both sides.
+    await create(alice, { date: "2026-05-31", amount: 99_000 });
+    await create(alice, { date: "2026-12-01", amount: 99_000 });
+    // The first and the last day of the range count.
+    await create(alice, { date: "2026-06-01", amount: 10_000 });
+    await create(alice, { date: "2026-11-30", amount: 7_000 });
+    await create(alice, { date: "2026-08-15", amount: 20_000 });
+    await create(alice, {
+      date: "2026-08-20",
+      amount: 5_000,
+      categoryId: alice.byName("Transport").id,
+    });
+    await create(alice, {
+      ...salary(alice),
+      date: "2026-08-25",
+      amount: 8_500_000,
+    });
+    // Bob's rows never count for Alice.
+    await create(bob, { date: "2026-08-10", amount: 1_000_000 });
+    await create(bob, {
+      ...salary(bob),
+      date: "2026-07-25",
+      amount: 9_000_000,
+    });
+
+    expect(
+      await monthlyTotals(db, alice.id, { from: "2026-06", to: "2026-11" }),
+    ).toEqual([
+      { month: "2026-06", income: 0, expense: 10_000 },
+      { month: "2026-07", income: 0, expense: 0 },
+      { month: "2026-08", income: 8_500_000, expense: 25_000 },
+      { month: "2026-09", income: 0, expense: 0 },
+      { month: "2026-10", income: 0, expense: 0 },
+      { month: "2026-11", income: 0, expense: 7_000 },
+    ]);
+  });
+
+  it("crosses a year boundary", async () => {
+    await create(alice, { date: "2026-12-31", amount: 12_000 });
+    await create(alice, { date: "2027-01-01", amount: 1_000 });
+
+    expect(
+      await monthlyTotals(db, alice.id, { from: "2026-12", to: "2027-01" }),
+    ).toEqual([
+      { month: "2026-12", income: 0, expense: 12_000 },
+      { month: "2027-01", income: 0, expense: 1_000 },
+    ]);
+  });
+
+  it("is all zero without transactions", async () => {
+    await create(bob, { date: "2026-11-01" });
+    expect(
+      await monthlyTotals(db, alice.id, { from: "2026-10", to: "2026-11" }),
+    ).toEqual([
+      { month: "2026-10", income: 0, expense: 0 },
+      { month: "2026-11", income: 0, expense: 0 },
+    ]);
+  });
+});
+
+describe("totalsByCategory", () => {
+  const november = { from: "2026-11-01", to: "2026-11-30" };
+
+  it("adds up the user's transactions of one type per category, largest first", async () => {
+    await create(alice, { date: "2026-11-01", amount: 30_000 });
+    await create(alice, { date: "2026-11-30", amount: 20_000 });
+    await create(alice, {
+      date: "2026-11-02",
+      amount: 75_000,
+      categoryId: alice.byName("Transport").id,
+    });
+    // Outside the range, of the other type, or Bob's: none of these count.
+    await create(alice, { date: "2026-10-31", amount: 500_000 });
+    await create(alice, { date: "2026-12-01", amount: 500_000 });
+    await create(alice, {
+      type: "income",
+      categoryId: alice.byName("Gaji").id,
+      date: "2026-11-25",
+      amount: 8_500_000,
+    });
+    await create(bob, { date: "2026-11-05", amount: 900_000 });
+
+    expect(
+      await totalsByCategory(db, alice.id, { type: "expense", ...november }),
+    ).toEqual([
+      {
+        category: {
+          id: alice.byName("Transport").id,
+          name: "Transport",
+          icon: "bus",
+        },
+        total: 75_000,
+        count: 1,
+      },
+      {
+        category: {
+          id: alice.byName("Makan").id,
+          name: "Makan",
+          icon: "utensils",
+        },
+        total: 50_000,
+        count: 2,
+      },
+    ]);
+  });
+
+  it("orders equal totals by category name", async () => {
+    await create(alice, {
+      amount: 10_000,
+      categoryId: alice.byName("Transport").id,
+    });
+    await create(alice, { amount: 10_000 });
+
+    const totals = await totalsByCategory(db, alice.id, {
+      type: "expense",
+      ...november,
+    });
+    expect(totals.map((t) => t.category.name)).toEqual(["Makan", "Transport"]);
+  });
+
+  it("covers all time without a range", async () => {
+    await create(alice, { date: "2020-01-01", amount: 10_000 });
+    await create(alice, { date: "2026-11-11", amount: 5_000 });
+
+    const totals = await totalsByCategory(db, alice.id, { type: "expense" });
+    expect(totals).toEqual([
+      expect.objectContaining({ total: 15_000, count: 2 }),
+    ]);
+  });
+
+  it("is empty without transactions", async () => {
+    await create(bob);
+    expect(
+      await totalsByCategory(db, alice.id, { type: "expense", ...november }),
+    ).toEqual([]);
   });
 });

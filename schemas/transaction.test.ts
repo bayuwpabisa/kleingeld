@@ -3,10 +3,13 @@
  */
 import { z } from "zod";
 import {
+  categoryTotalsQuerySchema,
   MAX_AMOUNT,
   MAX_NOTE_LENGTH,
   MAX_PAGE_SIZE,
   MAX_SEARCH_LENGTH,
+  MAX_TREND_MONTHS,
+  monthlyTrendQuerySchema,
   transactionFiltersSchema,
   transactionInputSchema,
   transactionListQuerySchema,
@@ -268,5 +271,107 @@ describe("transactionFiltersSchema", () => {
         to: "2026-11-01",
       }).success,
     ).toBe(false);
+  });
+});
+
+describe("monthlyTrendQuerySchema", () => {
+  it("reads a range of months and drops other parameters", () => {
+    expect(
+      monthlyTrendQuerySchema.parse({
+        from: "2026-06",
+        to: "2026-11",
+        type: "income",
+      }),
+    ).toEqual({ from: "2026-06", to: "2026-11" });
+  });
+
+  it("accepts one month and the longest range", () => {
+    expect(
+      monthlyTrendQuerySchema.safeParse({ from: "2026-11", to: "2026-11" })
+        .success,
+    ).toBe(true);
+    expect(MAX_TREND_MONTHS).toBe(24);
+    expect(
+      monthlyTrendQuerySchema.safeParse({ from: "2024-12", to: "2026-11" })
+        .success,
+    ).toBe(true);
+  });
+
+  it("asks for both months", () => {
+    const result = monthlyTrendQuerySchema.safeParse({});
+    expect(fieldErrors(result)).toEqual({
+      from: ["Bulan awal tidak valid"],
+      to: ["Bulan akhir tidak valid"],
+    });
+  });
+
+  it.each([
+    { from: "2026-13", to: "2026-12" },
+    { from: "2026-00", to: "2026-12" },
+    { from: "2026-6", to: "2026-12" },
+    { from: "2026-06-01", to: "2026-12" },
+    { from: "2026-06", to: "Desember" },
+  ])("rejects %p", (query) => {
+    expect(monthlyTrendQuerySchema.safeParse(query).success).toBe(false);
+  });
+
+  it("rejects a range that ends before it starts", () => {
+    const result = monthlyTrendQuerySchema.safeParse({
+      from: "2026-11",
+      to: "2026-10",
+    });
+    expect(fieldErrors(result).to).toEqual([
+      "Bulan awal harus sebelum bulan akhir",
+    ]);
+  });
+
+  it("rejects a range longer than 24 months", () => {
+    const result = monthlyTrendQuerySchema.safeParse({
+      from: "2024-11",
+      to: "2026-11",
+    });
+    expect(fieldErrors(result).to).toEqual(["Rentang maksimal 24 bulan"]);
+  });
+});
+
+describe("categoryTotalsQuerySchema", () => {
+  it("reads the type and an optional date range, and drops the rest", () => {
+    expect(
+      categoryTotalsQuerySchema.parse({
+        type: "expense",
+        from: "2026-11-01",
+        to: "2026-11-30",
+        q: "kopi",
+        page: "2",
+      }),
+    ).toEqual({ type: "expense", from: "2026-11-01", to: "2026-11-30" });
+    expect(categoryTotalsQuerySchema.parse({ type: "income" })).toEqual({
+      type: "income",
+    });
+  });
+
+  it("asks for the type", () => {
+    expect(fieldErrors(categoryTotalsQuerySchema.safeParse({}))).toEqual({
+      type: ["Tipe tidak valid"],
+    });
+  });
+
+  it.each([
+    { type: "transfer" },
+    { type: "expense", from: "2026-13-01" },
+    { type: "expense", to: "kemarin" },
+  ])("rejects %p", (query) => {
+    expect(categoryTotalsQuerySchema.safeParse(query).success).toBe(false);
+  });
+
+  it("rejects a range that ends before it starts", () => {
+    const result = categoryTotalsQuerySchema.safeParse({
+      type: "expense",
+      from: "2026-11-30",
+      to: "2026-11-01",
+    });
+    expect(fieldErrors(result).to).toEqual([
+      "Tanggal awal harus sebelum tanggal akhir",
+    ]);
   });
 });

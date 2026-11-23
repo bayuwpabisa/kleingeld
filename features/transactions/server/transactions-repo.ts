@@ -8,6 +8,7 @@ import {
   ilike,
   lte,
   or,
+  sql,
   sum,
   type SQL,
 } from "drizzle-orm";
@@ -15,6 +16,10 @@ import {
 import { categories, transactions } from "@/db/schema";
 import type { AppDb, DbExecutor } from "@/db/types";
 import type {
+  CategoryTotal,
+  CategoryTotalsQuery,
+  MonthlyTotal,
+  MonthlyTrendQuery,
   TransactionDto,
   TransactionFilters,
   TransactionInput,
@@ -24,6 +29,8 @@ import type {
   TransactionType,
   TransactionUpdate,
 } from "@/schemas/transaction";
+
+import { monthRange, monthsBetween } from "../periods";
 
 // Server only. Every function takes the signed-in user's id and scopes each
 // query to it, so one user can never read or change another user's rows.
@@ -198,6 +205,70 @@ export async function summarizeTransactions(
   const income = of("income");
   const expense = of("expense");
   return { income, expense, balance: income.total - expense.total };
+}
+
+/**
+ * Income and expense per month for every month from `from` to `to`
+ * ("YYYY-MM", both included), oldest first. A month without rows is 0.
+ */
+export async function monthlyTotals(
+  db: AppDb,
+  userId: string,
+  { from, to }: MonthlyTrendQuery,
+): Promise<MonthlyTotal[]> {
+  // Drizzle has no helper that groups dates by month, so this one
+  // expression is SQL. `date` has no time zone, so no conversion happens.
+  const month = sql<string>`to_char(${transactions.date}, 'YYYY-MM')`;
+  const rows = await db
+    .select({
+      month,
+      type: transactions.type,
+      total: sum(transactions.amount).mapWith(Number),
+    })
+    .from(transactions)
+    .where(
+      and(
+        eq(transactions.userId, userId),
+        gte(transactions.date, monthRange(from).from),
+        lte(transactions.date, monthRange(to).to),
+      ),
+    )
+    .groupBy(month, transactions.type);
+
+  const totalOf = (value: string, type: TransactionType) =>
+    rows.find((r) => r.month === value && r.type === type)?.total ?? 0;
+  return monthsBetween(from, to).map((value) => ({
+    month: value,
+    income: totalOf(value, "income"),
+    expense: totalOf(value, "expense"),
+  }));
+}
+
+/**
+ * The user's transactions of one type added up per category, largest total
+ * first; equal totals by category name. Categories without rows are left out.
+ */
+export function totalsByCategory(
+  db: AppDb,
+  userId: string,
+  query: CategoryTotalsQuery,
+): Promise<CategoryTotal[]> {
+  const total = sum(transactions.amount).mapWith(Number);
+  return db
+    .select({
+      category: {
+        id: categories.id,
+        name: categories.name,
+        icon: categories.icon,
+      },
+      total,
+      count: count(),
+    })
+    .from(transactions)
+    .innerJoin(categories, eq(categories.id, transactions.categoryId))
+    .where(filterConditions(userId, query))
+    .groupBy(categories.id)
+    .orderBy(desc(total), asc(categories.name));
 }
 
 export function getTransaction(db: AppDb, userId: string, id: string) {
