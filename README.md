@@ -69,7 +69,7 @@ The app uses Postgres on [Neon](https://neon.com) through Drizzle ORM. To work o
    DATABASE_URL_UNPOOLED=postgresql://...         # direct, used by migrations
    ```
 
-3. Apply the migrations and load the demo account (about three months of transactions up to today):
+3. Apply the migrations and load the demo account (about six months of transactions up to today):
 
    ```bash
    npm run db:migrate

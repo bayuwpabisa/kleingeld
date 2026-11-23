@@ -53,9 +53,12 @@ function toIsoDate(ms: number) {
   return new Date(ms).toISOString().slice(0, 10);
 }
 
+/** This month and the five before it: what the dashboard's trend chart shows. */
+const MONTHS = 6;
+
 /**
- * Builds about three months of believable transactions for the demo account:
- * from the first day of two months ago up to `today` ("YYYY-MM-DD").
+ * Builds about six months of believable transactions for the demo account:
+ * from the first day of five months ago up to `today` ("YYYY-MM-DD").
  *
  * Each day uses its own seed, so a day's transactions stay the same when the
  * demo is re-seeded on a later day. Pure: no database access.
@@ -88,7 +91,7 @@ export function buildDemoTransactions({
   const endDate = new Date(end);
   const start = Date.UTC(
     endDate.getUTCFullYear(),
-    endDate.getUTCMonth() - 2,
+    endDate.getUTCMonth() - (MONTHS - 1),
     1,
   );
 
