@@ -19,7 +19,12 @@ import {
   trendRows,
   trendSummary,
 } from "../trend-chart-data";
-import { CHART_CONTENT_HEIGHT, ChartCard, type ChartView } from "./chart-card";
+import {
+  CHART_CONTENT_HEIGHT,
+  ChartCard,
+  ChartTable,
+  type ChartView,
+} from "./chart-card";
 import { MonthlyTrendChart } from "./monthly-trend-chart";
 
 const HEADING_ID = "tren-bulanan";
@@ -153,55 +158,43 @@ function TrendLegend() {
   );
 }
 
+/** The chart's two series, month by month. */
 function TrendTable({ months }: { months: MonthlyTotal[] }) {
   const rows = trendRows(months);
-  const captionId = useId();
   return (
-    // The chart's two series, month by month. They fit a 320px phone; only
-    // very long amounts scroll sideways. A scrolling box takes focus, so the
-    // arrow keys can move it (axe: scrollable-region-focusable), and is
-    // named after the table it holds.
-    <div
-      role="region"
-      aria-labelledby={captionId}
-      tabIndex={0}
-      className="h-full overflow-auto"
+    <ChartTable
+      caption={`Pemasukan dan pengeluaran per bulan, ${trendRangeLabel(months)}`}
     >
-      <table className="w-full text-sm">
-        <caption id={captionId} className="sr-only">
-          Pemasukan dan pengeluaran per bulan, {trendRangeLabel(months)}
-        </caption>
-        <thead>
-          <tr className="text-fg-muted">
-            <th scope="col" className="h-10 pr-2 text-left font-medium">
-              Bulan
+      <thead>
+        <tr className="text-fg-muted">
+          <th scope="col" className="h-10 pr-2 text-left font-medium">
+            Bulan
+          </th>
+          <th scope="col" className="px-2 text-right font-medium">
+            Pemasukan
+          </th>
+          <th scope="col" className="pl-2 text-right font-medium">
+            Pengeluaran
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        {rows.map((row) => (
+          <tr key={row.month} className="border-t border-border">
+            <th scope="row" className="h-10 pr-2 text-left font-normal">
+              <span aria-hidden>{row.label}</span>
+              <span className="sr-only">{monthLabel(row.month)}</span>
             </th>
-            <th scope="col" className="px-2 text-right font-medium">
-              Pemasukan
-            </th>
-            <th scope="col" className="pl-2 text-right font-medium">
-              Pengeluaran
-            </th>
+            <td className="px-2 text-right">
+              <Money amount={row.income} />
+            </td>
+            <td className="pl-2 text-right">
+              <Money amount={row.expense} />
+            </td>
           </tr>
-        </thead>
-        <tbody>
-          {rows.map((row) => (
-            <tr key={row.month} className="border-t border-border">
-              <th scope="row" className="h-10 pr-2 text-left font-normal">
-                <span aria-hidden>{row.label}</span>
-                <span className="sr-only">{monthLabel(row.month)}</span>
-              </th>
-              <td className="px-2 text-right">
-                <Money amount={row.income} />
-              </td>
-              <td className="pl-2 text-right">
-                <Money amount={row.expense} />
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+        ))}
+      </tbody>
+    </ChartTable>
   );
 }
 

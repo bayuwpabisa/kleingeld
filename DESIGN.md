@@ -59,7 +59,7 @@ Aturan:
 - **Tren bulanan**: bar berkelompok, pemasukan vs pengeluaran per bulan, 6 bulan. Ada legend (2 seri) dan label nilai hanya di bulan berjalan.
 - **Per kategori**: **bar horizontal berperingkat, bukan donut**. Satu warna (`chart-expense`), terbesar di atas, maksimal 5 kategori + "Lainnya". Alasannya, kategori buatan user jumlahnya tidak terbatas dan donut buruk untuk membandingkan nilai yang mirip. Akibatnya, **kategori tidak butuh warna sendiri**, cukup ikon.
 - Grid dan sumbu memakai `border` dan `fg-muted`. Teks di grafik memakai token teks, bukan warna seri. Satu sumbu Y saja.
-- Setiap grafik punya tooltip saat hover/fokus dan tombol **"Lihat sebagai tabel"**.
+- Setiap grafik punya tooltip saat hover/fokus dan tombol **"Lihat tabel"** (label pendek: "Lihat sebagai tabel" keluar 34px dari kartu "Pengeluaran per kategori" di HP 320px, diukur).
 
 ## Tipografi
 

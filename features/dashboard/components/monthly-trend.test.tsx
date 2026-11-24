@@ -82,7 +82,7 @@ function deferred<T>() {
 
 const section = () => screen.getByRole("region", { name: "Tren bulanan" });
 const toggle = () =>
-  within(section()).getByRole("button", { name: /Lihat sebagai/ });
+  within(section()).getByRole("button", { name: /Lihat (tabel|grafik)/ });
 
 afterEach(() => {
   fetchApi.mockReset();
@@ -97,7 +97,7 @@ describe("MonthlyTrend with the server's data", () => {
     expect(figure).toBeInTheDocument();
     expect(within(section()).getByText("Pemasukan")).toBeInTheDocument();
     expect(within(section()).getByText("Pengeluaran")).toBeInTheDocument();
-    expect(toggle()).toHaveAccessibleName("Lihat sebagai tabel");
+    expect(toggle()).toHaveAccessibleName("Lihat tabel");
     expect(toggle()).not.toHaveAttribute("aria-pressed");
     expect(section()).toHaveAttribute("aria-busy", "false");
     expect(fetchApi).not.toHaveBeenCalled();
@@ -127,7 +127,7 @@ describe("MonthlyTrend with the server's data", () => {
     expect(cells).toHaveLength(2);
     expect(within(cells[0]!).getByText("0 rupiah")).toBeInTheDocument();
     expect(within(cells[1]!).getByText("6.398.500 rupiah")).toBeInTheDocument();
-    expect(toggle()).toHaveAccessibleName("Lihat sebagai grafik");
+    expect(toggle()).toHaveAccessibleName("Lihat grafik");
     const controlled = document.getElementById(
       toggle().getAttribute("aria-controls") ?? "",
     );
@@ -138,7 +138,7 @@ describe("MonthlyTrend with the server's data", () => {
 
     expect(within(section()).queryByRole("table")).not.toBeInTheDocument();
     expect(within(section()).getByRole("figure")).toBeInTheDocument();
-    expect(toggle()).toHaveAccessibleName("Lihat sebagai tabel");
+    expect(toggle()).toHaveAccessibleName("Lihat tabel");
     expect(toggle()).toHaveFocus();
   });
 
@@ -223,7 +223,7 @@ describe("MonthlyTrend with the server's data", () => {
     ).toBeInTheDocument();
     expect(within(section()).queryByRole("figure")).not.toBeInTheDocument();
     expect(
-      within(section()).queryByRole("button", { name: /Lihat sebagai/ }),
+      within(section()).queryByRole("button", { name: /Lihat (tabel|grafik)/ }),
     ).not.toBeInTheDocument();
   });
 
@@ -257,11 +257,11 @@ describe("MonthlyTrend without the server's data", () => {
 
     // Without it the heading wraps only once the button arrives (320px)
     // and the card grows by a line (measured in the browser).
-    const placeholder = within(section()).getByText("Lihat sebagai tabel");
+    const placeholder = within(section()).getByText("Lihat tabel");
     expect(placeholder).toHaveAttribute("aria-hidden", "true");
     expect(placeholder).toHaveClass("invisible");
     expect(
-      within(section()).queryByRole("button", { name: /Lihat sebagai/ }),
+      within(section()).queryByRole("button", { name: /Lihat (tabel|grafik)/ }),
     ).not.toBeInTheDocument();
   });
 
@@ -282,7 +282,7 @@ describe("MonthlyTrend without the server's data", () => {
       "Tren bulanan gagal dimuat. Periksa koneksi lalu coba lagi.",
     );
     expect(
-      within(section()).queryByRole("button", { name: /Lihat sebagai/ }),
+      within(section()).queryByRole("button", { name: /Lihat (tabel|grafik)/ }),
     ).not.toBeInTheDocument();
 
     await user.click(

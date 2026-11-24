@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useId, type ReactNode } from "react";
 
 import { Button, buttonClasses } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -13,15 +13,18 @@ export type ChartView = "chart" | "table";
  */
 export const CHART_CONTENT_HEIGHT = "h-72";
 
-const TABLE_LABEL = "Lihat sebagai tabel";
-const CHART_LABEL = "Lihat sebagai grafik";
+// Short, so the button fits next to a long heading's first word on a 320px
+// phone ("Pengeluaran per kategori": "Lihat sebagai tabel" stuck out of the
+// card by 34px, measured).
+const TABLE_LABEL = "Lihat tabel";
+const CHART_LABEL = "Lihat grafik";
 
 type ChartCardProps = {
   title: string;
   headingId: string;
   busy: boolean;
   /**
-   * The button that swaps the chart for a table ("Lihat sebagai tabel"),
+   * The button that swaps the chart for a table ("Lihat tabel"),
    * only when there is data to show. `controls` is the id of the content.
    */
   toggle?: { view: ChartView; onToggle: () => void; controls: string };
@@ -84,5 +87,37 @@ export function ChartCard({
       </div>
       {children}
     </Card>
+  );
+}
+
+/**
+ * A chart's numbers as a table ("Lihat tabel"), named by its
+ * caption. The rows fit a 320px phone; only very long amounts scroll
+ * sideways. A scrolling box takes focus, so the arrow keys can move it
+ * (axe: scrollable-region-focusable), and is named after the table it holds.
+ * `children` are the table's `<thead>` and `<tbody>`.
+ */
+export function ChartTable({
+  caption,
+  children,
+}: {
+  caption: string;
+  children: ReactNode;
+}) {
+  const captionId = useId();
+  return (
+    <div
+      role="region"
+      aria-labelledby={captionId}
+      tabIndex={0}
+      className="h-full overflow-auto"
+    >
+      <table className="w-full text-sm">
+        <caption id={captionId} className="sr-only">
+          {caption}
+        </caption>
+        {children}
+      </table>
+    </div>
   );
 }
