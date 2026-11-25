@@ -8,13 +8,20 @@ import {
   Tooltip,
   XAxis,
   YAxis,
+  useYAxisScale,
+  type LabelProps,
   type TooltipContentProps,
 } from "recharts";
 
 import { Money } from "@/components/ui/money";
 import { monthLabel } from "@/features/transactions/periods";
 
-import { compactRupiah, type TrendRow } from "../trend-chart-data";
+import {
+  compactRupiah,
+  VALUE_LABEL_LINE,
+  valueLabelBaselines,
+  type TrendRow,
+} from "../trend-chart-data";
 
 // The Recharts part of "Tren bulanan", in its own file so the page can load
 // it later (dynamic import, task 20 Nov). Colors are the theme's CSS
@@ -30,14 +37,19 @@ import { compactRupiah, type TrendRow } from "../trend-chart-data";
 const AXIS_TICK = { fill: "var(--fg-muted)", fontSize: 12 };
 const VALUE_LABEL = { fill: "var(--fg)", fontSize: 12, fontWeight: 500 };
 
+// Room above the plot for this month's value labels, two lines when they
+// are stacked (valueLabelBaselines).
+const TOP_ROOM = 20 + VALUE_LABEL_LINE;
+
 export function MonthlyTrendChart({ rows }: { rows: TrendRow[] }) {
+  const current = rows.at(-1);
   return (
     <BarChart
       data={rows}
       responsive
       className="h-full w-full"
       title="Grafik tren bulanan. Tekan panah kiri atau kanan untuk membaca tiap bulan."
-      margin={{ top: 20, right: 4, bottom: 0, left: 0 }}
+      margin={{ top: TOP_ROOM, right: 4, bottom: 0, left: 0 }}
       barGap={2}
       barCategoryGap="24%"
     >
@@ -67,7 +79,14 @@ export function MonthlyTrendChart({ rows }: { rows: TrendRow[] }) {
         radius={[4, 4, 0, 0]}
         isAnimationActive={false}
       >
-        <LabelList dataKey="incomeLabel" position="top" {...VALUE_LABEL} />
+        {current && (
+          <LabelList
+            dataKey="incomeLabel"
+            content={(props) => (
+              <ValueLabel {...props} series="income" current={current} />
+            )}
+          />
+        )}
       </Bar>
       <Bar
         dataKey="expense"
@@ -76,9 +95,56 @@ export function MonthlyTrendChart({ rows }: { rows: TrendRow[] }) {
         radius={[4, 4, 0, 0]}
         isAnimationActive={false}
       >
-        <LabelList dataKey="expenseLabel" position="top" {...VALUE_LABEL} />
+        {current && (
+          <LabelList
+            dataKey="expenseLabel"
+            content={(props) => (
+              <ValueLabel {...props} series="expense" current={current} />
+            )}
+          />
+        )}
       </Bar>
     </BarChart>
+  );
+}
+
+/**
+ * This month's amount above its bar ("8,5 jt"; other months have no label).
+ * Placed from both bars' tops, so the two labels never cover each other
+ * when income and expense are close (valueLabelBaselines).
+ */
+function ValueLabel({
+  viewBox,
+  value,
+  series,
+  current,
+}: LabelProps & { series: "income" | "expense"; current: TrendRow }) {
+  const yScale = useYAxisScale();
+  if (
+    !yScale ||
+    !viewBox ||
+    !("width" in viewBox) ||
+    typeof value !== "string"
+  ) {
+    return null;
+  }
+  // A bar of 0 is not drawn, so it has no label to make room for.
+  const top = (amount: number) =>
+    amount > 0 ? (yScale(amount) ?? null) : null;
+  const baseline = valueLabelBaselines({
+    income: top(current.income),
+    expense: top(current.expense),
+  })[series];
+  if (baseline === null) return null;
+  return (
+    <text
+      x={viewBox.x + viewBox.width / 2}
+      y={baseline}
+      textAnchor="middle"
+      {...VALUE_LABEL}
+    >
+      {value}
+    </text>
   );
 }
 

@@ -45,6 +45,39 @@ export function trendRows(months: MonthlyTotal[]): TrendRow[] {
   }));
 }
 
+/** Gap between a bar's top and its label's baseline (Recharts' default). */
+const VALUE_LABEL_GAP = 5;
+/** One line of a 12px value label, measured in the browser. */
+export const VALUE_LABEL_LINE = 16;
+
+type BySeries<T> = { income: T; expense: T };
+
+/**
+ * Where this month's two value labels go: the SVG y of each baseline, from
+ * the y of each bar's top (smaller is higher; `null` for a bar of 0, which
+ * has no label). Each label sits just above its own bar. The two bars are
+ * side by side, so their labels overlap sideways (measured at 320–1440px:
+ * a label is wider than the step from one bar's middle to the next). When
+ * their tops are closer than one label line, the lower bar's label moves up
+ * above the other one (the expense label when the bars are equal).
+ */
+export function valueLabelBaselines(
+  tops: BySeries<number | null>,
+): BySeries<number | null> {
+  const income = tops.income === null ? null : tops.income - VALUE_LABEL_GAP;
+  const expense = tops.expense === null ? null : tops.expense - VALUE_LABEL_GAP;
+  if (
+    income === null ||
+    expense === null ||
+    Math.abs(income - expense) >= VALUE_LABEL_LINE
+  ) {
+    return { income, expense };
+  }
+  return income <= expense
+    ? { income, expense: income - VALUE_LABEL_LINE }
+    : { income: expense - VALUE_LABEL_LINE, expense };
+}
+
 /** "Juni–November 2026", or "Agustus 2026–Januari 2027" across a year. */
 export function trendRangeLabel(months: MonthlyTotal[]): string {
   const first = months.at(0)?.month ?? "";

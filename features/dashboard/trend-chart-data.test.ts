@@ -6,6 +6,7 @@ import {
   trendRangeLabel,
   trendRows,
   trendSummary,
+  valueLabelBaselines,
 } from "./trend-chart-data";
 
 /** Six months as the API sends them, ending in November (this month). */
@@ -149,5 +150,56 @@ describe("isEmptyTrend", () => {
         { month: "2026-11", income: 0, expense: 1 },
       ]),
     ).toBe(false);
+  });
+});
+
+// SVG y grows downwards: a smaller top is a taller bar. A label's baseline
+// sits 5px above its bar, and one label line is 16px.
+describe("valueLabelBaselines", () => {
+  it("puts each label just above its own bar when they are far apart", () => {
+    expect(valueLabelBaselines({ income: 100, expense: 160 })).toStrictEqual({
+      income: 95,
+      expense: 155,
+    });
+  });
+
+  it("lifts the lower bar's label above the other one when they would overlap", () => {
+    expect(valueLabelBaselines({ income: 100, expense: 110 })).toStrictEqual({
+      income: 95,
+      expense: 79,
+    });
+    expect(valueLabelBaselines({ income: 110, expense: 100 })).toStrictEqual({
+      income: 79,
+      expense: 95,
+    });
+  });
+
+  it("lifts the expense label when both bars are the same height", () => {
+    expect(valueLabelBaselines({ income: 100, expense: 100 })).toStrictEqual({
+      income: 95,
+      expense: 79,
+    });
+  });
+
+  it("stacks only when the bars are closer than one label line", () => {
+    expect(valueLabelBaselines({ income: 100, expense: 116 })).toStrictEqual({
+      income: 95,
+      expense: 111,
+    });
+    expect(valueLabelBaselines({ income: 100, expense: 115 })).toStrictEqual({
+      income: 95,
+      expense: 79,
+    });
+  });
+
+  it("leaves a lone label in place (a bar of 0 has no label)", () => {
+    expect(valueLabelBaselines({ income: null, expense: 100 })).toStrictEqual({
+      income: null,
+      expense: 95,
+    });
+    expect(valueLabelBaselines({ income: 100, expense: null })).toStrictEqual({
+      income: 95,
+      expense: null,
+    });
   });
 });
