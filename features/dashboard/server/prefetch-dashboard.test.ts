@@ -12,12 +12,16 @@ import {
 import { transactionKeys } from "@/features/transactions/api/keys";
 import { createTransaction } from "@/features/transactions/server/transactions-repo";
 import type {
+  CategoryTotal,
+  MonthlyTotal,
   TransactionInput,
   TransactionPage,
   TransactionSummary,
 } from "@/schemas/transaction";
 
 import {
+  prefetchMonthCategories,
+  prefetchMonthlyTrend,
   prefetchMonthSummary,
   prefetchRecentTransactions,
 } from "./prefetch-dashboard";
@@ -136,6 +140,73 @@ describe("prefetchRecentTransactions", () => {
   });
 });
 
+describe("prefetchMonthlyTrend", () => {
+  it("puts six months of totals under the trend key of those months", async () => {
+    await create(alice, { amount: 30_000, date: "2026-06-01" });
+    await create(alice, { amount: 45_000, date: "2026-11-23" });
+    await create(alice, {
+      type: "income",
+      categoryId: alice.byName("Gaji").id,
+      amount: 8_500_000,
+      date: "2026-10-25",
+    });
+    // A month too early, and another user's row.
+    await create(alice, { amount: 1_000, date: "2026-05-31" });
+    await create(bob, { amount: 99_000, date: "2026-11-15" });
+
+    const state = await prefetchMonthlyTrend(db, alice.id, "2026-11-23");
+
+    expect(state.queries).toHaveLength(1);
+    expect(
+      hydrated(state).getQueryData<MonthlyTotal[]>(
+        transactionKeys.trend({ from: "2026-06", to: "2026-11" }),
+      ),
+    ).toStrictEqual([
+      { month: "2026-06", income: 0, expense: 30_000 },
+      { month: "2026-07", income: 0, expense: 0 },
+      { month: "2026-08", income: 0, expense: 0 },
+      { month: "2026-09", income: 0, expense: 0 },
+      { month: "2026-10", income: 8_500_000, expense: 0 },
+      { month: "2026-11", income: 0, expense: 45_000 },
+    ]);
+  });
+});
+
+describe("prefetchMonthCategories", () => {
+  it("puts this month's expense per category under its key", async () => {
+    await create(alice, { amount: 25_000, date: "2026-11-01" });
+    await create(alice, {
+      amount: 60_000,
+      date: "2026-11-30",
+      categoryId: alice.byName("Transport").id,
+    });
+    // Last month, income, and another user's row.
+    await create(alice, { amount: 500_000, date: "2026-10-31" });
+    await create(alice, {
+      type: "income",
+      categoryId: alice.byName("Gaji").id,
+      amount: 8_500_000,
+      date: "2026-11-25",
+    });
+    await create(bob, { amount: 99_000, date: "2026-11-15" });
+
+    const state = await prefetchMonthCategories(db, alice.id, "2026-11-23");
+
+    expect(state.queries).toHaveLength(1);
+    const totals = hydrated(state).getQueryData<CategoryTotal[]>(
+      transactionKeys.byCategory({
+        type: "expense",
+        from: "2026-11-01",
+        to: "2026-11-30",
+      }),
+    );
+    expect(totals?.map((t) => [t.category.name, t.total])).toStrictEqual([
+      ["Transport", 60_000],
+      ["Makan", 25_000],
+    ]);
+  });
+});
+
 describe("when the database fails", () => {
   let broken: TestDb;
 
@@ -149,6 +220,11 @@ describe("when the database fails", () => {
   it.each([
     ["summary", () => prefetchMonthSummary(broken, "alice", "2026-11-22")],
     ["recent transactions", () => prefetchRecentTransactions(broken, "alice")],
+    ["trend", () => prefetchMonthlyTrend(broken, "alice", "2026-11-22")],
+    [
+      "categories",
+      () => prefetchMonthCategories(broken, "alice", "2026-11-22"),
+    ],
   ])("hands over no %s and logs the error", async (_name, prefetch) => {
     const log = jest.spyOn(console, "error").mockImplementation(() => {});
 

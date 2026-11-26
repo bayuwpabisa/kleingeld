@@ -31,16 +31,24 @@ describe("buildDemoTransactions", () => {
   const today = "2026-11-09";
   const rows = buildDemoTransactions({ today, categories });
 
-  it("covers the first day of two months ago up to today", () => {
+  // The dashboard's trend chart shows six months: this one and five before.
+  const fullMonths = ["2026-06", "2026-07", "2026-08", "2026-09", "2026-10"];
+
+  it("covers the first day of five months ago up to today", () => {
     const dates = rows.map((r) => r.date).sort();
-    expect(dates.at(0)).toBe("2026-09-01");
+    expect(dates.at(0)).toBe("2026-06-01");
     expect(dates.at(-1)! <= today).toBe(true);
-    expect(rows.length).toBeGreaterThanOrEqual(120);
-    expect(rows.length).toBeLessThanOrEqual(250);
+    expect(rows.length).toBeGreaterThanOrEqual(300);
+    expect(rows.length).toBeLessThanOrEqual(500);
+  });
+
+  it("has transactions in each of the six months", () => {
+    const months = new Set(rows.map((r) => r.date.slice(0, 7)));
+    expect([...months].sort()).toEqual([...fullMonths, "2026-11"]);
   });
 
   it("pays a salary in every full month", () => {
-    for (const month of ["2026-09", "2026-10"]) {
+    for (const month of fullMonths) {
       const salaries = rows.filter(
         (r) => r.categoryId === salaryId && r.date.startsWith(month),
       );
@@ -63,7 +71,7 @@ describe("buildDemoTransactions", () => {
 
   it("spends less than it earns in every full month", () => {
     const totals = totalsByMonth(rows);
-    for (const month of ["2026-09", "2026-10"]) {
+    for (const month of fullMonths) {
       const total = totals.get(month);
       expect(total).toBeDefined();
       expect(total!.expense).toBeLessThan(total!.income);
@@ -77,13 +85,13 @@ describe("buildDemoTransactions", () => {
   it("keeps past days the same when today moves forward", () => {
     const tomorrow = buildDemoTransactions({ today: "2026-11-10", categories });
     const upToToday = tomorrow.filter((r) => r.date <= today);
-    expect(upToToday).toEqual(rows.filter((r) => r.date >= "2026-09-01"));
+    expect(upToToday).toEqual(rows.filter((r) => r.date >= "2026-06-01"));
   });
 
   it("works on the first day of a month and across a year boundary", () => {
     const janRows = buildDemoTransactions({ today: "2027-01-01", categories });
     const dates = janRows.map((r) => r.date).sort();
-    expect(dates.at(0)).toBe("2026-11-01");
+    expect(dates.at(0)).toBe("2026-08-01");
     expect(dates.at(-1)! <= "2027-01-01").toBe(true);
   });
 

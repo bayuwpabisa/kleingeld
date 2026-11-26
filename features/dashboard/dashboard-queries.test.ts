@@ -2,9 +2,69 @@ import {
   listQueryFromKey,
   transactionKeys,
 } from "@/features/transactions/api/keys";
-import { transactionListQuerySchema } from "@/schemas/transaction";
+import {
+  categoryTotalsQuerySchema,
+  monthlyTrendQuerySchema,
+  transactionListQuerySchema,
+} from "@/schemas/transaction";
 
-import { currentMonthFilters, RECENT_QUERY } from "./dashboard-queries";
+import {
+  currentMonthFilters,
+  monthCategoriesQuery,
+  RECENT_QUERY,
+  trendRange,
+} from "./dashboard-queries";
+
+describe("trendRange", () => {
+  it("is this month and the five before it", () => {
+    expect(trendRange("2026-11-23")).toStrictEqual({
+      from: "2026-06",
+      to: "2026-11",
+    });
+  });
+
+  it("starts in the previous year early in the year", () => {
+    expect(trendRange("2027-01-01")).toStrictEqual({
+      from: "2026-08",
+      to: "2027-01",
+    });
+    expect(trendRange("2027-05-31")).toStrictEqual({
+      from: "2026-12",
+      to: "2027-05",
+    });
+  });
+
+  it("stays in one year from June to December", () => {
+    expect(trendRange("2026-06-15")).toStrictEqual({
+      from: "2026-01",
+      to: "2026-06",
+    });
+    expect(trendRange("2026-12-31")).toStrictEqual({
+      from: "2026-07",
+      to: "2026-12",
+    });
+  });
+
+  it("is a range the API accepts, unchanged", () => {
+    const range = trendRange("2026-11-23");
+    expect(monthlyTrendQuerySchema.parse(range)).toStrictEqual(range);
+  });
+});
+
+describe("monthCategoriesQuery", () => {
+  it("is this month's expense", () => {
+    expect(monthCategoriesQuery("2026-11-23")).toStrictEqual({
+      type: "expense",
+      from: "2026-11-01",
+      to: "2026-11-30",
+    });
+  });
+
+  it("is a query the API accepts, unchanged", () => {
+    const query = monthCategoriesQuery("2026-11-23");
+    expect(categoryTotalsQuerySchema.parse(query)).toStrictEqual(query);
+  });
+});
 
 describe("currentMonthFilters", () => {
   it("covers the whole month of today", () => {

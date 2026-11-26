@@ -92,6 +92,7 @@ Branch `feature/dashboard-summary` dari `develop` `c611c7b`; scope commit `dashb
     - `agent-browser errors` kosong; log `next start` 0 baris error/warn. Server `:3002` dihentikan (`taskkill`), port tertutup.
   - Self-review `git diff develop...HEAD`: kode dibaca utuh di awal sesi ini (tanpa temuan, lihat Catatan perbaikan entri D5); commit sesudahnya hanya dokumen, dan butir dashboard di AGENTS.md dicocokkan dengan kodenya.
   - **Belum dicek**: jalur prefetch gagal sungguhan di browser (DB mati saat render). Dijaga test: `prefetch-dashboard.test.ts` (query gagal tidak di-dehydrate) dan test komponen "tanpa data server → request".
+  - Dipush `c72dc17`, PR #23 → `234c8bf` (squash, 22 Nov; `git diff origin/develop feature/dashboard-summary` kosong, branch lokal dan remote dihapus).
 
 ## File utama
 Ditulis ulang 22 Nov dari `git diff --stat develop...HEAD` (lihat Catatan perbaikan).

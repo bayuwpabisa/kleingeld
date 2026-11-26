@@ -1,6 +1,10 @@
 import { apiFetch } from "@/lib/api/client";
 import {
   DEFAULT_PAGE_SIZE,
+  type CategoryTotal,
+  type CategoryTotalsQuery,
+  type MonthlyTotal,
+  type MonthlyTrendQuery,
   type TransactionFilters,
   type TransactionListQuery,
   type TransactionPage,
@@ -33,6 +37,32 @@ export function fetchTransactionSummary(
 ) {
   return apiFetch<TransactionSummary>(
     withSearch("/api/transactions/summary", toSearchParams(filters)),
+    { signal },
+  );
+}
+
+/** GET /api/transactions/trend: income and expense per month of the range. */
+export function fetchMonthlyTrend(
+  query: MonthlyTrendQuery,
+  signal?: AbortSignal,
+) {
+  const params = new URLSearchParams({ from: query.from, to: query.to });
+  return apiFetch<MonthlyTotal[]>(
+    withSearch("/api/transactions/trend", params),
+    { signal },
+  );
+}
+
+/** GET /api/transactions/by-category: totals per category of one type. */
+export function fetchCategoryTotals(
+  query: CategoryTotalsQuery,
+  signal?: AbortSignal,
+) {
+  const params = new URLSearchParams({ type: query.type });
+  if (query.from) params.set("from", query.from);
+  if (query.to) params.set("to", query.to);
+  return apiFetch<CategoryTotal[]>(
+    withSearch("/api/transactions/by-category", params),
     { signal },
   );
 }

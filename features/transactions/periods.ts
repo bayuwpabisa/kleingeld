@@ -33,6 +33,17 @@ export function monthLabel(month: MonthValue): string {
   return monthName.format(new Date(`${month}-01T00:00:00Z`));
 }
 
+/** Every month from `from` to `to`, both included, oldest first. */
+export function monthsBetween(from: MonthValue, to: MonthValue): MonthValue[] {
+  const [fromYear = 0, fromMonth = 1] = from.split("-").map(Number);
+  const [toYear = 0, toMonth = 1] = to.split("-").map(Number);
+  const count = (toYear - fromYear) * 12 + (toMonth - fromMonth) + 1;
+  return Array.from({ length: Math.max(count, 0) }, (_, step) => {
+    const date = new Date(Date.UTC(fromYear, fromMonth - 1 + step, 1));
+    return `${date.getUTCFullYear()}-${pad(date.getUTCMonth() + 1)}`;
+  });
+}
+
 /** The current month and the 11 before it, newest first. */
 export function recentMonths(
   today: string,

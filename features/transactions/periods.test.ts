@@ -1,7 +1,40 @@
 /**
  * @jest-environment node
  */
-import { monthRange, periodLabel, periodOf, recentMonths } from "./periods";
+import {
+  monthRange,
+  monthsBetween,
+  periodLabel,
+  periodOf,
+  recentMonths,
+} from "./periods";
+
+describe("monthsBetween", () => {
+  it("lists every month from the first to the last, oldest first", () => {
+    expect(monthsBetween("2026-06", "2026-11")).toEqual([
+      "2026-06",
+      "2026-07",
+      "2026-08",
+      "2026-09",
+      "2026-10",
+      "2026-11",
+    ]);
+  });
+
+  it("crosses a year boundary", () => {
+    expect(monthsBetween("2026-11", "2027-02")).toEqual([
+      "2026-11",
+      "2026-12",
+      "2027-01",
+      "2027-02",
+    ]);
+  });
+
+  it("is one month when both ends are the same, and empty when reversed", () => {
+    expect(monthsBetween("2026-11", "2026-11")).toEqual(["2026-11"]);
+    expect(monthsBetween("2026-11", "2026-10")).toEqual([]);
+  });
+});
 
 describe("monthRange", () => {
   it("covers the whole month, leap years included", () => {

@@ -9,7 +9,7 @@ import { buildDemoTransactions } from "./build-demo-transactions";
 import { DEMO_CUSTOM_CATEGORIES, DEMO_USER } from "./demo-user";
 
 /**
- * Resets the demo account to fresh data: about three months of transactions
+ * Resets the demo account to fresh data: about six months of transactions
  * up to `today`. Safe to run again (the demo login and a daily job will call
  * it); the user row is kept, so its sessions survive a reset.
  */
