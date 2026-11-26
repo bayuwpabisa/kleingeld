@@ -4,10 +4,10 @@ import { useToast } from "@/components/ui/toast";
 import type { TransactionDto, TransactionInput } from "@/schemas/transaction";
 
 import { insertTransaction } from "./cache";
-import { transactionKeys } from "./keys";
 import {
   cachedCategory,
   failureToast,
+  refetchAfterChange,
   restoreLists,
   snapshotLists,
   updateLists,
@@ -57,7 +57,7 @@ export function useCreateTransaction({
       toast.show({ message: successMessage });
     },
     onSettled() {
-      return queryClient.invalidateQueries({ queryKey: transactionKeys.all });
+      return refetchAfterChange(queryClient);
     },
   });
 

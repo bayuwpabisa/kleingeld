@@ -7,6 +7,7 @@ import { transactionKeys } from "./keys";
 import {
   failureToast,
   findCachedTransaction,
+  refetchAfterChange,
   restoreLists,
   snapshotLists,
   toInput,
@@ -52,7 +53,7 @@ export function useDeleteTransaction() {
       });
     },
     onSettled() {
-      return queryClient.invalidateQueries({ queryKey: transactionKeys.all });
+      return refetchAfterChange(queryClient);
     },
   });
 

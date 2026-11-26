@@ -1,5 +1,6 @@
 import type { QueryClient, QueryKey } from "@tanstack/react-query";
 
+import { budgetKeys } from "@/features/budgets/api/keys";
 import { categoryKeys } from "@/features/categories/api/use-categories";
 import { ApiError } from "@/lib/api/client";
 import type { ToastOptions } from "@/lib/store/toast-slice";
@@ -58,6 +59,17 @@ export function updateLists(
   }
 }
 
+/**
+ * After every change, done or failed: refetch everything about transactions
+ * and the budgets, whose spending comes from the transactions.
+ */
+export function refetchAfterChange(queryClient: QueryClient) {
+  return Promise.all([
+    queryClient.invalidateQueries({ queryKey: transactionKeys.all }),
+    queryClient.invalidateQueries({ queryKey: budgetKeys.all }),
+  ]);
+}
+
 /** A transaction from any cached list or detail, for edits and undo. */
 export function findCachedTransaction(
   queryClient: QueryClient,
@@ -104,14 +116,15 @@ export function toInput(transaction: TransactionDto): TransactionInput {
 /**
  * The toast after a failed write. A refusal by the server (4xx) says why and
  * has no retry, since the same request would fail again; a network or server
- * failure offers "Coba lagi".
+ * failure offers "Coba lagi". Budgets use it too (`subject: "Budget"`).
  */
 export function failureToast(
   action: "disimpan" | "dihapus",
   error: unknown,
   retry: () => void,
+  subject: "Transaksi" | "Budget" = "Transaksi",
 ): ToastOptions {
-  const base = `Transaksi gagal ${action}.`;
+  const base = `${subject} gagal ${action}.`;
   if (error instanceof ApiError && error.status < 500) {
     const reason =
       Object.values(error.fieldErrors).flat()[0] ??
