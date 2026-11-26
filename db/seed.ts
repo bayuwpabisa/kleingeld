@@ -9,7 +9,7 @@ async function main() {
   try {
     const result = await seedDemoUser(db);
     console.log(
-      `Demo account seeded up to ${result.today}: ${result.categories} categories, ${result.transactions} transactions.`,
+      `Demo account seeded up to ${result.today}: ${result.categories} categories, ${result.transactions} transactions, ${result.budgets} budgets.`,
     );
   } finally {
     await pool.end();

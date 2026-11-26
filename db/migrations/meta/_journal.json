@@ -15,6 +15,13 @@
       "when": 1794329371792,
       "tag": "0001_auth",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1795653197593,
+      "tag": "0002_budgets",
+      "breakpoints": true
     }
   ]
 }
