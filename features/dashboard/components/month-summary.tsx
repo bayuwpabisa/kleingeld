@@ -1,12 +1,10 @@
 "use client";
 
 import { CircleAlert } from "lucide-react";
-import type { ReactNode } from "react";
 
+import { summaryFrameClasses, SummaryItem } from "@/components/summary-item";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Money } from "@/components/ui/money";
-import { Skeleton } from "@/components/ui/skeleton";
 import { useTransactionSummary } from "@/features/transactions/api/use-transaction-summary";
 import { summaryLayout } from "@/features/transactions/summary-layout";
 import { cn } from "@/lib/cn";
@@ -81,11 +79,7 @@ function MonthSummaryCards({
     <section
       aria-labelledby="ringkasan-bulan-ini"
       aria-busy={busy}
-      className={cn(
-        layout.grid,
-        "rounded-xl border border-border bg-surface-muted p-4",
-        "lg:rounded-none lg:border-0 lg:bg-transparent lg:p-0",
-      )}
+      className={cn(layout.grid, summaryFrameClasses)}
     >
       <h2 id="ringkasan-bulan-ini" className="sr-only">
         Ringkasan bulan ini
@@ -121,55 +115,5 @@ function MonthSummaryCards({
         note={summary && `${summary.expense.count} transaksi`}
       />
     </section>
-  );
-}
-
-function SummaryItem({
-  label,
-  amount,
-  amountClass,
-  note,
-  noteClass,
-  className,
-}: {
-  label: ReactNode;
-  amount: number | undefined;
-  /** Font size and the fixed height of the amount's row. */
-  amountClass: string;
-  note: ReactNode;
-  noteClass?: string;
-  className?: string;
-}) {
-  // On phones a part of the filled card, from lg a card of its own (the
-  // same border, radius and padding as Card). min-w-0: a long amount must
-  // not widen its column. The amount's row has a fixed height and the
-  // skeleton the same, so nothing moves when the numbers arrive.
-  return (
-    <div
-      className={cn(
-        "min-w-0 lg:rounded-xl lg:border lg:border-border lg:bg-surface lg:p-6",
-        className,
-      )}
-    >
-      <p className="text-sm text-fg-muted">{label}</p>
-      {amount === undefined ? (
-        <>
-          <Skeleton className={cn("mt-1 w-3/4", amountClass)} />
-          <div className={noteClass}>
-            <Skeleton className="mt-2 h-4 w-1/3" />
-          </div>
-        </>
-      ) : (
-        <>
-          <Money
-            amount={amount}
-            className={cn("mt-1 flex items-center", amountClass)}
-          />
-          <div className={noteClass}>
-            <p className="mt-1 text-sm text-fg-muted">{note}</p>
-          </div>
-        </>
-      )}
-    </div>
   );
 }

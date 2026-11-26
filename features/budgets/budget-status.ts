@@ -88,9 +88,14 @@ export function attentionMessage(
   return `${parts.length} kategori perlu perhatian: ${andList.format(parts)}.`;
 }
 
+/** The month of `today` ("YYYY-MM-DD") whose spending a budget counts. */
+export function monthOf(today: string): string {
+  return today.slice(0, 7);
+}
+
 /** What is left lasts until the month ends: "untuk 5 hari lagi". */
 export function daysLeftLabel(today: string): string {
-  const lastDay = Number(monthRange(today.slice(0, 7)).to.slice(8));
+  const lastDay = Number(monthRange(monthOf(today)).to.slice(8));
   const days = lastDay - Number(today.slice(8)) + 1;
   return days <= 1 ? "untuk hari ini" : `untuk ${days} hari lagi`;
 }
