@@ -17,23 +17,31 @@ export const MAX_SEARCH_LENGTH = 100;
 export const SORT_FIELDS = ["date", "amount"] as const;
 export const SORT_ORDERS = ["asc", "desc"] as const;
 
+/**
+ * Whole rupiah, always positive. Shared with budget limits
+ * (schemas/budget.ts), so both forms give the same messages.
+ */
+export const amountField = z
+  .number({
+    // An empty amount field in the form gives undefined or NaN.
+    error: (issue) =>
+      issue.input === undefined || Number.isNaN(issue.input)
+        ? "Isi nominal"
+        : "Nominal harus berupa angka",
+  })
+  .int({ error: "Nominal harus bilangan bulat" })
+  .positive({ error: "Nominal harus lebih dari 0" })
+  .max(MAX_AMOUNT, { error: "Nominal maksimal Rp1.000.000.000.000" });
+
+export const categoryIdField = z.uuid({ error: "Pilih kategori" });
+
 const fields = {
   type: z.enum(TRANSACTION_TYPES, {
     error: "Pilih pemasukan atau pengeluaran",
   }),
-  categoryId: z.uuid({ error: "Pilih kategori" }),
-  // Whole rupiah. The sign is in `type`, so the amount is always positive.
-  amount: z
-    .number({
-      // An empty amount field in the form gives undefined or NaN.
-      error: (issue) =>
-        issue.input === undefined || Number.isNaN(issue.input)
-          ? "Isi nominal"
-          : "Nominal harus berupa angka",
-    })
-    .int({ error: "Nominal harus bilangan bulat" })
-    .positive({ error: "Nominal harus lebih dari 0" })
-    .max(MAX_AMOUNT, { error: "Nominal maksimal Rp1.000.000.000.000" }),
+  categoryId: categoryIdField,
+  // The sign is in `type`, so the amount is always positive.
+  amount: amountField,
   // A calendar date without a time zone, "YYYY-MM-DD".
   date: z.iso.date({
     error: (issue) =>
@@ -55,7 +63,7 @@ const fields = {
 
 // strictObject: unknown keys such as `userId` are rejected, not ignored.
 // This message covers problems with the body itself; fields have their own.
-const bodyOptions = {
+export const bodyOptions = {
   error: (issue: z.core.$ZodRawIssue) =>
     issue.code === "unrecognized_keys"
       ? `Field tidak dikenal: ${issue.keys.join(", ")}`
@@ -129,7 +137,7 @@ export const transactionListQuerySchema = z
 export const MAX_TREND_MONTHS = 24;
 
 /** "YYYY-MM" with a real month. */
-const monthField = (error: string) =>
+export const monthField = (error: string) =>
   z.string({ error }).regex(/^\d{4}-(0[1-9]|1[0-2])$/, { error });
 
 function monthCount(from: string, to: string) {

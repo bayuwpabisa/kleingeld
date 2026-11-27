@@ -3,6 +3,8 @@ import { Suspense } from "react";
 
 import { AddTransactionButton } from "@/components/app-shell/add-transaction-button";
 import { PageHeader } from "@/components/app-shell/page-header";
+import { BudgetOverviewSkeleton } from "@/features/dashboard/components/budget-overview";
+import { BudgetOverviewSection } from "@/features/dashboard/components/budget-overview-section";
 import { CategoryBreakdownSkeleton } from "@/features/dashboard/components/category-breakdown";
 import { CategoryBreakdownSection } from "@/features/dashboard/components/category-breakdown-section";
 import { MonthSummarySkeleton } from "@/features/dashboard/components/month-summary";
@@ -43,7 +45,8 @@ export default function DashboardPage() {
           <CategoryBreakdownSection />
         </Suspense>
       </div>
-      {/* Budget and bills join this row later (wireframe 03). Three columns
+      {/* Transaksi terbaru, then Budget; bills join this row later
+          (wireframe 03). Three columns
           only from 1440px: below that a card is too narrow for its heading
           and "Lihat semua" on one line (measured at 1280px). Both column
           counts use arbitrary breakpoints on purpose: Tailwind puts those
@@ -52,6 +55,9 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 gap-6 min-[1024px]:grid-cols-2 min-[1440px]:grid-cols-3 lg:gap-4">
         <Suspense fallback={<RecentTransactionsSkeleton />}>
           <RecentTransactionsSection />
+        </Suspense>
+        <Suspense fallback={<BudgetOverviewSkeleton />}>
+          <BudgetOverviewSection />
         </Suspense>
       </div>
     </>

@@ -144,11 +144,37 @@ export const transactions = pgTable(
   ],
 );
 
+// One monthly limit per category, the same every month until it is changed.
+// The data access makes sure the category is the user's own and an expense
+// category; the database does not check that.
+export const budgets = pgTable(
+  "budgets",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    userId: text()
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    // CASCADE: deleting a category (the demo reset does) removes its budget.
+    categoryId: uuid()
+      .notNull()
+      .references(() => categories.id, { onDelete: "cascade" }),
+    // Whole rupiah per month, always positive.
+    amount: bigint({ mode: "number" }).notNull(),
+    ...timestamps,
+  },
+  (t) => [
+    check("budgets_amount_positive", sql`${t.amount} > 0`),
+    // Also the index for a user's budgets (user_id comes first).
+    unique("budgets_user_category_unique").on(t.userId, t.categoryId),
+  ],
+);
+
 export const usersRelations = relations(users, ({ many }) => ({
   sessions: many(sessions),
   accounts: many(accounts),
   categories: many(categories),
   transactions: many(transactions),
+  budgets: many(budgets),
 }));
 
 export const sessionsRelations = relations(sessions, ({ one }) => ({
@@ -162,6 +188,7 @@ export const accountsRelations = relations(accounts, ({ one }) => ({
 export const categoriesRelations = relations(categories, ({ one, many }) => ({
   user: one(users, { fields: [categories.userId], references: [users.id] }),
   transactions: many(transactions),
+  budgets: many(budgets),
 }));
 
 export const transactionsRelations = relations(transactions, ({ one }) => ({
@@ -172,9 +199,19 @@ export const transactionsRelations = relations(transactions, ({ one }) => ({
   }),
 }));
 
+export const budgetsRelations = relations(budgets, ({ one }) => ({
+  user: one(users, { fields: [budgets.userId], references: [users.id] }),
+  category: one(categories, {
+    fields: [budgets.categoryId],
+    references: [categories.id],
+  }),
+}));
+
 export type User = typeof users.$inferSelect;
 export type Category = typeof categories.$inferSelect;
 export type NewCategory = typeof categories.$inferInsert;
 export type Transaction = typeof transactions.$inferSelect;
 export type NewTransaction = typeof transactions.$inferInsert;
+export type Budget = typeof budgets.$inferSelect;
+export type NewBudget = typeof budgets.$inferInsert;
 export type TransactionType = (typeof transactionType.enumValues)[number];

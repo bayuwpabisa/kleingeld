@@ -1,6 +1,7 @@
 import type { InfiniteData } from "@tanstack/react-query";
 import { act, waitFor } from "@testing-library/react";
 
+import { budgetKeys } from "@/features/budgets/api/keys";
 import { categoryKeys } from "@/features/categories/api/use-categories";
 import { ApiError, apiFetch } from "@/lib/api/client";
 import { runToastAction } from "@/lib/store/toast-slice";
@@ -226,6 +227,49 @@ describe("useDeleteTransaction", () => {
       ),
     );
     expect(list()).toEqual(firstPage);
+  });
+});
+
+describe("budgets", () => {
+  // A budget's spending comes from the transactions, so every change must
+  // refetch the budgets too (Budget page and dashboard card).
+  const budgetKey = budgetKeys.month("2026-11");
+
+  function setupWithBudgets<Result>(hook: () => Result) {
+    fetchApi.mockResolvedValueOnce({ ...existing, id: "saved" });
+    const utils = setup(hook);
+    utils.queryClient.setQueryData(budgetKey, []);
+    const refetched = () =>
+      waitFor(() =>
+        expect(utils.queryClient.getQueryState(budgetKey)?.isInvalidated).toBe(
+          true,
+        ),
+      );
+    return { ...utils, refetched };
+  }
+
+  it("refetches them after adding a transaction", async () => {
+    const { result, refetched } = setupWithBudgets(() =>
+      useCreateTransaction(),
+    );
+    act(() => result.current.mutate(input));
+    await refetched();
+  });
+
+  it("refetches them after editing a transaction", async () => {
+    const { result, refetched } = setupWithBudgets(() =>
+      useUpdateTransaction(),
+    );
+    act(() => result.current.mutate({ id: existing.id, values: input }));
+    await refetched();
+  });
+
+  it("refetches them after deleting a transaction", async () => {
+    const { result, refetched } = setupWithBudgets(() =>
+      useDeleteTransaction(),
+    );
+    act(() => result.current.mutate(existing.id));
+    await refetched();
   });
 });
 

@@ -1,9 +1,4 @@
-import {
-  dehydrate,
-  QueryCache,
-  QueryClient,
-  type DehydratedState,
-} from "@tanstack/react-query";
+import { dehydrate, type DehydratedState } from "@tanstack/react-query";
 
 import type { AppDb } from "@/db/types";
 import { transactionKeys } from "@/features/transactions/api/keys";
@@ -13,6 +8,7 @@ import {
   summarizeTransactions,
   totalsByCategory,
 } from "@/features/transactions/server/transactions-repo";
+import { prefetchQueryClient } from "@/lib/prefetch-client";
 
 import {
   currentMonthFilters,
@@ -26,22 +22,8 @@ import {
 // browser's hooks use (features/transactions/api). The browser then shows it
 // at once and keeps it fresh after changes, like any other query.
 
-/**
- * One client per request. No retries, so a failing database does not hold
- * the page back; a failed query is left out of the state (dehydrate keeps
- * only successful ones) and the browser loads it itself, showing its error
- * state with "Coba lagi". The error is logged here, since nothing else sees it.
- */
-function requestQueryClient() {
-  return new QueryClient({
-    queryCache: new QueryCache({
-      onError: (error) => console.error("Dashboard prefetch failed", error),
-    }),
-    // TanStack already skips retries on the server; said here so the page
-    // does not depend on that default.
-    defaultOptions: { queries: { retry: false } },
-  });
-}
+/** One client per request (lib/prefetch-client.ts). */
+const requestQueryClient = () => prefetchQueryClient("Dashboard");
 
 /** Income, expense and balance of the month of `today` ("YYYY-MM-DD"). */
 export async function prefetchMonthSummary(

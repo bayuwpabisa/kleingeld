@@ -6,6 +6,7 @@ import { z } from "zod";
 export type ApiErrorCode =
   | "unauthorized"
   | "not_found"
+  | "conflict"
   | "invalid_json"
   | "validation_error"
   | "unsupported_media_type";
@@ -50,6 +51,17 @@ export function validationError(error: z.ZodError) {
 export function invalidFields(fieldErrors: FieldErrors) {
   return apiError(400, "validation_error", "Data tidak valid", {
     fieldErrors,
+    formErrors: [],
+  });
+}
+
+/**
+ * 409 when the data clashes with what is already saved, e.g. a second budget
+ * for one category. The message also sits on the field, for the form.
+ */
+export function conflict(field: string, message: string) {
+  return apiError(409, "conflict", message, {
+    fieldErrors: { [field]: [message] },
     formErrors: [],
   });
 }

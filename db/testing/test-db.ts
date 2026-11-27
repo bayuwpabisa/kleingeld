@@ -24,8 +24,9 @@ export async function createTestDb(): Promise<TestDb> {
 
 /** Removes every row, so each test starts from an empty database. */
 export async function resetTestDb(db: AppDb) {
-  // Children first: transactions → categories → users (sessions and
-  // accounts cascade with their user).
+  // Children first: budgets → transactions → categories → users (sessions
+  // and accounts cascade with their user).
+  await db.delete(schema.budgets);
   await db.delete(schema.transactions);
   await db.delete(schema.categories);
   await db.delete(schema.users);

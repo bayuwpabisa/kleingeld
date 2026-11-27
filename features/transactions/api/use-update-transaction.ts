@@ -9,6 +9,7 @@ import {
   cachedCategory,
   failureToast,
   findCachedTransaction,
+  refetchAfterChange,
   restoreLists,
   snapshotLists,
   updateLists,
@@ -66,7 +67,7 @@ export function useUpdateTransaction() {
       toast.show({ message: "Transaksi disimpan" });
     },
     onSettled() {
-      return queryClient.invalidateQueries({ queryKey: transactionKeys.all });
+      return refetchAfterChange(queryClient);
     },
   });
 
