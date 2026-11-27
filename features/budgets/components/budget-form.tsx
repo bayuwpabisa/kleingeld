@@ -25,7 +25,11 @@ import { amountField } from "@/schemas/transaction";
 import { useCreateBudget } from "../api/use-create-budget";
 import { useUpdateBudget } from "../api/use-update-budget";
 import { budgetLevel } from "../budget-status";
-import { budgetBorderClasses, BudgetUsage } from "./budget-meter";
+import {
+  budgetBorderClasses,
+  budgetCardClasses,
+  BudgetUsage,
+} from "./budget-meter";
 
 // What the fields hold (the amount can be empty) versus what Zod returns.
 type FormValues = z.input<typeof budgetInputSchema>;
@@ -255,8 +259,7 @@ export function BudgetForm({
 
 // Every state as tall as a full card (110px, the height of the cards on the
 // page), so the dialog does not jump when a category or limit is entered.
-const previewClasses =
-  "flex min-h-27.5 min-w-0 flex-col justify-center gap-3 rounded-xl border bg-surface p-4";
+const previewClasses = cn(budgetCardClasses, "min-h-27.5 justify-center");
 
 /**
  * "Pemakaian bulan ini": the card the budget will have, redrawn as the limit

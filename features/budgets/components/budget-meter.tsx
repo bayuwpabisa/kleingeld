@@ -26,6 +26,10 @@ const labelClasses: Record<BudgetLevel, string> = {
   over: "text-danger",
 };
 
+/** A budget card's frame, without its border colour (see below). */
+export const budgetCardClasses =
+  "flex min-w-0 flex-col gap-3 rounded-xl border bg-surface p-4";
+
 /** The card's border for a level: plain, `warning-fill` or `danger`. */
 export const budgetBorderClasses: Record<BudgetLevel, string> = {
   ok: "border-border",

@@ -23,7 +23,11 @@ import {
 } from "../budget-status";
 import { BudgetDialogs } from "./budget-dialogs";
 import { CreateBudgetButton, useBudgetEditor } from "./budget-editor";
-import { budgetBorderClasses, BudgetUsage } from "./budget-meter";
+import {
+  budgetBorderClasses,
+  budgetCardClasses,
+  BudgetUsage,
+} from "./budget-meter";
 
 /** How many cards the skeleton shows before the budgets are known. */
 const SKELETON_CARDS = 3;
@@ -109,7 +113,7 @@ export function BudgetsSkeleton() {
       <BudgetSummary budgets={undefined} today="" busy />
       <BudgetList busy>
         {Array.from({ length: SKELETON_CARDS }, (_, index) => (
-          <CardSkeleton key={index} />
+          <BudgetCardSkeleton key={index} />
         ))}
       </BudgetList>
     </>
@@ -199,9 +203,6 @@ function BudgetList({
   );
 }
 
-const cardClasses =
-  "flex min-w-0 flex-col gap-3 rounded-xl border bg-surface p-4";
-
 /**
  * One budget: name and status, the meter, then "Rp… dari Rp…". A button
  * ("Atur budget Makan") lies over the whole card, so a tap anywhere opens the
@@ -216,7 +217,7 @@ function BudgetCard({ budget }: { budget: BudgetStatus }) {
   return (
     <li
       className={cn(
-        cardClasses,
+        budgetCardClasses,
         "group relative",
         budgetBorderClasses[budgetLevel(spent, amount)],
       )}
@@ -245,10 +246,13 @@ function BudgetCard({ budget }: { budget: BudgetStatus }) {
   );
 }
 
-/** A card the same height as BudgetCard: 24px name, 8px meter, 20px line. */
-function CardSkeleton() {
+/**
+ * A card the same height as a budget card: 24px name, 8px meter, 20px line.
+ * Also the dashboard's Budget card while it loads.
+ */
+export function BudgetCardSkeleton() {
   return (
-    <li aria-hidden className={cn(cardClasses, "border-border")}>
+    <li aria-hidden className={cn(budgetCardClasses, "border-border")}>
       <div className="flex h-6 items-center justify-between gap-3">
         <Skeleton className="h-4 w-1/3" />
         <Skeleton className="h-3.5 w-20" />
