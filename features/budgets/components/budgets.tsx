@@ -6,7 +6,6 @@ import type { ReactNode } from "react";
 import { summaryFrameClasses, SummaryItem } from "@/components/summary-item";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ErrorState } from "@/components/ui/error-state";
-import { Money } from "@/components/ui/money";
 import { Skeleton } from "@/components/ui/skeleton";
 import { balanceSize } from "@/features/dashboard/balance-size";
 import { summaryLayout } from "@/features/transactions/summary-layout";
@@ -22,22 +21,30 @@ import {
   daysLeftLabel,
   monthOf,
 } from "../budget-status";
-import {
-  BudgetMeter,
-  budgetBorderClasses,
-  BudgetStatusLabel,
-} from "./budget-meter";
+import { BudgetDialogs } from "./budget-dialogs";
+import { CreateBudgetButton, useBudgetEditor } from "./budget-editor";
+import { budgetBorderClasses, BudgetUsage } from "./budget-meter";
 
 /** How many cards the skeleton shows before the budgets are known. */
 const SKELETON_CARDS = 3;
 
 /**
  * The Budget page's content for the month of `today` (wireframe 05): the
- * totals, a banner naming the budgets at 80% or more, and a card per budget.
- * The page hands the server's budgets to the query cache, so they show at
- * once; they load again after any budget or transaction change.
+ * totals, a banner naming the budgets at 80% or more, and a card per budget,
+ * which opens its "Atur budget" dialog. The page hands the server's budgets
+ * to the query cache, so they show at once; they load again after any
+ * budget or transaction change. Needs a BudgetEditorProvider above it.
  */
 export function Budgets({ today }: { today: string }) {
+  return (
+    <>
+      <BudgetsContent today={today} />
+      <BudgetDialogs today={today} />
+    </>
+  );
+}
+
+function BudgetsContent({ today }: { today: string }) {
   const { data, isError, isFetching, fetchStatus, refetch } = useBudgets(
     monthOf(today),
   );
@@ -48,6 +55,7 @@ export function Budgets({ today }: { today: string }) {
         <EmptyState
           icon={PiggyBank}
           message="Belum ada budget. Atur batas per kategori supaya pengeluaran tetap terkontrol."
+          action={<CreateBudgetButton />}
         />
       );
     }
@@ -194,31 +202,45 @@ function BudgetList({
 const cardClasses =
   "flex min-w-0 flex-col gap-3 rounded-xl border bg-surface p-4";
 
-/** One budget: name and status, the meter, then "Rp… dari Rp…". */
+/**
+ * One budget: name and status, the meter, then "Rp… dari Rp…". A button
+ * ("Atur budget Makan") lies over the whole card, so a tap anywhere opens the
+ * dialog, the focus ring outlines the card, and its tooltip gives the whole
+ * name. It sits beside the content,
+ * not around it, so the heading and meter are still read on their own.
+ */
 function BudgetCard({ budget }: { budget: BudgetStatus }) {
+  const { openEdit } = useBudgetEditor();
   const { spent, amount, category } = budget;
   const nameId = `budget-${budget.id}`;
   return (
     <li
       className={cn(
         cardClasses,
+        "group relative",
         budgetBorderClasses[budgetLevel(spent, amount)],
       )}
     >
-      <div className="flex items-center justify-between gap-3">
-        <h3
-          id={nameId}
-          title={category.name}
-          className="min-w-0 truncate font-medium"
-        >
-          {category.name}
-        </h3>
-        <BudgetStatusLabel spent={spent} amount={amount} />
-      </div>
-      <BudgetMeter spent={spent} amount={amount} labelledBy={nameId} />
-      <p className="text-sm text-fg-muted">
-        <Money amount={spent} /> dari <Money amount={amount} />
-      </p>
+      <BudgetUsage
+        name={
+          <h3
+            id={nameId}
+            className="min-w-0 truncate font-medium group-hover:underline"
+          >
+            {category.name}
+          </h3>
+        }
+        labelledBy={nameId}
+        spent={spent}
+        amount={amount}
+      />
+      <button
+        type="button"
+        aria-label={`Atur budget ${category.name}`}
+        title={`Atur budget ${category.name}`}
+        onClick={() => openEdit(budget)}
+        className="absolute inset-0 rounded-xl"
+      />
     </li>
   );
 }

@@ -13,6 +13,7 @@ import type { BudgetStatus } from "@/schemas/budget";
 import { renderWithProviders } from "@/test/render-with-providers";
 
 import { budgetKeys } from "../api/keys";
+import { BudgetEditorProvider } from "./budget-editor";
 import { Budgets, BudgetsSkeleton } from "./budgets";
 
 jest.mock("@/lib/api/client", () => ({
@@ -48,10 +49,17 @@ function serverState(rows: BudgetStatus[]) {
   return dehydrate(server);
 }
 
+// The page wraps them in the provider of the budget dialogs.
+const budgets = () => (
+  <BudgetEditorProvider>
+    <Budgets today={TODAY} />
+  </BudgetEditorProvider>
+);
+
 function renderHydrated(rows: BudgetStatus[]) {
   return renderWithProviders(
     <HydrationBoundary state={serverState(rows)}>
-      <Budgets today={TODAY} />
+      {budgets()}
     </HydrationBoundary>,
   );
 }
@@ -103,6 +111,21 @@ describe("Budgets with the server's data", () => {
         .getAllByRole("heading")
         .map((h) => h.textContent),
     ).toStrictEqual(["Belanja", "Makan", "Transport"]);
+    // One button per card opens its dialog.
+    expect(
+      within(list())
+        .getAllByRole("button")
+        .map((button) => button.getAttribute("aria-label")),
+    ).toStrictEqual([
+      "Atur budget Belanja",
+      "Atur budget Makan",
+      "Atur budget Transport",
+    ]);
+    // The button lies over the card, so it carries the tooltip with the
+    // whole name (long names are cut off with "…").
+    expect(
+      within(card("Makan")).getByRole("button", { name: "Atur budget Makan" }),
+    ).toHaveAttribute("title", "Atur budget Makan");
     expect(screen.getByRole("meter", { name: "Belanja" })).toHaveAttribute(
       "aria-valuetext",
       "50% terpakai",
@@ -152,6 +175,9 @@ describe("Budgets with the server's data", () => {
     expect(
       screen.queryByRole("region", { name: "Ringkasan budget" }),
     ).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Buat budget" }),
+    ).toBeInTheDocument();
   });
 
   it("has no axe violations, with and without budgets", async () => {
@@ -166,7 +192,7 @@ describe("Budgets with the server's data", () => {
 describe("Budgets without the server's data", () => {
   it("shows the skeleton, then loads the month from the API", async () => {
     fetchApi.mockResolvedValueOnce(BUDGETS);
-    renderWithProviders(<Budgets today={TODAY} />);
+    renderWithProviders(budgets());
 
     expect(summary()).toHaveAttribute("aria-busy", "true");
     expect(screen.queryByRole("meter")).not.toBeInTheDocument();
@@ -184,7 +210,7 @@ describe("Budgets without the server's data", () => {
     fetchApi.mockRejectedValueOnce(
       new ApiError({ status: 500, code: "unknown", message: "x" }),
     );
-    renderWithProviders(<Budgets today={TODAY} />);
+    renderWithProviders(budgets());
 
     expect(
       await screen.findByText(
@@ -202,7 +228,7 @@ describe("Budgets without the server's data", () => {
 
   it("says it waits for the connection while offline", async () => {
     act(() => onlineManager.setOnline(false));
-    renderWithProviders(<Budgets today={TODAY} />);
+    renderWithProviders(budgets());
 
     expect(
       await screen.findByText(

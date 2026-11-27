@@ -1,5 +1,7 @@
 import { CircleAlert, TriangleAlert } from "lucide-react";
+import type { ReactNode } from "react";
 
+import { Money } from "@/components/ui/money";
 import { cn } from "@/lib/cn";
 
 import {
@@ -61,6 +63,31 @@ export function BudgetMeter({
         style={{ width: `${shown}%` }}
       />
     </div>
+  );
+}
+
+/**
+ * A budget card's content: the name (given, with the id `labelledBy`) and
+ * its status, the meter, then "Rp… dari Rp…". Shared by the cards of the
+ * Budget page and the preview in the budget form.
+ */
+export function BudgetUsage({
+  name,
+  labelledBy,
+  spent,
+  amount,
+}: MeterProps & { name: ReactNode; labelledBy: string }) {
+  return (
+    <>
+      <div className="flex items-center justify-between gap-3">
+        {name}
+        <BudgetStatusLabel spent={spent} amount={amount} />
+      </div>
+      <BudgetMeter spent={spent} amount={amount} labelledBy={labelledBy} />
+      <p className="text-sm text-fg-muted">
+        <Money amount={spent} /> dari <Money amount={amount} />
+      </p>
+    </>
   );
 }
 
