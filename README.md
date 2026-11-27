@@ -6,7 +6,7 @@ A personal finance app for tracking transactions, monthly budgets per category, 
 
 **Live:** [kleingeld.vercel.app](https://kleingeld.vercel.app)
 
-> **Status: v0.2 (transactions).** On the live site, sign in with the demo account ("Coba akun demo") and add, edit, delete, search and filter transactions. The demo data resets on every demo sign-in. Dashboard, budgets and bills arrive in v0.3; Google and GitHub sign-in are built but switched on for the live site in v1.0.
+> **Status: v0.2 (transactions).** On the live site, sign in with the demo account ("Coba akun demo") and add, edit, delete, search and filter transactions. The demo data resets on every demo sign-in. Dashboard, budgets and bills arrive in v0.3 (the dashboard and budgets are already on `develop`); Google and GitHub sign-in are built but switched on for the live site in v1.0.
 
 ## Roadmap
 
@@ -18,6 +18,15 @@ Dates of released versions are when they shipped; the others are targets, update
 | v0.2 | 21 Nov 2026 | Postgres schema and demo data, sign-in (demo account; Google and GitHub ready), transactions API, list, form and table with URL filters | ✅ Released |
 | v0.3 | 28 Nov 2026 | Dashboard with charts, budgets per category, recurring bills and installments, performance and accessibility audit | In progress |
 | v1.0 | 5 Dec 2026 | Unit and end-to-end tests for the main flows, Docker, Google and GitHub sign-in on the live site, full documentation | Planned |
+
+What v0.3 contains so far:
+
+- [x] Dashboard rendered on the server and streamed in parts: this month's balance, income and expenses, the latest transactions, and a budget card; the data reaches the browser through the query cache, so the first load makes no API calls
+- [x] Charts with Recharts: income vs expenses over six months, and this month's expenses per category as ranked bars; each chart can be swapped for a table, has a text summary for screen readers and moves between bars with the arrow keys
+- [x] Budgets: one monthly limit per expense category, a meter per category that warns from 80% and when over the limit (icon and text, not only colour), totals, and a banner naming the categories that need attention
+- [x] Create, change and delete budgets in a dialog (a bottom sheet on phones) with a live preview of the meter; delete can be undone; adding or changing a transaction updates the budgets at once
+- [x] 834 tests with Jest, React Testing Library and jest-axe
+- [ ] Recurring bills and installments, performance and accessibility audit
 
 What v0.2 contains:
 
@@ -42,9 +51,9 @@ What v0.1 contains:
 
 ## Tech stack
 
-**In use:** Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS v4, Lucide icons, Neon Postgres + Drizzle ORM, Better Auth, Zod, React Hook Form, TanStack Query, Redux Toolkit, Jest + React Testing Library + jest-axe, PGlite (Postgres in tests), GitHub Actions, Vercel.
+**In use:** Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS v4, Lucide icons, Neon Postgres + Drizzle ORM, Better Auth, Zod, React Hook Form, TanStack Query, Redux Toolkit, Recharts, Jest + React Testing Library + jest-axe, PGlite (Postgres in tests), GitHub Actions, Vercel.
 
-**Coming in later releases:** Recharts, Cypress + cypress-axe, Docker.
+**Coming in later releases:** Cypress + cypress-axe, Docker.
 
 ## Getting started
 
@@ -112,13 +121,20 @@ REST Route Handlers under `/api`, used by the app itself. Requests and responses
 | `GET` | `/api/transactions/{id}` | | `200` with the transaction |
 | `PATCH` | `/api/transactions/{id}` | any of the fields above | `200` with the updated transaction |
 | `DELETE` | `/api/transactions/{id}` | | `204` |
+| `GET` | `/api/transactions/trend?from=YYYY-MM&to=YYYY-MM` | | `200 [{ month, income, expense }]`, one row per month (a month without transactions is 0), at most 24 months |
+| `GET` | `/api/transactions/by-category?type=&from=&to=` | | `200 [{ category, total, count }]` for one type, largest first |
 | `GET` | `/api/categories` | | `200` with the user's categories (`id`, `name`, `type`, `icon`), expenses first |
+| `GET` | `/api/budgets?month=YYYY-MM` | | `200 [{ id, category, amount, spent, count }]`: each budget with its category's expenses in that month, by category name |
+| `POST` | `/api/budgets` | `{ categoryId, amount }` | `201` with the budget; `409` when the category already has one |
+| `PATCH` | `/api/budgets/{id}` | `{ amount }` | `200` with the updated budget |
+| `DELETE` | `/api/budgets/{id}` | | `204` |
 
 - List and summary parameters: `q` searches the note and the category name (case-insensitive, up to 100 characters); `type`; `category` (a category id); `from` and `to` (`YYYY-MM-DD`, both included, `from` ≤ `to`); `sort` is `date` (default) or `amount`, `order` is `desc` (default) or `asc`; `page` from 1, `pageSize` 1–100 (default 20). Ties are broken by date, entry time and id, so pages never overlap.
 - `type` is `income` or `expense`; `amount` is whole rupiah (integer, 1 to 1,000,000,000,000); `date` is `YYYY-MM-DD`; `note` is up to 200 characters (blank or `null` clears it). The category must be one of the user's own, of the same type.
 - Unknown fields such as `userId` are refused: the user always comes from the session.
 - Bodies must be sent as `application/json` (otherwise `415`).
-- A transaction of another user answers `404`, the same as one that does not exist.
+- A budget is a fixed monthly limit: it holds every month until it is changed or deleted, and is removed with its category. Only expense categories of the user can have one, one budget per category; a new category means a new budget, so `PATCH` changes the amount only.
+- A transaction or budget of another user answers `404`, the same as one that does not exist.
 
 Errors share one shape. Messages are in Indonesian because the UI shows them:
 
@@ -139,6 +155,7 @@ Errors share one shape. Messages are in Indonesian because the UI shows them:
 | `not_found` | 404 |
 | `invalid_json`, `validation_error` | 400 |
 | `unsupported_media_type` | 415 |
+| `conflict` | 409 |
 
 Trying it locally with the demo account (the sign-in resets the demo data):
 
@@ -155,6 +172,8 @@ Data from the API is server state and lives in TanStack Query: hooks in `feature
 Adding, editing and deleting transactions is optimistic: the list changes at once, goes back if the server refuses (with a toast and, for network errors, Coba lagi), and refetches when done. Deleting can be undone from its toast. The form (React Hook Form) validates with the same Zod schema as the API. On desktop it opens in a dialog from any page; on phones it is a page (`/transactions/new`, `/transactions/[id]/edit`).
 
 The transactions page keeps its search, filters (period, category, type), order and page in the URL, with the same names as the API, so a filtered list can be bookmarked and shared (`/transactions?q=kopi&type=expense&sort=amount`). Changes use the browser's history API, which Next.js syncs with `useSearchParams`: no server round trip, and Back returns to the previous filters. The search waits until typing stops (300 ms), and a request whose answer is no longer wanted is cancelled through its `AbortSignal`. Desktop pages through a table; phones load more rows with "Muat lebih banyak". Optimistic changes follow each cached list's filters and order, so a new row only appears in lists it belongs to.
+
+The dashboard and the Budget page are Server Components that run the same queries as the API on the server and hand the results to the query cache (`HydrationBoundary`), each part behind its own `<Suspense>` with a skeleton of the same height. Budget changes are not optimistic: the form is short and rarely used, so Simpan waits for the server, and a refused category is shown under its field. A budget's usage comes from transactions, so every transaction change also refetches the budgets.
 
 ## Scripts
 
